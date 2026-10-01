@@ -7,6 +7,7 @@ export {
   createMatch,
   applyAction,
   pendingDecision,
+  timeoutAction,
   legalActions,
   canPlay,
   canAttackWith,
@@ -22,7 +23,7 @@ export {
 } from './match.js';
 export { computePowers, powerOf, type PowerMap } from './power.js';
 export { matchesFilter } from './query.js';
-export { getPlayerView, type PlayerView, type SideView, type BattleView, type VisibleCard } from './view.js';
+export { getPlayerView, eventsFor, HIDDEN_UID, type PlayerView, type SideView, type BattleView, type VisibleCard } from './view.js';
 export { validateDeck, validateCardDef, validateEffect, validateCatalog } from './validate.js';
 export {
   keywordText,

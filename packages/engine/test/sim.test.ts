@@ -4,6 +4,8 @@ import {
   cardText,
   createMatch,
   effectText,
+  eventsFor,
+  HIDDEN_UID,
   KEYWORDS,
   keywordText,
   Rng,
@@ -188,5 +190,23 @@ describe('validation des cartes', () => {
     }
     expect(validateCardDef(event('e', { effects: [] })).join()).toContain('effet main ou counter');
     expect(validateCardDef(card('l', { type: 'leader', life: undefined })).join()).toContain('life invalide');
+  });
+});
+
+describe('événements filtrés par joueur', () => {
+  it("ne révèlent jamais les cartes piochées ou récupérées en main par l'adversaire", () => {
+    const { log } = game('filtre', ['ai', 'ai']);
+    for (const viewer of [0, 1] as const) {
+      const opponent = viewer === 0 ? 1 : 0;
+      const filtered = eventsFor(log, viewer);
+      expect(filtered).toHaveLength(log.length);
+      for (const e of filtered) {
+        if (e.type === 'card_drawn' && e.player === opponent) expect(e.uid).toBe(HIDDEN_UID);
+        if (e.type === 'life_lost' && e.player === opponent && e.to === 'hand') expect(e.uid).toBe(HIDDEN_UID);
+        if (e.type === 'card_created' && e.player === opponent) expect(e.defId).toBe(HIDDEN_UID);
+      }
+      // Ses propres pioches restent visibles.
+      expect(filtered.some((e) => e.type === 'card_drawn' && e.player === viewer && e.uid !== HIDDEN_UID)).toBe(true);
+    }
   });
 });

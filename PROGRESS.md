@@ -2,23 +2,64 @@
 
 ## Phase en cours
 
-**Phase 2 bis — Refonte du duel (modèle TCG One Piece)** : terminée, en attente de validation. Branche `refonte-duel`.
+**Phase 3 — Serveur et comptes** : terminée, en attente de validation. Branche `phase-3-serveur`.
 
 | Phase | Statut |
 |---|---|
 | 1. Moteur de règles | ✅ Terminée |
 | 2. Prototype jouable local | ✅ Validée (fusionnée dans `master`) |
-| 2 bis. Refonte du duel (One Piece) | ✅ Terminée, en attente de validation |
-| 3. Serveur et comptes | ⏳ Prochaine |
-| 4. Pipeline de contenu et admin | — |
+| 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
+| 3. Serveur et comptes | ✅ Terminée, en attente de validation |
+| 4. Pipeline de contenu et admin | ⏳ Prochaine |
 | 5. Économie | — |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
 
-**Lancer le prototype :** `pnpm install` puis `pnpm dev`, et ouvrir http://localhost:5173. L'outil de développement du navigateur en vue mobile donne le meilleur rendu. `?timer=0` dans l'URL de partie désactive les minuteurs.
+**Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 3 : serveur et comptes
+
+**Serveur (`apps/server`)** : Fastify, WebSocket, PostgreSQL.
+- **Base** : SQL paramétré sans ORM, migrations versionnées (`src/db/migrations`).
+  - En production : PostgreSQL via `DATABASE_URL` (Neon).
+  - En développement et en test : **PGlite**, un vrai PostgreSQL embarqué, rien à installer.
+- **Comptes** : date de naissance obligatoire et **accès refusé avant 21 ans**.
+  - Mots de passe hachés en Argon2.
+  - Sessions par jeton aléatoire dont seule l'empreinte est stockée, dans un cookie httpOnly / SameSite.
+  - Limitation de débit sur l'authentification ; même message d'erreur que le compte existe ou non.
+- **Kit de départ** (prototype) : les 5 Leaders, 2 exemplaires de chaque carte, et les 5 decks préconstruits.
+- **Collection et decks** (REST) : les decks sont validés par le moteur **et** par la possession des cartes.
+- **Parties en temps réel** (`/ws`), le **serveur fait foi** :
+  - seed issue de `crypto` ;
+  - actions validées par le moteur ;
+  - chaque joueur ne reçoit que sa vue et des événements filtrés (la pioche et les Vies adverses restent cachées) ;
+  - minuteurs côté serveur, avec action par défaut à l'expiration ;
+  - reconnexion avec reprise de la partie.
+- **Matchmaking** : partie rapide, classée, ou contre un fantôme. Si personne ne se présente dans le délai (15 s), un **fantôme** prend le relais : le deck enregistré d'un autre joueur, joué par l'IA.
+- **Replays** : chaque partie est enregistrée (version du contenu, seed, decks, actions, résultat). Historique et replay sont réservés aux participants.
+- `packages/shared` : types du protocole WebSocket et de l'API, partagés entre le serveur et le site.
+- Moteur : ajout de `eventsFor` (filtrage des événements par joueur) et de `timeoutAction` (action par défaut du minuteur).
+
+**Site (`apps/web`)**
+- Pages **Connexion** et **Inscription** (rappel 21+, erreurs claires).
+- **Salon en ligne** : choix parmi ses decks, trois modes, recherche avec compte à rebours avant le fantôme.
+- **Mes parties** : historique avec résultat, puis **replay** joué par le moteur à partir de la seed, avec Pause, Lecture et Action suivante.
+- Le composant `Game` affiche indifféremment une partie locale (entraînement contre l'IA), une partie en ligne ou un replay, à travers une interface `MatchClient` qui reçoit les étapes en continu.
+- Le menu propose « Jouer en ligne » en premier, l'entraînement hors ligne en second, et une barre de compte.
+
+**Tests** : 70 moteur, 6 contenu, **16 serveur** et **14 E2E**. Les tests serveur couvrent :
+- comptes, âge, sessions, decks et possession ;
+- deux joueurs connectés jusqu'à la fin de partie, sans fuite d'information ;
+- fantôme, minuteurs et reconnexion ;
+- replay qui reproduit exactement le résultat.
+
+Les tests E2E couvrent, sur smartphone et sur PC : l'inscription, une partie en ligne complète, l'historique, le replay et le refus avant 21 ans.
+
+**Reste pour l'hébergement (phase 8)** : un adaptateur Redis (Upstash) pour la file et les sessions si plusieurs serveurs tournent, les Dockerfiles et `fly.toml`. Aujourd'hui, les parties en cours sont en mémoire : un redémarrage du serveur interrompt les parties non terminées.
+
 
 ### 2026-10-02 — Affichage adapté au PC et au smartphone
 
@@ -101,20 +142,13 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 
 ## Prochaines étapes
 
-### Phase 3 — Serveur et comptes
-1. `apps/server` : Fastify + PostgreSQL (schéma de la section 16), migrations, Redis.
-2. Comptes avec date de naissance obligatoire et accès refusé avant 21 ans. Authentification.
-3. Collections et decks (Leader + 20 cartes, validés par `validateDeck`).
-4. **WebSocket `/match`** :
-   - matchmaking ;
-   - seed `crypto` côté serveur ;
-   - actions validées par `applyAction` ;
-   - envoi de `getPlayerView` et d'événements filtrés (rien sur la main ni les Vies adverses) ;
-   - minuteurs côté serveur.
-5. Implémentation WebSocket de `MatchClient` dans `apps/web`, à la place de `LocalMatch`.
-6. Mode fantôme (IA `chooseAction` sur un deck enregistré) et replays (seed + decks + actions).
+### Phase 4 — Pipeline de contenu et admin
+1. `tools/pipeline` : extraction Wikidata (SPARQL), score de notoriété (sitelinks + Pageviews), pré-filtrage de la politique de contenu (section 5), images Commons avec filtre de licences, carte typographique de secours.
+2. `apps/admin` : éditeur de cartes et de Leaders (DSL validé par `validateCardDef`), budget de puissance, simulations IA contre IA pour l'équilibrage, file des demandes de retrait, `country_rules`, journal d'audit.
+3. Catalogue en base (tables `cards`, `card_images`, `series`) à la place du JSON du prototype.
+4. Production du set de base (personnes, événements et lieux réels) : 250 cartes et les Leaders.
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
-- La branche `refonte-duel` peut-elle être fusionnée dans `master` ?
+- La branche `phase-3-serveur` peut-elle être fusionnée dans `master` ?

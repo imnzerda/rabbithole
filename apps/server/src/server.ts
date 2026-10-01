@@ -1,0 +1,15 @@
+import { buildApp } from './app.js';
+import { loadConfig } from './config.js';
+
+const config = loadConfig();
+const { app } = await buildApp(config);
+
+const shutdown = async () => {
+  await app.close();
+  process.exit(0);
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+await app.listen({ port: config.port, host: config.host });
+console.log(`RABBIT HOLE serveur prêt sur http://localhost:${config.port} (${config.databaseUrl ? 'PostgreSQL' : `PGlite ${config.pgliteDir || 'mémoire'}`})`);

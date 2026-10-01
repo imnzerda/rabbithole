@@ -120,3 +120,17 @@ describe('déroulement des tours', () => {
     expect(JSON.stringify(frozen)).toBe(before);
   });
 });
+
+describe('minuteur', () => {
+  it('timeoutAction : action par défaut légale pour chaque décision', async () => {
+    const { timeoutAction } = await import('../src/index.js');
+    const g = sandbox({ mulligan: true });
+    let guard = 0;
+    while (g.state.phase !== 'ended' && guard++ < 500) {
+      const t = timeoutAction(g.state)!;
+      g.act(t.player, t.action);
+    }
+    // À force de finir les tours sans jouer, une pioche finit par se vider.
+    expect(g.state.result?.reason).toBe('deck_out');
+  });
+});

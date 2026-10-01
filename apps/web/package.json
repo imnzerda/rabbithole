@@ -8,11 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "dev:lan": "vite dev --host"
   },
   "dependencies": {
     "@rabbithole/content": "workspace:^",
     "@rabbithole/engine": "workspace:^",
+    "@rabbithole/shared": "workspace:^",
     "pixi.js": "^8.21.0"
   },
   "devDependencies": {

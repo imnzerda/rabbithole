@@ -2,7 +2,7 @@ import { getCardDef, type MatchContext } from './context.js';
 import { legalActions, pendingDecision, type Decision, type LegalActions } from './match.js';
 import { computePowers } from './power.js';
 import { boardOf, isTrending } from './query.js';
-import { other, type CardInstance, type CardType, type MatchResult, type MatchState, type PlayerIndex } from './types.js';
+import { other, type CardInstance, type CardType, type MatchEvent, type MatchResult, type MatchState, type PlayerIndex } from './types.js';
 
 export interface VisibleCard {
   uid: string;
@@ -128,4 +128,27 @@ export function getPlayerView(ctx: MatchContext, s: MatchState, viewer: PlayerIn
     legal: legalActions(ctx, s, viewer),
     result: s.result,
   };
+}
+
+/** Identifiant de remplacement pour une carte que le joueur n'a pas le droit d'identifier. */
+export const HIDDEN_UID = 'hidden';
+
+/**
+ * Événements qu'un joueur a le droit de recevoir. On masque ce qui révélerait
+ * les cartes cachées de l'adversaire : sa pioche, les Vies qui rejoignent sa main
+ * et les cartes générées directement dans sa main.
+ */
+export function eventsFor(events: readonly MatchEvent[], viewer: PlayerIndex): MatchEvent[] {
+  return events.map((e) => {
+    switch (e.type) {
+      case 'card_drawn':
+        return e.player === viewer ? e : { ...e, uid: HIDDEN_UID };
+      case 'life_lost':
+        return e.player === viewer || e.to === 'trash' ? e : { ...e, uid: HIDDEN_UID };
+      case 'card_created':
+        return e.player === viewer ? e : { ...e, uid: HIDDEN_UID, defId: HIDDEN_UID };
+      default:
+        return e;
+    }
+  });
 }

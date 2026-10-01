@@ -5,7 +5,8 @@
   interface Props {
     result: MatchResult;
     you: PlayerIndex;
-    onreplay: () => void;
+    /** « Rejouer » (absent : pas de bouton). */
+    onreplay?: () => void;
     onmenu: () => void;
   }
   let { result, you, onreplay, onmenu }: Props = $props();
@@ -28,7 +29,7 @@
     </p>
     <div class="actions">
       <button class="btn" onclick={onmenu}>{t('menu')}</button>
-      <button class="btn btn-primary" onclick={onreplay} data-testid="replay">{t('play_again')}</button>
+      {#if onreplay}<button class="btn btn-primary" onclick={onreplay} data-testid="replay">{t('play_again')}</button>{/if}
     </div>
   </div>
 </div>

@@ -606,3 +606,24 @@ export function legalActions(ctx: MatchContext, s: MatchState, player: PlayerInd
   };
 }
 
+
+/**
+ * Action appliquée quand le minuteur d'une décision expire (le serveur fait foi) :
+ * finir le tour, ne pas bloquer, ne pas contrer, garder la Vie en main, garder sa main de départ.
+ */
+export function timeoutAction(s: MatchState): { player: PlayerIndex; action: GameAction } | null {
+  const d = pendingDecision(s);
+  if (!d) return null;
+  switch (d.kind) {
+    case 'main':
+      return { player: d.player, action: { type: 'end_turn' } };
+    case 'block':
+      return { player: d.player, action: { type: 'block', blocker: null } };
+    case 'counter':
+      return { player: d.player, action: { type: 'counter', uids: [] } };
+    case 'trigger':
+      return { player: d.player, action: { type: 'trigger', activate: false } };
+    case 'mulligan':
+      return { player: d.player, action: { type: 'mulligan', redraw: false } };
+  }
+}

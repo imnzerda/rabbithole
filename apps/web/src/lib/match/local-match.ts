@@ -2,21 +2,23 @@ import {
   applyAction,
   chooseAction,
   createMatch,
+  EngineError,
   getPlayerView,
   pendingDecision,
   Rng,
+  timeoutAction,
   type GameAction,
   type MatchContext,
   type MatchEvent,
   type MatchState,
   type PlayerView,
 } from '@rabbithole/engine';
-import type { MatchClient, MatchStep } from './client';
+import { BaseMatchClient, type MatchClient } from './client';
 
 const ME = 0;
 const AI = 1;
 
-/** Seed aléatoire forte. Prototype uniquement : en phase 3, la seed vient du serveur. */
+/** Seed aléatoire forte. Entraînement local uniquement : en ligne, la seed vient du serveur. */
 function randomSeed(): string {
   const bytes = new Uint32Array(4);
   crypto.getRandomValues(bytes);
@@ -29,20 +31,26 @@ export interface DeckChoice {
 }
 
 /**
- * Partie locale contre l'IA (prototype). Le moteur tourne dans le navigateur,
- * mais l'UI n'accède qu'à la vue du joueur, comme face au serveur.
+ * Partie d'entraînement contre l'IA, entièrement dans le navigateur (aucun enjeu).
+ * L'UI n'accède qu'à la vue du joueur, exactement comme face au serveur.
  */
-export class LocalMatch implements MatchClient {
+export class LocalMatch extends BaseMatchClient implements MatchClient {
+  readonly spectator = false;
+  readonly opponentName = 'IA';
   private state: MatchState;
   private readonly ai: Rng;
-  readonly initialSteps: MatchStep[];
+  private initialEvents: MatchEvent[];
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private closed = false;
 
   constructor(
     readonly ctx: MatchContext,
     mine: DeckChoice,
     theirs: DeckChoice,
+    private readonly timers: boolean,
     seed: string = randomSeed(),
   ) {
+    super();
     this.ai = Rng.fromSeed(`${seed}:ai`);
     const { state, events } = createMatch(ctx, {
       seed,
@@ -52,35 +60,76 @@ export class LocalMatch implements MatchClient {
       ],
     });
     this.state = state;
-    this.initialSteps = [this.step(events), ...this.runAi()];
+    this.initialEvents = events;
   }
 
   get view(): PlayerView {
     return getPlayerView(this.ctx, this.state, ME);
   }
 
-  private step(events: MatchEvent[]): MatchStep {
-    return { events, view: this.view };
+  private deadline(): number | null {
+    const d = pendingDecision(this.state);
+    if (!this.timers || !d || d.player !== ME) return null;
+    const s = d.kind === 'main' ? this.ctx.rules.turnTimerSeconds : this.ctx.rules.reactionTimerSeconds;
+    return Date.now() + s * 1000;
+  }
+
+  private emit(events: MatchEvent[]): void {
+    this.emitStep({ events, view: this.view, deadline: this.deadline() });
+  }
+
+  start(): void {
+    queueMicrotask(() => {
+      this.emit(this.initialEvents);
+      this.initialEvents = [];
+      this.runAi();
+      this.arm();
+    });
+  }
+
+  private apply(player: 0 | 1, action: GameAction): void {
+    const result = applyAction(this.ctx, this.state, player, action);
+    this.state = result.state;
+    this.emit(result.events);
   }
 
   /** L'IA joue tant que c'est à elle de décider. */
-  private runAi(): MatchStep[] {
-    const steps: MatchStep[] = [];
-    for (let guard = 0; guard < 200; guard++) {
+  private runAi(): void {
+    for (let guard = 0; guard < 200 && !this.closed; guard++) {
       const d = pendingDecision(this.state);
       if (!d || d.player !== AI) break;
       const action = chooseAction(this.ctx, this.state, AI, this.ai);
       if (!action) break;
-      const result = applyAction(this.ctx, this.state, AI, action);
-      this.state = result.state;
-      steps.push(this.step(result.events));
+      this.apply(AI, action);
     }
-    return steps;
   }
 
-  async act(action: GameAction): Promise<MatchStep[]> {
-    const result = applyAction(this.ctx, this.state, ME, action);
-    this.state = result.state;
-    return [this.step(result.events), ...this.runAi()];
+  /** Minuteur local : action par défaut à l'expiration (même règle que le serveur). */
+  private arm(): void {
+    if (this.timer) clearTimeout(this.timer);
+    const deadline = this.deadline();
+    if (deadline === null || this.closed) return;
+    this.timer = setTimeout(() => {
+      const fallback = timeoutAction(this.state);
+      if (!fallback || fallback.player !== ME) return;
+      this.act(fallback.action);
+    }, deadline - Date.now());
+  }
+
+  act(action: GameAction): void {
+    if (this.closed) return;
+    try {
+      this.apply(ME, action);
+    } catch (error) {
+      this.emitError({ code: error instanceof EngineError ? error.code : 'error', message: String((error as Error).message) });
+      return;
+    }
+    this.runAi();
+    this.arm();
+  }
+
+  close(): void {
+    this.closed = true;
+    if (this.timer) clearTimeout(this.timer);
   }
 }

@@ -5,6 +5,12 @@
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
+  import { loadSession, logout, session } from '$lib/session.svelte';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    if (!session.loaded) void loadSession();
+  });
 
   const ctx = prototypeContext();
   let selected = $state(PROTOTYPE_DECKS[0]?.id ?? '');
@@ -20,6 +26,16 @@
 </script>
 
 <main>
+  <nav class="account" aria-label="Compte">
+    {#if session.user}
+      <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
+      <a href="/replays">{t('history')}</a>
+      <button class="link" onclick={() => logout()}>{t('logout')}</button>
+    {:else if session.loaded}
+      <a href="/login">{t('login')}</a>
+      <a class="strong" href="/signup">{t('signup')}</a>
+    {/if}
+  </nav>
   <header>
     <div class="logo" aria-hidden="true">
       <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
@@ -29,8 +45,13 @@
     <p class="tagline">{t('tagline')}</p>
   </header>
 
+  <div class="online">
+    <button class="btn btn-primary cta" data-testid="online" onclick={() => goto('/online')}>{t('online')}</button>
+  </div>
+
   <section>
-    <h2>{t('choose_deck')}</h2>
+    <h2>{t('practice')}</h2>
+    <p class="hint">{t('practice_hint')} {t('choose_deck')} :</p>
     <div class="decks" role="radiogroup" aria-label={t('choose_deck')}>
       {#each PROTOTYPE_DECKS as deck (deck.id)}
         <button
@@ -56,9 +77,8 @@
 
   <div class="actions">
     <button class="btn" onclick={() => (showRules = true)}>{t('rules')}</button>
-    <button class="btn btn-primary play" data-testid="play" onclick={() => goto(`/play?deck=${selected}`)}>{t('play')}</button>
+    <button class="btn play" data-testid="play" onclick={() => goto(`/play?deck=${selected}`)}>{t('practice')}</button>
   </div>
-  <p class="opponent">{t('opponent_ai')}</p>
 </main>
 
 {#if showRules}
@@ -74,6 +94,42 @@
   header {
     text-align: center;
     margin-bottom: 24px;
+  }
+  .account {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 14px;
+    min-height: 24px;
+    font-size: 14px;
+  }
+  .account a,
+  .account .link {
+    color: var(--muted);
+    text-decoration: none;
+    background: none;
+    padding: 0;
+  }
+  .account .strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .hello {
+    font-weight: 700;
+  }
+  .online {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .cta {
+    width: min(520px, 100%);
+    font-size: 20px;
+    padding: 16px;
+  }
+  .hint {
+    color: var(--muted);
+    margin: -4px 0 12px;
   }
   .logo {
     position: relative;
@@ -188,10 +244,5 @@
     flex: 1;
     font-size: 18px;
     padding: 14px;
-  }
-  .opponent {
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
   }
 </style>
