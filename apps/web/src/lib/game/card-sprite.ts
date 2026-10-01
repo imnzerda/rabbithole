@@ -6,8 +6,8 @@ import { CATEGORY_STYLE, COLORS, FONT, RARITY_STYLE, shade } from './theme';
 export type CardMode = 'board' | 'hand';
 
 export const CARD_SIZE: Record<CardMode, { w: number; h: number }> = {
-  board: { w: 120, h: 160 },
-  hand: { w: 128, h: 176 },
+  board: { w: 108, h: 148 },
+  hand: { w: 118, h: 164 },
 };
 
 export type Highlight = 'playable' | 'ready' | 'target' | null;
@@ -131,24 +131,27 @@ export class CardSprite extends Container {
 
     if (def.type !== 'character') {
       const label = text(def.type === 'leader' ? t('leader').toUpperCase() : t('event').toUpperCase(), {
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: '700',
         fill: def.type === 'leader' ? COLORS.power : COLORS.accent,
         letterSpacing: 1.5,
       });
       label.anchor.set(0.5);
-      label.position.set(w / 2, 24);
+      // En bas : le haut est occupé par le coût ; un Leader a sa puissance en bas à droite.
+      label.position.set(def.type === 'event' ? w / 2 : w / 2 - 14, h - 16);
       this.body.addChild(label);
     }
 
     const name = text(loc(def.name), {
-      fontSize: hand ? 16 : 15,
+      fontSize: hand ? 18 : 17,
       fontWeight: '700',
       align: 'center',
       wordWrap: true,
-      wordWrapWidth: w - 16,
-      lineHeight: hand ? 18 : 17,
+      wordWrapWidth: w - 12,
+      lineHeight: hand ? 20 : 19,
     });
+    // Un mot trop long pour la largeur (ex. « L'Influenceuse ») : on réduit la police.
+    while (name.width > w - 10 && Number(name.style.fontSize) > 11) name.style.fontSize = Number(name.style.fontSize) - 1;
     name.anchor.set(0.5);
     name.position.set(w / 2, h * 0.38);
     this.body.addChild(name);
@@ -156,7 +159,7 @@ export class CardSprite extends Container {
     const tags = def.keywords.map((k) => KEYWORD_NAMES[k][locale]);
     if (def.effects.length > 0) tags.push('✦');
     if (tags.length) {
-      const kw = text(tags.join(' · '), { fontSize: 11, fill: cat.color, fontWeight: '700', align: 'center', wordWrap: true, wordWrapWidth: w - 14 });
+      const kw = text(tags.join(' · '), { fontSize: 13, fill: cat.color, fontWeight: '700', align: 'center', wordWrap: true, wordWrapWidth: w - 10 });
       kw.anchor.set(0.5);
       kw.position.set(w / 2, h * 0.62);
       this.body.addChild(kw);
@@ -182,28 +185,28 @@ export class CardSprite extends Container {
     this.body.addChild(frame);
 
     if (hand && def.type !== 'leader' && this.face.cost !== undefined) {
-      const cost = new Graphics().circle(18, 20, 15).fill(COLORS.mana).stroke({ width: 2, color: 0x0d2a40 });
-      const value = text(String(this.face.cost), { fontSize: 18, fontWeight: '700', fill: 0x06131f });
+      const cost = new Graphics().circle(19, 21, 17).fill(COLORS.mana).stroke({ width: 2, color: 0x0d2a40 });
+      const value = text(String(this.face.cost), { fontSize: 21, fontWeight: '700', fill: 0x06131f });
       value.anchor.set(0.5);
-      value.position.set(18, 20);
+      value.position.set(19, 21);
       this.body.addChild(cost, value);
     }
 
     // Valeur de Contre (main uniquement) : bouclier à gauche.
     if (hand && (this.face.counter ?? 0) > 0) {
       const y = h - 22;
-      const shield = new Graphics().roundRect(4, y - 12, 34, 24, 8).fill(0x2a1f44).stroke({ width: 2, color: COLORS.win });
-      const value = text(`+${this.face.counter}`, { fontSize: 14, fontWeight: '700', fill: COLORS.win });
+      const shield = new Graphics().roundRect(4, y - 14, 38, 28, 9).fill(0x2a1f44).stroke({ width: 2, color: COLORS.win });
+      const value = text(`+${this.face.counter}`, { fontSize: 17, fontWeight: '700', fill: COLORS.win });
       value.anchor.set(0.5);
-      value.position.set(21, y);
+      value.position.set(23, y);
       this.body.addChild(shield, value);
     }
 
     if ((this.face.buzz ?? 0) > 0) {
-      const badge = new Graphics().roundRect(w - 44, 14, 38, 22, 11).fill(COLORS.mana);
-      const value = text(`⚡${this.face.buzz}`, { fontSize: 13, fontWeight: '700', fill: 0x06131f });
+      const badge = new Graphics().roundRect(w - 48, 14, 42, 26, 13).fill(COLORS.mana);
+      const value = text(`⚡${this.face.buzz}`, { fontSize: 16, fontWeight: '700', fill: 0x06131f });
       value.anchor.set(0.5);
-      value.position.set(w - 25, 25);
+      value.position.set(w - 27, 27);
       this.body.addChild(badge, value);
     } else if (this.face.trending) {
       const trend = text('🔥', { fontSize: 15 });
@@ -229,15 +232,15 @@ export class CardSprite extends Container {
     for (const child of this.powerBadge.removeChildren()) child.destroy();
     const def = this.face.defId ? this.ctx.cards[this.face.defId] : null;
     if (!def || def.type === 'event' || this.face.power === null) return;
-    const r = 17;
-    const x = this.w - r - 4;
-    const y = this.h - r - 4;
+    const r = 20;
+    const x = this.w - r - 3;
+    const y = this.h - r - 3;
     const boosted = this.face.power > def.power;
     const g = new Graphics()
       .circle(x, y, r)
       .fill(boosted ? COLORS.win : COLORS.power)
       .stroke({ width: 2, color: 0x2a1a05 });
-    const value = text(String(this.face.power), { fontSize: 19, fontWeight: '700', fill: COLORS.powerText });
+    const value = text(String(this.face.power), { fontSize: 23, fontWeight: '700', fill: COLORS.powerText });
     value.anchor.set(0.5);
     value.position.set(x, y);
     this.powerBadge.addChild(g, value);

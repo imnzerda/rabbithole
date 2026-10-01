@@ -4,7 +4,11 @@ import { chromium, devices } from '@playwright/test';
 const out = process.argv[2] ?? 'shots';
 const base = process.env.BASE_URL ?? 'http://localhost:5173';
 const browser = await chromium.launch();
-const page = await browser.newPage({ ...devices['Pixel 7'], locale: 'fr-FR' });
+// DEVICE=desktop : écran de PC en paysage ; sinon smartphone (Pixel 7).
+const desktop = process.env.DEVICE === 'desktop';
+const page = await browser.newPage(
+  desktop ? { viewport: { width: 1600, height: 900 }, locale: 'fr-FR' } : { ...devices['Pixel 7'], locale: 'fr-FR' },
+);
 const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
@@ -71,7 +75,7 @@ for (let i = 0; i < 400; i++) {
     shotDefense = true;
     await page.screenshot({ path: `${out}/4-defense.png` });
   }
-  if (!shotMid && v.turn >= 7 && v.legal?.kind === 'main') {
+  if (!shotMid && v.turn >= 5 && v.legal?.kind === 'main') {
     shotMid = true;
     await page.screenshot({ path: `${out}/3-midgame.png` });
     const box = await page.evaluate(() => window.__rabbithole.handCard(0));
@@ -83,6 +87,25 @@ for (let i = 0; i < 400; i++) {
       await page.waitForTimeout(300);
       await page.screenshot({ path: `${out}/5-detail.png` });
       await page.getByRole('button', { name: 'Fermer' }).click();
+      // Tap sur une carte de la main : elle passe devant, agrandie.
+      const tapped = await page.evaluate(() => window.__rabbithole.handCard(2));
+      if (tapped) {
+        await page.mouse.click(tapped.x, tapped.y);
+        await page.waitForTimeout(400);
+        await page.screenshot({ path: `${out}/8-selected.png` });
+        await page.mouse.click(tapped.x, tapped.y - 46);
+        await page.waitForTimeout(300);
+      }
+      if (desktop) {
+        // Survol à la souris : aperçu de la carte sur le côté.
+        const card = await page.evaluate(() => window.__rabbithole.handCard(1));
+        if (card) {
+          await page.mouse.move(card.x, card.y);
+          await page.waitForTimeout(400);
+          await page.screenshot({ path: `${out}/7-hover.png` });
+          await page.mouse.move(5, 5);
+        }
+      }
     }
   }
   await step();

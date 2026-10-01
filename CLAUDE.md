@@ -82,7 +82,8 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
   - `lib/match/local-match.ts` : partie locale contre l'IA, pour le prototype uniquement.
-  - `lib/game/renderer.ts` : plateau, glisser-déposer, animation des événements.
+  - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
+  - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.
   - `lib/ui/` : fiches (carte, règles, fin de partie) et `DecisionPanel` (mulligan, blocage, contres, Déclencheur).
-  - `e2e/` : tests Playwright et `shots.mjs` (captures de contrôle).
+  - `e2e/` : tests Playwright (exécutés sur smartphone et sur PC) et `shots.mjs` (captures de contrôle, `DEVICE=desktop` pour le format PC).

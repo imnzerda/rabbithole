@@ -67,7 +67,7 @@
 
 <style>
   main {
-    max-width: 520px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: max(24px, env(safe-area-inset-top)) 16px 32px;
   }
@@ -136,6 +136,7 @@
   .decks {
     display: grid;
     gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   }
   .deck {
     text-align: left;
@@ -180,7 +181,8 @@
   .actions {
     display: flex;
     gap: 10px;
-    margin-top: 24px;
+    margin: 24px auto 0;
+    max-width: 520px;
   }
   .actions .play {
     flex: 1;

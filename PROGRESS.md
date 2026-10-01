@@ -20,6 +20,23 @@
 
 ## Journal
 
+### 2026-10-02 — Affichage adapté au PC et au smartphone
+
+- **Deux dispositions du plateau**, choisies automatiquement selon la forme de l'écran et recalculées au redimensionnement :
+  - **paysage (PC, tablette)** : Leaders, Vies et Buzz à gauche, Personnages au centre, main sur toute la largeur, zone libre à droite pour les cartes jouées et les panneaux ;
+  - **portrait (smartphone)** : disposition compacte (600 px logiques au lieu de 720), donc tout est environ 20 % plus gros à l'écran.
+- **Lisibilité** :
+  - texte des cartes agrandi (nom, mots-clés, coût, puissance, Contre, Buzz) ;
+  - les noms trop longs réduisent leur police pour tenir ;
+  - l'étiquette Leader/Événement passe en bas de la carte.
+- **Smartphone** : la carte touchée dans la main passe au premier plan, agrandie de 20 %. Elle reste lisible même avec 9 cartes en main.
+- **PC** :
+  - **aperçu de carte au survol** de la souris, dans la zone libre à droite ;
+  - le panneau de défense se range à droite au lieu de couvrir la main ;
+  - les boutons sont regroupés à droite ;
+  - le menu des decks s'affiche en grille sur plusieurs colonnes.
+- **Tests E2E** : les 5 scénarios tournent sur smartphone (Pixel 7) et sur PC (1600×900), soit 10 tests, tous verts.
+
 ### 2026-10-02 — Refonte du duel : modèle TCG One Piece
 
 Décisions :

@@ -128,6 +128,18 @@
     box-shadow: 0 -8px 30px rgb(0 0 0 / 0.5);
     z-index: 20;
   }
+  /* Écran large : le panneau se range à droite pour laisser la main et le plateau visibles. */
+  @media (min-width: 900px) and (min-aspect-ratio: 23/20) {
+    .panel {
+      left: auto;
+      right: 12px;
+      top: 12px;
+      bottom: auto;
+      width: min(380px, 28%);
+      max-height: calc(100% - 24px);
+      overflow-y: auto;
+    }
+  }
   h3 {
     margin: 0 0 8px;
     font-size: 16px;

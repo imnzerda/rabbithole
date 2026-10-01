@@ -9,6 +9,7 @@
   import type { MatchClient, MatchStep } from '$lib/match/client';
   import { LocalMatch } from '$lib/match/local-match';
   import CardDetail from '$lib/ui/CardDetail.svelte';
+  import CardInfo from '$lib/ui/CardInfo.svelte';
   import DecisionPanel from '$lib/ui/DecisionPanel.svelte';
   import EndScreen from '$lib/ui/EndScreen.svelte';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
@@ -28,6 +29,9 @@
   let timeLeft = $state(0);
   let detail = $state<{ defId: string; power: number | null } | null>(null);
   let showRules = $state(false);
+  /** Aperçu au survol (PC, écran large uniquement). */
+  let hovered = $state<{ defId: string; power: number | null } | null>(null);
+  let wide = $state(false);
 
   const legal = $derived(view?.legal ?? null);
   const myMain = $derived(!busy && legal?.kind === 'main');
@@ -130,7 +134,14 @@
       onInspect(defId, power) {
         detail = { defId, power };
       },
+      onHover(defId, power) {
+        hovered = defId ? { defId, power } : null;
+      },
     });
+    const media = window.matchMedia('(min-width: 900px) and (min-aspect-ratio: 23/20)');
+    const syncWide = () => (wide = media.matches);
+    syncWide();
+    media.addEventListener('change', syncWide);
     renderer = r;
     let cancelled = false;
     void r.init(host).then(() => {
@@ -156,6 +167,7 @@
     return () => {
       cancelled = true;
       clearInterval(timer);
+      media.removeEventListener('change', syncWide);
       r.destroy();
       renderer = null;
     };
@@ -179,6 +191,8 @@
     <div class="canvas" bind:this={host}></div>
     {#if view && myReaction}
       <DecisionPanel {ctx} {view} onact={(a) => void perform(a)} />
+    {:else if wide && hovered}
+      <aside class="preview" aria-live="polite"><CardInfo {ctx} defId={hovered.defId} power={hovered.power} compact /></aside>
     {/if}
   </div>
 
@@ -231,8 +245,51 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    max-width: 760px;
-    margin: 0 auto;
+  }
+  .preview {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: min(340px, 26%);
+    max-height: calc(100% - 24px);
+    overflow-y: auto;
+    background: rgb(23 18 37 / 0.94);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px 16px;
+    pointer-events: none;
+    z-index: 15;
+  }
+  @media (min-width: 900px) {
+    .game .hud {
+      padding-inline: 20px;
+    }
+    .game .hud .btn {
+      padding: 12px 22px;
+      font-size: 17px;
+    }
+    .game .row {
+      justify-content: flex-end;
+    }
+    .game .row .deck {
+      margin-right: auto;
+      font-size: 14px;
+    }
+    .game .row .end {
+      flex: 0 1 340px;
+    }
+    .game .context {
+      justify-content: center;
+    }
+    .game .context .btn {
+      flex: 0 1 260px;
+    }
+    .game .turn {
+      font-size: 18px;
+    }
+    .game .hint {
+      font-size: 14px;
+    }
   }
   .board {
     flex: 1;

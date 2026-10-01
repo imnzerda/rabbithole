@@ -7,16 +7,67 @@ import { COLORS, FONT } from './theme';
 import { ease, Tweener } from './tween';
 
 // ---------------------------------------------------------------------------
-// Disposition logique (portrait), mise à l'échelle de l'écran.
+// Dispositions logiques, mises à l'échelle de l'écran :
+// - portrait (smartphone) : tout en colonne, compact pour un texte lisible ;
+// - paysage (PC, tablette) : Leaders à gauche, Personnages au centre, main en bas,
+//   zone libre à droite pour montrer les cartes jouées.
 // ---------------------------------------------------------------------------
 
-export const LOGICAL = { w: 720, h: 1020 };
-const SLOT_X = (i: number) => 92 + i * 134;
-const LEADER_X = 360;
-const SIDE_X = { life: 150, buzz: 570 };
-const ROW = { oppLeader: 104, oppChars: 296, myChars: 494, myLeader: 686 };
-const HAND_Y = 900;
-const DIVIDER_Y = 395;
+export interface Layout {
+  name: 'portrait' | 'landscape';
+  w: number;
+  h: number;
+  slotX: (i: number) => number;
+  leaderX: number;
+  lifeX: number;
+  buzzX: number;
+  rows: { oppLeader: number; oppChars: number; myChars: number; myLeader: number };
+  /** Bande des Personnages (fond). */
+  zone: { x1: number; x2: number; half: number };
+  /** Fond derrière les Leaders (paysage uniquement). */
+  leaderZone: { x1: number; x2: number } | null;
+  divider: { y: number; x1: number; x2: number };
+  hand: { y: number; cx: number; width: number };
+  banner: { x: number; y: number };
+  showcase: { x: number; y: number };
+}
+
+const PORTRAIT: Layout = {
+  name: 'portrait',
+  w: 600,
+  h: 900,
+  slotX: (i) => 68 + i * 116,
+  leaderX: 300,
+  lifeX: 112,
+  buzzX: 488,
+  rows: { oppLeader: 88, oppChars: 262, myChars: 448, myLeader: 622 },
+  zone: { x1: 8, x2: 592, half: 84 },
+  leaderZone: null,
+  divider: { y: 355, x1: 30, x2: 570 },
+  hand: { y: 800, cx: 300, width: 588 },
+  banner: { x: 300, y: 355 },
+  showcase: { x: 300, y: 355 },
+};
+
+const LANDSCAPE: Layout = {
+  name: 'landscape',
+  w: 1400,
+  h: 800,
+  slotX: (i) => 500 + i * 130,
+  leaderX: 250,
+  lifeX: 92,
+  buzzX: 385,
+  rows: { oppLeader: 150, oppChars: 150, myChars: 450, myLeader: 450 },
+  zone: { x1: 432, x2: 1088, half: 90 },
+  leaderZone: { x1: 20, x2: 420 },
+  divider: { y: 300, x1: 30, x2: 1080 },
+  hand: { y: 700, cx: 700, width: 1380 },
+  banner: { x: 560, y: 300 },
+  showcase: { x: 1250, y: 300 },
+};
+
+/** Au-delà de ce rapport largeur / hauteur, on passe en paysage. */
+const LANDSCAPE_RATIO = 1.15;
 const RESTED = { rotation: Math.PI / 2, scale: 0.75 };
 
 export interface RendererCallbacks {
@@ -24,6 +75,8 @@ export interface RendererCallbacks {
   onAttack(attacker: string, target: string): void;
   onSelect(uid: string | null): void;
   onInspect(defId: string, power: number | null): void;
+  /** Survol à la souris (PC) : aperçu de la carte, `null` à la sortie. */
+  onHover?(defId: string | null, power: number | null): void;
 }
 
 export interface RenderOptions {
@@ -46,8 +99,8 @@ interface Press {
 /** Pile de Vies (dos de cartes empilés + nombre). */
 class LifePile extends Container {
   private readonly g = new Graphics();
-  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fontWeight: '700', fill: COLORS.text }, resolution: 2 });
-  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 12, fill: COLORS.muted }, resolution: 2 });
+  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 27, fontWeight: '700', fill: COLORS.text }, resolution: 2 });
+  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 15, fill: COLORS.muted }, resolution: 2 });
   count = -1;
 
   constructor() {
@@ -76,14 +129,14 @@ class LifePile extends Container {
 
 /** Indicateur de Buzz : actif / épuisé. */
 class BuzzMeter extends Container {
-  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 24, fontWeight: '700', fill: COLORS.mana }, resolution: 2 });
-  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 12, fill: COLORS.muted, align: 'center' }, resolution: 2 });
+  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 30, fontWeight: '700', fill: COLORS.mana }, resolution: 2 });
+  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 15, fill: COLORS.muted, align: 'center' }, resolution: 2 });
 
   constructor() {
     super();
     this.value.anchor.set(0.5);
     this.caption.anchor.set(0.5, 0);
-    this.caption.position.set(0, 20);
+    this.caption.position.set(0, 22);
     this.addChild(this.value, this.caption);
   }
 
@@ -118,6 +171,8 @@ export class GameRenderer {
   private press: Press | null = null;
   private destroyed = false;
   private scale = 1;
+  private L: Layout = PORTRAIT;
+  private readonly background = new Graphics();
 
   constructor(
     private readonly ctx: MatchContext,
@@ -149,35 +204,50 @@ export class GameRenderer {
       if (e.target === this.app.stage && this.options.interactive) this.callbacks.onSelect(null);
     });
 
-    this.drawBackground();
-    this.lifePiles[0].position.set(SIDE_X.life, ROW.myLeader);
-    this.lifePiles[1].position.set(SIDE_X.life, ROW.oppLeader);
-    this.buzz[0].position.set(SIDE_X.buzz, ROW.myLeader - 14);
-    this.buzz[1].position.set(SIDE_X.buzz, ROW.oppLeader - 14);
-    this.backLayer.addChild(...this.lifePiles, ...this.buzz);
+    this.backLayer.addChild(this.background, ...this.lifePiles, ...this.buzz);
+    this.applyLayout();
 
     this.app.renderer.on('resize', () => this.fit());
     this.fit();
   }
 
-  private drawBackground(): void {
-    const g = new Graphics();
-    g.roundRect(14, ROW.oppChars - 96, LOGICAL.w - 28, 192, 20).fill(COLORS.zone).stroke({ width: 1, color: COLORS.zoneLine });
-    g.roundRect(14, ROW.myChars - 96, LOGICAL.w - 28, 192, 20).fill(COLORS.zone).stroke({ width: 1, color: COLORS.zoneLine });
-    g.moveTo(40, DIVIDER_Y).lineTo(LOGICAL.w - 40, DIVIDER_Y).stroke({ width: 2, color: COLORS.accent, alpha: 0.35 });
-    this.backLayer.addChild(g);
+  /** Fond, Vies et Buzz selon la disposition courante. */
+  private applyLayout(): void {
+    const L = this.L;
+    const g = this.background.clear();
+    for (const y of [L.rows.oppChars, L.rows.myChars]) {
+      g.roundRect(L.zone.x1, y - L.zone.half, L.zone.x2 - L.zone.x1, L.zone.half * 2, 20).fill(COLORS.zone).stroke({ width: 1, color: COLORS.zoneLine });
+    }
+    if (L.leaderZone) {
+      for (const y of [L.rows.oppLeader, L.rows.myLeader]) {
+        g.roundRect(L.leaderZone.x1, y - L.zone.half, L.leaderZone.x2 - L.leaderZone.x1, L.zone.half * 2, 20)
+          .fill({ color: COLORS.zone, alpha: 0.6 })
+          .stroke({ width: 1, color: COLORS.zoneLine, alpha: 0.6 });
+      }
+    }
+    g.moveTo(L.divider.x1, L.divider.y).lineTo(L.divider.x2, L.divider.y).stroke({ width: 2, color: COLORS.accent, alpha: 0.35 });
+    this.lifePiles[0].position.set(L.lifeX, L.rows.myLeader);
+    this.lifePiles[1].position.set(L.lifeX, L.rows.oppLeader);
+    this.buzz[0].position.set(L.buzzX, L.rows.myLeader - 18);
+    this.buzz[1].position.set(L.buzzX, L.rows.oppLeader - 18);
   }
 
   private fit(): void {
     const { width, height } = this.app.screen;
-    this.scale = Math.min(width / LOGICAL.w, height / LOGICAL.h);
+    const next = width / Math.max(1, height) > LANDSCAPE_RATIO ? LANDSCAPE : PORTRAIT;
+    const changed = next !== this.L;
+    this.L = next;
+    const L = this.L;
+    this.scale = Math.min(width / L.w, height / L.h);
     this.root.scale.set(this.scale);
     // Sur un écran plus haut que la disposition : la main se colle en bas, le plateau descend un peu.
-    const extra = Math.max(0, height / this.scale - LOGICAL.h);
+    const extra = Math.max(0, height / this.scale - L.h);
     this.boardRoot.y = Math.round(extra * 0.4);
     this.handLayer.y = Math.round(extra * 0.9);
-    this.root.position.set((width - LOGICAL.w * this.scale) / 2, 0);
+    this.root.position.set((width - L.w * this.scale) / 2, 0);
     this.app.stage.hitArea = this.app.screen;
+    if (changed) this.applyLayout();
+    this.refresh();
   }
 
   destroy(): void {
@@ -200,6 +270,12 @@ export class GameRenderer {
       s = new CardSprite(this.ctx, uid, mode);
       s.position.set(spawn.x, spawn.y);
       s.on('pointerdown', (e) => this.onCardDown(s!, e));
+      s.on('pointerover', (e) => {
+        if (e.pointerType === 'mouse' && s!.face.defId && !this.press?.dragging) this.callbacks.onHover?.(s!.face.defId, s!.face.power);
+      });
+      s.on('pointerout', (e) => {
+        if (e.pointerType === 'mouse') this.callbacks.onHover?.(null, null);
+      });
       this.sprites.set(uid, s);
     }
     return s;
@@ -259,22 +335,22 @@ export class GameRenderer {
     const sides: [typeof view.me, typeof view.opponent] = [view.me, view.opponent];
     sides.forEach((side, i) => {
       const mine = i === 0;
-      const leaderY = mine ? ROW.myLeader : ROW.oppLeader;
-      const charsY = mine ? ROW.myChars : ROW.oppChars;
+      const leaderY = mine ? this.L.rows.myLeader : this.L.rows.oppLeader;
+      const charsY = mine ? this.L.rows.myChars : this.L.rows.oppChars;
       const boardSet = mine ? this.myBoard : this.enemyBoard;
 
-      const leader = this.sprite(side.leader.uid, 'board', { x: LEADER_X, y: leaderY });
+      const leader = this.sprite(side.leader.uid, 'board', { x: this.L.leaderX, y: leaderY });
       leader.setMode('board');
       leader.setFace(this.faceOf(side.leader, false));
-      this.place(leader, LEADER_X, leaderY, side.leader.rested, this.boardLayer);
+      this.place(leader, this.L.leaderX, leaderY, side.leader.rested, this.boardLayer);
       keep.add(side.leader.uid);
       boardSet.add(side.leader.uid);
 
       side.characters.forEach((c, slot) => {
-        const s = this.sprite(c.uid, 'board', { x: LEADER_X, y: mine ? LOGICAL.h + 100 : -120 });
+        const s = this.sprite(c.uid, 'board', { x: this.L.leaderX, y: mine ? this.L.h + 100 : -120 });
         s.setMode('board');
         s.setFace(this.faceOf(c, false));
-        this.place(s, SLOT_X(slot), charsY, c.rested, this.boardLayer);
+        this.place(s, this.L.slotX(slot), charsY, c.rested, this.boardLayer);
         keep.add(c.uid);
         boardSet.add(c.uid);
       });
@@ -285,7 +361,7 @@ export class GameRenderer {
 
     this.handOrder = view.me.hand.map((c) => c.uid);
     for (const c of view.me.hand) {
-      const s = this.sprite(c.uid, 'hand', { x: LOGICAL.w + 80, y: HAND_Y });
+      const s = this.sprite(c.uid, 'hand', { x: this.L.w + 80, y: this.L.hand.y });
       s.setMode('hand');
       s.setFace(this.faceOf(c, true));
       keep.add(c.uid);
@@ -303,14 +379,22 @@ export class GameRenderer {
 
   private layoutHand(): void {
     const n = this.handOrder.length;
-    const spacing = n > 1 ? Math.min(136, (LOGICAL.w - 24 - 128) / (n - 1)) : 0;
-    const start = LOGICAL.w / 2 - (spacing * (n - 1)) / 2;
+    const { cx, width } = this.L.hand;
+    const cardW = 118;
+    const spacing = n > 1 ? Math.min(cardW + 10, (width - cardW) / (n - 1)) : 0;
+    const start = cx - (spacing * (n - 1)) / 2;
     this.handOrder.forEach((uid, i) => {
       const s = this.sprites.get(uid);
       if (!s) return;
-      const raised = uid === this.options.selected ? 24 : 0;
-      this.place(s, start + i * spacing, HAND_Y - raised, false, this.handLayer);
+      const selected = uid === this.options.selected;
+      this.place(s, start + i * spacing, this.L.hand.y - (selected ? 46 : 0), false, this.handLayer);
     });
+    // La carte sélectionnée passe devant les autres, agrandie : lisible même dans une main pleine.
+    const chosen = this.options.selected ? this.sprites.get(this.options.selected) : undefined;
+    if (chosen && this.handOrder.includes(chosen.cardUid)) {
+      this.handLayer.addChild(chosen);
+      void this.tween.to(chosen.scale, { x: 1.2, y: 1.2 }, 160);
+    }
   }
 
   private refresh(): void {
@@ -386,7 +470,7 @@ export class GameRenderer {
     const targets = this.options.legal?.attackers.find((a) => a.uid === attacker)?.targets ?? [];
     for (const uid of targets) {
       const home = this.homes.get(uid);
-      if (home && Math.abs(home.x - x) < 70 && Math.abs(home.y - y) < 90) return uid;
+      if (home && Math.abs(home.x - x) < 64 && Math.abs(home.y - y) < 84) return uid;
     }
     return null;
   }
@@ -401,7 +485,7 @@ export class GameRenderer {
 
     if (press.dragging) {
       const p = this.local(e);
-      if (press.origin === 'hand' && p.y < HAND_Y + this.handLayer.y - 110) {
+      if (press.origin === 'hand' && p.y < this.L.hand.y + this.handLayer.y - 110) {
         this.callbacks.onPlay(uid);
         return;
       }
@@ -457,7 +541,7 @@ export class GameRenderer {
     txt.anchor.set(0.5);
     const bg = new Graphics().roundRect(-txt.width / 2 - 28, -34, txt.width + 56, 68, 34).fill({ color: 0x000000, alpha: 0.78 });
     box.addChild(bg, txt);
-    box.position.set(LOGICAL.w / 2, DIVIDER_Y);
+    box.position.set(this.L.banner.x, this.L.banner.y);
     box.scale.set(0.6);
     box.alpha = 0;
     this.fxLayer.addChild(box);
@@ -472,12 +556,12 @@ export class GameRenderer {
     const s = new CardSprite(this.ctx, `showcase-${defId}`, 'hand');
     s.eventMode = 'none';
     s.setFace({ defId, power: null });
-    s.position.set(LOGICAL.w / 2, DIVIDER_Y);
+    s.position.set(this.L.showcase.x, this.L.showcase.y);
     s.scale.set(0.5);
     s.alpha = 0;
     const label = new Text({ text: caption, style: { fontFamily: FONT, fontSize: 20, fontWeight: '700', fill: COLORS.accent, stroke: { color: 0x000000, width: 4 } }, resolution: 2 });
     label.anchor.set(0.5);
-    label.position.set(LOGICAL.w / 2, DIVIDER_Y + 120);
+    label.position.set(this.L.showcase.x, this.L.showcase.y + 125);
     this.fxLayer.addChild(s, label);
     await Promise.all([this.tween.to(s.scale, { x: 1.25, y: 1.25 }, 260, ease.outBack), this.tween.to(s, { alpha: 1 }, 200)]);
     await this.tween.wait(650);
@@ -525,7 +609,7 @@ export class GameRenderer {
         case 'counter_played':
           if (e.value > 0) {
             const target = this.view?.battle ? this.homes.get(this.view.battle.target) : undefined;
-            this.float(target?.x ?? LOGICAL.w / 2, (target?.y ?? DIVIDER_Y) - 40, `${t('counter')} +${e.value}`, COLORS.win);
+            this.float(target?.x ?? this.L.banner.x, (target?.y ?? this.L.banner.y) - 40, `${t('counter')} +${e.value}`, COLORS.win);
             await this.tween.wait(350);
           } else {
             await this.showcase(e.defId, t('counter').toUpperCase());
@@ -534,7 +618,7 @@ export class GameRenderer {
         case 'battle_resolved': {
           const s = this.sprites.get(e.target);
           const home = this.homes.get(e.target);
-          this.float(home?.x ?? LOGICAL.w / 2, (home?.y ?? DIVIDER_Y) + 10, `${e.attackerPower} vs ${e.defenderPower}`, e.hit ? COLORS.lose : COLORS.win, 26);
+          this.float(home?.x ?? this.L.banner.x, (home?.y ?? this.L.banner.y) + 10, `${e.attackerPower} vs ${e.defenderPower}`, e.hit ? COLORS.lose : COLORS.win, 26);
           if (e.hit && s) await this.shake(s);
           else await this.tween.wait(350);
           break;
