@@ -2,14 +2,14 @@
 
 ## Phase en cours
 
-**Phase 3 — Serveur et comptes** : terminée, avec comptes sans condition d'âge, anti-double compte par HWID et collection par boosters. En attente de validation. Branche `comptes-et-boosters`.
+**Phase 3 — Serveur et comptes** : validée et fusionnée dans `master` (dépôt GitHub `imnzerda/rabbithole`). Prochaine : **Phase 4**.
 
 | Phase | Statut |
 |---|---|
 | 1. Moteur de règles | ✅ Terminée |
 | 2. Prototype jouable local | ✅ Validée (fusionnée dans `master`) |
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
-| 3. Serveur et comptes | ✅ Terminée, en attente de validation |
+| 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ⏳ Prochaine |
 | 5. Économie | 🟡 Bases avancées (pièces, aperçus, boosters gratuits, recyclage, crafting) |
 | 6. Rétention | — |
@@ -193,7 +193,6 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
-- La branche `comptes-et-boosters` (Phase 3 complète) peut-elle être fusionnée dans `master` ?
 - **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
 - Anti-double compte : garder le mode souple (HWID + même IP) ou passer en strict (`HWID_STRICT=true`) ?
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.
