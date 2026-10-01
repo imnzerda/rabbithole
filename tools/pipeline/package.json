@@ -1,0 +1,21 @@
+{
+  "name": "@rabbithole/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline de création de cartes : Wikidata, notoriété, politique de contenu, images libres (section 11).",
+  "scripts": {
+    "pipeline": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rabbithole/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

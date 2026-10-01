@@ -92,6 +92,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
+- [tools/pipeline/](tools/pipeline/) : pipeline de contenu (Wikidata, notoriété, politique de contenu, images Commons), avec un README. Réglages dans `src/config.ts`, résultats dans `out/` (hors dépôt).
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
   - `lib/match/` : `LocalMatch` (entraînement hors ligne), `OnlineMatch` et `Lobby` (serveur), `ReplayMatch` (relecture).

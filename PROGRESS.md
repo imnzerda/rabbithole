@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 4 — Pipeline de contenu et admin** : en cours (étape 1/5 terminée : catalogue en base).
+**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 et 2 sur 5 terminées : catalogue en base, pipeline).
 
 | Phase | Statut |
 |---|---|
@@ -19,6 +19,18 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 4, étape 2 : pipeline de contenu (`tools/pipeline`)
+
+- CLI `pnpm --filter @rabbithole/pipeline pipeline <commande>` : `extract`, `score`, `policy`, `images`, `export`, `validate`, `all` (voir [tools/pipeline/README.md](tools/pipeline/README.md)).
+- **Extraction Wikidata** : 55 sources (occupations et natures Wikidata vérifiées via l'API) réparties sur les 10 catégories, classées par nombre de langues, filtre pays facultatif (`--country FR`).
+- **Notoriété** : vues Wikipédia sur 12 et 60 mois dans 10 langues ; score rangé **par catégorie** (sinon la musique et le football écrasent tout) ; iconiques = top 1 % du lot.
+- **Politique de contenu** automatique : exclus (mineurs, terrorisme), à revoir (victimes, condamnations, morts violentes, Industrie X, mots sensibles, début de carrière inconnu), drapeaux `adult`, `sensitive`, `politicallySensitive`.
+- **Images Commons** : licence vérifiée (domaine public, CC0, CC BY, CC BY-SA), crédit complet, droits de la personnalité signalés.
+- Résultats dans `tools/pipeline/out/` (JSON de travail + CSV), importés dans l'admin à l'étape 3.
+- **Tests** : 19 tests unitaires sans réseau.
+- Limites : vues sur 10 langues, début de carrière souvent absent de Wikidata, images pas encore recadrées ni envoyées sur R2.
+
 
 ### 2026-10-02 — Phase 4, étape 1 : catalogue de cartes en base
 
@@ -232,6 +244,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
+- **Règle des mineurs** : appliquée à la lettre, « carrière commencée avant 18 ans » exclut Taylor Swift, Shakira, John Lennon, Mozart et la plupart des sportifs. Garder l'exclusion, ou passer en revue humaine (la carte ne porte que sur la période adulte) ?
 - **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.

@@ -147,6 +147,25 @@ importers:
         specifier: workspace:*
         version: link:../engine
 
+  tools/pipeline:
+    dependencies:
+      '@rabbithole/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.3
+        version: 26.6.3
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(tsx@4.23.15))
+
 packages:
 
   '@electric-sql/pglite@0.5.8':

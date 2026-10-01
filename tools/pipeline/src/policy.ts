@@ -1,0 +1,61 @@
+import { POLICY } from './config.js';
+import { yearOf } from './score.js';
+import type { Candidate, PolicyStatus } from './types.js';
+
+/**
+ * Politique de contenu (section 5), appliquée automatiquement à chaque candidat.
+ * - `excluded` : règle stricte vérifiable (mineur, terrorisme…). Jamais publiable.
+ * - `needs_review` : doute → un humain tranche dans l'outil d'admin (en cas de doute, on exclut).
+ * - `ok` : rien de détecté (la curation humaine reste obligatoire).
+ * Les raisons sont des codes stables, lisibles dans l'admin.
+ */
+export function evaluatePolicy(c: Candidate, now = new Date()): { status: PolicyStatus; reasons: string[]; flags: NonNullable<Candidate['flags']> } {
+  const excluded: string[] = [];
+  const review: string[] = [];
+  const flags: NonNullable<Candidate['flags']> = {};
+  const isPerson = c.kind === 'person';
+
+  // Mineurs : enfants acteurs et mineurs aujourd'hui exclus ; carrière commencée mineur selon `POLICY.minorCareerStart`.
+  for (const o of c.occupations) if (POLICY.excludedOccupations[o]) excluded.push(`occupation:${o}`);
+  const birthYear = yearOf(c.birth);
+  if (isPerson && birthYear !== null) {
+    if (now.getUTCFullYear() - birthYear < POLICY.majority + 1) excluded.push('minor_now');
+    const startYear = yearOf(c.start);
+    if (startYear !== null && startYear - birthYear < POLICY.majority) (POLICY.minorCareerStart === 'exclude' ? excluded : review).push('minor_at_career_start');
+    if (startYear === null && c.categories.some((cat) => POLICY.childCareerCategories.includes(cat))) review.push('career_start_unknown');
+  }
+  if (isPerson && birthYear === null) review.push('birth_unknown');
+
+  // Terrorisme.
+  for (const i of c.instanceOf) if (POLICY.excludedInstances[i]) excluded.push(`terrorism:${i}`);
+  for (const x of c.convictedOf) if (POLICY.excludedConvictions[x]) excluded.push(`convicted_terrorism:${x}`);
+
+  // Victimes, condamnations, morts violentes : revue humaine.
+  if (c.listedAsVictim) review.push('listed_as_victim');
+  if (c.convictedOf.length) review.push('convicted');
+  if (c.mannerOfDeath.some((m) => POLICY.violentDeath.includes(m))) review.push('violent_death');
+  if (c.causeOfDeath.some((m) => POLICY.sensitiveCauses.includes(m))) {
+    review.push('sensitive_death');
+    flags.sensitive = true;
+  }
+
+  // Industrie X : drapeau adulte, vérifier qu'aucune exploitation n'a été dénoncée.
+  if (c.occupations.some((o) => POLICY.adultOccupations.includes(o))) {
+    flags.adult = true;
+    flags.sensitive = true;
+    review.push('adult_performer');
+  }
+
+  // Descriptions : mots sensibles (meurtre, victime, attentat…).
+  const text = Object.values(c.descriptions).join(' ');
+  if (POLICY.sensitiveWords.test(text)) {
+    review.push('sensitive_words');
+    flags.sensitive = true;
+  }
+  if (c.convictedOf.length || review.includes('violent_death')) flags.sensitive = true;
+
+  if (c.occupations.some((o) => POLICY.politicalOccupations.includes(o))) flags.politicallySensitive = true;
+
+  const status: PolicyStatus = excluded.length ? 'excluded' : review.length ? 'needs_review' : 'ok';
+  return { status, reasons: [...excluded, ...review], flags };
+}
