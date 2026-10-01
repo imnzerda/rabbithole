@@ -6,6 +6,7 @@ import { syncAdminRoles } from './auth/accounts.js';
 import { createGuard, type Guard } from './auth/guard.js';
 import { Catalog } from './catalog/catalog.js';
 import { registerAdmin } from './admin/routes.js';
+import { registerModeration } from './moderation/routes.js';
 import { registerAuth } from './auth/routes.js';
 import type { ServerConfig } from './config.js';
 import { createPgDb, createPgliteDb, type Db } from './db/db.js';
@@ -44,6 +45,7 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   registerEconomy(app, deps);
   registerMatches(app, deps, matches);
   registerAdmin(app, deps);
+  registerModeration(app, deps);
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {

@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
-  import { loadCatalog } from '$lib/catalog';
+  import { loadViewerCatalog } from '$lib/viewer.svelte';
   import { t } from '$lib/i18n';
   import { ReplayMatch } from '$lib/match/replay';
   import { loadSession, session } from '$lib/session.svelte';
@@ -22,7 +22,7 @@
       try {
         const { replay } = await api.replay(page.params.id ?? '');
         // Les cartes telles qu'elles étaient au moment de la partie.
-        const { ctx } = await loadCatalog(replay.contentVersion);
+        const { ctx } = await loadViewerCatalog(replay.contentVersion);
         // Le moteur rejoue seed + decks + actions : le résultat est identique à la partie jouée.
         client = new ReplayMatch(ctx, replay, replay.you);
         timer = setInterval(() => {

@@ -114,6 +114,45 @@ export interface AuditEntry {
   admin: string | null;
 }
 
+export interface ReportRow {
+  id: string;
+  target_type: 'card' | 'player';
+  card_id: string | null;
+  card_name: string | null;
+  match_id: string | null;
+  target_user: string | null;
+  reporter: string | null;
+  reason: string;
+  details: string | null;
+  status: string;
+  resolution: string | null;
+  created_at: string;
+  open_on_target: number;
+}
+
+export interface TakedownRow {
+  id: string;
+  card_id: string;
+  card_name: string | null;
+  card_status: string | null;
+  requester_name: string;
+  requester_contact: string;
+  relation: string;
+  reason: string;
+  status: 'open' | 'in_progress' | 'done' | 'rejected';
+  resolution: string | null;
+  created_at: string;
+  due_at: string;
+  overdue: boolean;
+}
+
+export interface CountryRuleRow {
+  country: string;
+  allow_adult: boolean;
+  allow_political: boolean;
+  blocked_card_ids: string[];
+}
+
 const qs = (params: Record<string, string | number | undefined>) => {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') p.set(k, String(v));
@@ -150,6 +189,15 @@ export const api = {
   budget: () => request<{ cards: { id: string; status: string; report: BudgetReport }[] }>('GET', '/admin/budget'),
   decks: () => request<{ decks: { id: string; name: Record<string, string>; leader: string }[] }>('GET', '/admin/decks'),
   simulate: (body: { a: { prebuilt: string }; b: { prebuilt: string }; games: number; includeDrafts: boolean }) => request<SimulationResult>('POST', '/admin/simulate', body),
+
+  reports: (status: 'open' | 'resolved' | 'dismissed') => request<{ reports: ReportRow[] }>('GET', `/admin/reports${qs({ status })}`),
+  resolveReport: (id: string, status: 'resolved' | 'dismissed', resolution: string) => request<{ ok: true }>('POST', `/admin/reports/${id}`, { status, resolution }),
+  takedowns: () => request<{ takedowns: TakedownRow[] }>('GET', '/admin/takedowns'),
+  handleTakedown: (id: string, status: TakedownRow['status'], resolution: string, retireCard: boolean) =>
+    request<{ ok: true }>('POST', `/admin/takedowns/${id}`, { status, resolution, retireCard }),
+  countryRules: () => request<{ rules: CountryRuleRow[] }>('GET', '/admin/country-rules'),
+  setCountryRule: (country: string, rule: { allowAdult: boolean; allowPolitical: boolean; blockedCardIds: string[] }) =>
+    request<{ ok: true }>('PUT', `/admin/country-rules/${country}`, rule),
 
   audit: (limit = 200) => request<{ entries: AuditEntry[] }>('GET', `/admin/audit${qs({ limit })}`),
 };

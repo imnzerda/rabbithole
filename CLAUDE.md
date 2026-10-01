@@ -59,7 +59,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - Les textes sont décalés mais **jamais dégradants ni diffamatoires**, et aucune image n'est explicite.
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
 - Le contenu `adult` est filtré par pays (`country_rules`).
-- **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À venir : un **système de signalement** et un **interrupteur « contenu sensible »** (on/off) par joueur.
+- **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À la place : **signalements** (cartes, joueurs) et **interrupteur « contenu sensible »** (masqué par défaut, affichage seulement).
 - **Inscription protégée** : captcha invisible (Turnstile), pot de miel, débit limité par IP et sous-réseau, e-mails jetables et alias refusés, un compte par appareil (empreinte numérique, cookie d'appareil), SMS demandé en cas de risque (VPN, appareil vu ailleurs) avec un compte par numéro. Comptes partageant un appareil ou une IP signalés. IP, appareils et numéros stockés uniquement en empreinte salée.
 - **Pas de kit de départ** : les joueurs construisent leur deck en ouvrant des boosters.
 
@@ -90,6 +90,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
   - `src/db/` : accès base (`pg` / PGlite) et migrations SQL.
   - `src/auth/` : comptes, Argon2, sessions  ; inscription protégée : `antiabuse.ts` (appareils, comptes liés), `guard.ts` (captcha, SMS, VPN, débit, e-mails jetables et alias), `phone.ts` (numéros), `signup.ts` (vérification par SMS). L'empreinte numérique est calculée par `apps/web/src/lib/fingerprint.ts`.
   - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, Leader de départ, pièces de fin de partie.
+  - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).

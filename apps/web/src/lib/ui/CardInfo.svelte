@@ -1,6 +1,9 @@
 <script lang="ts">
   import { CATEGORY_NAMES, cardText, type MatchContext } from '@rabbithole/engine';
   import { loc, locale, t } from '../i18n';
+  import { session } from '../session.svelte';
+  import { viewer } from '../viewer.svelte';
+  import ReportDialog from './ReportDialog.svelte';
   import { CATEGORY_STYLE, RARITY_STYLE } from '../game/theme';
 
   /** Contenu d'une carte (nom, chiffres, règles, ambiance) : fiche plein écran et aperçu au survol. */
@@ -18,6 +21,9 @@
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
   const color = $derived(def ? hex(CATEGORY_STYLE[def.categories[0] ?? 'internet'].color) : '#888');
   const frame = $derived(def ? RARITY_STYLE[def.rarity] : null);
+  const masked = $derived(viewer.masked.has(defId));
+  const credit = $derived(masked ? undefined : viewer.credits.get(defId));
+  let reporting = $state(false);
 </script>
 
 {#if def && frame}
@@ -44,7 +50,23 @@
       </ul>
     {/if}
     {#if def.flavor && !compact}<p class="flavor">« {loc(def.flavor)} »</p>{/if}
+    {#if masked}<p class="masked">{t('masked_notice')} {#if !compact && session.user}<a href="/settings">{t('masked_settings')}</a>{/if}</p>{/if}
+    {#if credit && !compact}
+      <figure class="photo">
+        <img src={credit.imageUrl} alt="" loading="lazy" />
+        <figcaption>
+          <a href={credit.filePage} target="_blank" rel="noreferrer">{t('photo_credit', { author: credit.author, license: credit.license, modified: credit.modified ? t('photo_modified') : '' })}</a>
+        </figcaption>
+      </figure>
+    {/if}
+    {#if !compact}
+      <p class="links">
+        {#if session.user}<button class="link" onclick={() => (reporting = true)} data-testid="report-card">{t('report')}</button> · {/if}
+        <a href="/takedown?card={encodeURIComponent(defId)}">{t('takedown')}</a>
+      </p>
+    {/if}
   </div>
+  {#if reporting}<ReportDialog target={{ type: 'card', cardId: defId }} onclose={() => (reporting = false)} />{/if}
 {/if}
 
 <style>
@@ -125,5 +147,44 @@
     color: var(--muted);
     font-style: italic;
     margin: 16px 0 0;
+  }
+  .masked {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 0.05);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .masked a,
+  .links a,
+  .links .link {
+    color: var(--accent);
+  }
+  .photo {
+    margin: 16px 0 0;
+    display: grid;
+    gap: 6px;
+  }
+  .photo img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .photo figcaption a {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .links {
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .link {
+    background: none;
+    padding: 0;
+    text-decoration: underline;
+    font-size: 13px;
   }
 </style>

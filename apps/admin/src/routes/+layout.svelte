@@ -18,6 +18,8 @@
     ['/candidates', 'Candidats'],
     ['/cards', 'Cartes'],
     ['/series', 'Séries'],
+    ['/moderation', 'Modération'],
+    ['/countries', 'Pays'],
     ['/balance', 'Équilibrage'],
     ['/audit', 'Journal'],
   ] as const;

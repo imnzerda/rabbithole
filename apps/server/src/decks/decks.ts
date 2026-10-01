@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
 import type { Db } from '../db/db.js';
 import type { AppDeps } from '../deps.js';
+import { contentFilterFor } from '../moderation/filter.js';
 import type { CatalogDto } from '@rabbithole/shared';
 
 export interface Deck {
@@ -45,8 +46,9 @@ export async function getDeck(db: Db, userId: string, id: string): Promise<Deck 
 }
 
 /** Règles du jeu (moteur) + possession : on ne joue que ce qu'on a dans sa collection. */
-export async function checkDeck(db: Db, ctx: MatchContext, userId: string, leaderId: string, cardIds: string[]): Promise<string[]> {
+export async function checkDeck(db: Db, ctx: MatchContext, userId: string, leaderId: string, cardIds: string[], blocked: Set<string> = new Set()): Promise<string[]> {
   const errors = validateDeck(ctx, leaderId, cardIds);
+  for (const id of new Set([leaderId, ...cardIds])) if (blocked.has(id)) errors.push(`Carte indisponible dans ton pays : ${id}`);
   const owned = await getCollection(db, userId);
   if (!owned.get(leaderId)) errors.push(`Leader non possédé : ${leaderId}`);
   const counts = new Map<string, number>();
@@ -88,7 +90,7 @@ export function registerDecks(app: FastifyInstance, { db, catalog }: AppDeps): v
     const parsed = deckSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     const { name, leaderId, cardIds } = parsed.data;
-    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds);
+    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds, (await contentFilterFor(db, request.user!, catalog.current)).blocked);
     if (errors.length) return reply.code(400).send({ error: 'invalid_deck', errors });
     const [row] = await db.query<DeckRow>('INSERT INTO decks (user_id, name, leader_id, card_ids) VALUES ($1, $2, $3, $4) RETURNING *', [
       request.user!.id,
@@ -105,7 +107,7 @@ export function registerDecks(app: FastifyInstance, { db, catalog }: AppDeps): v
     if (!id.success || !parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     if (!(await getDeck(db, request.user!.id, id.data))) return reply.code(404).send({ error: 'not_found' });
     const { name, leaderId, cardIds } = parsed.data;
-    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds);
+    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds, (await contentFilterFor(db, request.user!, catalog.current)).blocked);
     if (errors.length) return reply.code(400).send({ error: 'invalid_deck', errors });
     const [row] = await db.query<DeckRow>(
       'UPDATE decks SET name = $1, leader_id = $2, card_ids = $3, updated_at = now() WHERE id = $4 AND user_id = $5 RETURNING *',

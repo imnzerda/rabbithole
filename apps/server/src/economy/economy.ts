@@ -94,7 +94,9 @@ export async function ensurePreview(db: Db, userId: string, type: BoosterType, e
     'SELECT card_ids, refresh_at, refresh_at <= now() AS expired FROM booster_previews WHERE user_id = $1 AND booster_type = $2',
     [userId, type],
   );
-  if (row && !row.expired) return { cardIds: row.card_ids, refreshAt: iso(row.refresh_at) };
+  const pool = new Set(BOOSTER_TYPES[type].pool(catalog).map((c) => c.id));
+  // Un aperçu dont une carte n'est plus disponible (retrait, règle de pays) est remplacé : jamais vendu.
+  if (row && !row.expired && row.card_ids.every((id) => pool.has(id))) return { cardIds: row.card_ids, refreshAt: iso(row.refresh_at) };
   return regeneratePreview(db, userId, type, economy, catalog);
 }
 

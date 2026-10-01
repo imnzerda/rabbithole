@@ -12,8 +12,9 @@
 
   let { data } = $props();
   // Le catalogue est lu une fois : il ne change pas pendant la vie de la page.
-  const { ctx, collectible } = untrack(() => data.catalog);
-  const inCollection = (c: CardDef) => collectible.has(c.id);
+  const { ctx, collectible, blocked } = untrack(() => data.catalog);
+  // Cartes bloquées dans le pays du joueur : absentes de la collection (section 9).
+  const inCollection = (c: CardDef) => collectible.has(c.id) && !blocked.has(c.id);
   const leaders = Object.values(ctx.cards).filter((c) => inCollection(c) && c.type === 'leader');
   const cards = Object.values(ctx.cards)
     .filter((c) => inCollection(c) && c.type !== 'leader')

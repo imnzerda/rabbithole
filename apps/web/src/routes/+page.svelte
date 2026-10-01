@@ -32,6 +32,7 @@
       <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
       <a href="/decks">{t('decks')}</a>
       <a href="/replays">{t('history')}</a>
+      <a href="/settings" data-testid="nav-settings">{t('settings')}</a>
       <button class="link" onclick={() => logout()}>{t('logout')}</button>
     {:else if session.loaded}
       <a href="/login">{t('login')}</a>
@@ -81,6 +82,7 @@
     <button class="btn" onclick={() => (showRules = true)}>{t('rules')}</button>
     <button class="btn play" data-testid="play" onclick={() => goto(`/play?deck=${selected}`)}>{t('practice')}</button>
   </div>
+  <footer class="legal"><a href="/credits">{t('credits')}</a> · <a href="/takedown">{t('takedown')}</a></footer>
 </main>
 
 {#if showRules}
@@ -88,6 +90,15 @@
 {/if}
 
 <style>
+  .legal {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legal a {
+    color: var(--muted);
+  }
   main {
     max-width: 1100px;
     margin: 0 auto;

@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 à 3 sur 5 terminées : catalogue en base, pipeline, outil d'admin).
+**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 à 4 sur 5 terminées : catalogue en base, pipeline, outil d'admin, côté joueur).
 
 | Phase | Statut |
 |---|---|
@@ -19,6 +19,16 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 4, étape 4 : côté joueur (signalement, contenu sensible, retraits, crédits, pays)
+
+- **Interrupteur « contenu sensible »** (page Réglages) : **masqué par défaut**. Une carte masquée (drapeau `sensitive` ou `adult`) s'affiche « Carte masquée », sans nom ni texte d'ambiance, partout (collection, decks, plateau, replays) ; elle se joue normalement.
+- **Signalements** : une carte (depuis sa fiche) ou l'adversaire d'une partie en ligne contre un humain (écran de fin) ; 20 par jour au plus. File de modération dans l'admin (décision obligatoire, nombre de signalements ouverts sur la même cible).
+- **Demande de retrait** (section 5) : formulaire public sans compte (lien sur chaque fiche et en bas de l'accueil), **échéance 72 h**, file dans l'admin (en retard signalé), **retrait de la carte en un clic**.
+- **Crédits** (section 10.2) : page publique, et ligne de crédit avec la photo sur la fiche de chaque carte illustrée.
+- **Règles par pays** (section 9), gérées dans l'admin : contenu adulte, contenu politique, cartes bloquées. Une carte bloquée est absente des boosters (un aperçu qui en contient une est remplacé, jamais vendu), refusée en deck, cachée dans la collection, masquée chez un adversaire d'un autre pays.
+- **Tests** : 62 serveur (dont 6 de modération), 24 E2E (réglage, masquage, signalement, demande de retrait, crédits).
+
 
 ### 2026-10-02 — Phase 4, étape 3 : outil d'administration (`apps/admin`)
 
@@ -258,7 +268,6 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - **Règle des mineurs** : appliquée à la lettre, « carrière commencée avant 18 ans » exclut Taylor Swift, Shakira, John Lennon, Mozart et la plupart des sportifs. Garder l'exclusion, ou passer en revue humaine (la carte ne porte que sur la période adulte) ?
-- **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).

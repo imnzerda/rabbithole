@@ -13,6 +13,9 @@
     ['in_review', 'Cartes en relecture', '/cards?status=review'],
     ['policy_pending', 'Cartes en attente de validation (politique)', '/cards'],
     ['published', 'Cartes publiées', '/cards?status=published'],
+    ['takedowns_open', 'Demandes de retrait en cours', '/moderation'],
+    ['takedowns_overdue', 'Demandes de retrait en retard (72 h)', '/moderation'],
+    ['reports_open', 'Signalements ouverts', '/moderation'],
   ];
 
   onMount(async () => {

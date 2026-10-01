@@ -21,6 +21,9 @@
   // Le composant est recréé pour chaque partie : on fige le client et son catalogue.
   const match = untrack(() => client);
   const ctx = match.ctx;
+  // Partie en ligne contre un humain (ni entraînement, ni fantôme, ni replay) : l'adversaire peut être signalé.
+  const online = match as { matchId?: string; opponent?: { ghost: boolean } };
+  const reportMatchId = !match.spectator && online.matchId && online.opponent && !online.opponent.ghost ? online.matchId : null;
 
   let host: HTMLDivElement;
   let renderer: GameRenderer | null = null;
@@ -232,7 +235,7 @@
 {/if}
 
 {#if view?.result && !busy}
-  <EndScreen result={view.result} you={view.you} {reward} onreplay={onagain} onmenu={onexit} />
+  <EndScreen result={view.result} you={view.you} {reward} {reportMatchId} onreplay={onagain} onmenu={onexit} />
 {/if}
 
 <style>

@@ -26,7 +26,7 @@ import {
   type PipelineRun,
 } from './admin.js';
 
-async function requireAdmin(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function requireAdmin(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   await requireUser(request, reply);
   if (reply.sent) return;
   if (request.user!.role !== 'admin') await reply.code(403).send({ error: 'forbidden' });
@@ -55,7 +55,10 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
          (SELECT count(*)::int FROM cards WHERE status = 'draft') AS drafts,
          (SELECT count(*)::int FROM cards WHERE status = 'review') AS in_review,
          (SELECT count(*)::int FROM cards WHERE status = 'published') AS published,
-         (SELECT count(*)::int FROM cards WHERE policy_status = 'needs_review' AND policy_cleared_by IS NULL AND status <> 'retired') AS policy_pending`,
+         (SELECT count(*)::int FROM cards WHERE policy_status = 'needs_review' AND policy_cleared_by IS NULL AND status <> 'retired') AS policy_pending,
+         (SELECT count(*)::int FROM reports WHERE status = 'open') AS reports_open,
+         (SELECT count(*)::int FROM takedown_requests WHERE status IN ('open', 'in_progress')) AS takedowns_open,
+         (SELECT count(*)::int FROM takedown_requests WHERE status IN ('open', 'in_progress') AND due_at < now()) AS takedowns_overdue`,
     );
     return { counts, catalogVersion: catalog.current.version };
   });

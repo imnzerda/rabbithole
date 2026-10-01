@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { MatchResult, PlayerIndex } from '@rabbithole/engine';
   import { t } from '../i18n';
+  import ReportDialog from './ReportDialog.svelte';
 
   interface Props {
     result: MatchResult;
@@ -10,8 +11,11 @@
     onmenu: () => void;
     /** Pièces gagnées (parties en ligne). */
     reward?: number | null;
+    /** Partie en ligne contre un humain : on peut signaler l'adversaire. */
+    reportMatchId?: string | null;
   }
-  let { result, you, onreplay, onmenu, reward = null }: Props = $props();
+  let { result, you, onreplay, onmenu, reward = null, reportMatchId = null }: Props = $props();
+  let reporting = $state(false);
 
   const opp = $derived(you === 0 ? 1 : 0);
   const outcome = $derived(result.winner === null ? 'draw' : result.winner === you ? 'victory' : 'defeat');
@@ -34,10 +38,19 @@
       <button class="btn" onclick={onmenu}>{t('menu')}</button>
       {#if onreplay}<button class="btn btn-primary" onclick={onreplay} data-testid="replay">{t('play_again')}</button>{/if}
     </div>
+    {#if reportMatchId}<button class="report-link" onclick={() => (reporting = true)} data-testid="report-player">{t('report_player')}</button>{/if}
   </div>
 </div>
+{#if reporting && reportMatchId}<ReportDialog target={{ type: 'player', matchId: reportMatchId }} onclose={() => (reporting = false)} />{/if}
 
 <style>
+  .report-link {
+    margin-top: 14px;
+    background: none;
+    color: var(--muted);
+    text-decoration: underline;
+    font-size: 13px;
+  }
   .end {
     text-align: center;
   }

@@ -11,7 +11,7 @@
 
   let { data } = $props();
   // Le catalogue est lu une fois : il ne change pas pendant la vie de la page.
-  const { ctx, collectible } = untrack(() => data.catalog);
+  const { ctx, collectible, blocked } = untrack(() => data.catalog);
   const { deckSize, maxCopiesPerCard } = ctx.rules;
 
   interface Draft {
@@ -29,12 +29,12 @@
   let busy = $state(false);
 
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
-  const ownedLeaders = $derived(Object.values(ctx.cards).filter((c) => c.type === 'leader' && (owned.get(c.id) ?? 0) > 0));
+  const ownedLeaders = $derived(Object.values(ctx.cards).filter((c) => c.type === 'leader' && !blocked.has(c.id) && (owned.get(c.id) ?? 0) > 0));
   const leader = $derived(draft?.leaderId ? ctx.cards[draft.leaderId] : undefined);
   const eligible = $derived(
     leader
       ? Object.values(ctx.cards)
-          .filter((c) => c.type !== 'leader' && collectible.has(c.id) && (owned.get(c.id) ?? 0) > 0 && c.categories.some((x) => leader.categories.includes(x)))
+          .filter((c) => c.type !== 'leader' && collectible.has(c.id) && !blocked.has(c.id) && (owned.get(c.id) ?? 0) > 0 && c.categories.some((x) => leader.categories.includes(x)))
           .sort((a, b) => a.cost - b.cost || b.power - a.power)
       : [],
   );

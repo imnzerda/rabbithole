@@ -61,6 +61,8 @@ export interface PublicUser {
   starterLeader: string | null;
   /** `admin` : accès à l'outil d'administration. */
   role: 'player' | 'admin';
+  /** Contenu sensible affiché (sinon masqué : affichage seulement). */
+  showSensitive: boolean;
   createdAt: string;
 }
 

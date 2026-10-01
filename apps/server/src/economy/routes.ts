@@ -1,8 +1,9 @@
-import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
 import { grantTestKit } from '../content.js';
 import type { AppDeps } from '../deps.js';
+import { catalogForUser } from '../moderation/filter.js';
 import {
   BOOSTER_TYPES,
   boosterOdds,
@@ -22,6 +23,8 @@ const cardId = z.string().min(1).max(80);
 export function registerEconomy(app: FastifyInstance, { db, config, catalog }: AppDeps): void {
   const economy = config.economy;
   const cat = () => catalog.current;
+  /** Cartes obtenables par ce joueur : sans celles bloquées dans son pays (section 9). */
+  const catFor = (request: FastifyRequest) => catalogForUser(db, request.user!, catalog.current);
   const fail = (reply: FastifyReply, error: unknown) => {
     if (error instanceof EconomyError) return reply.code(error.status).send({ error: error.code });
     throw error;
@@ -36,6 +39,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
   /** Boutique de boosters : aperçu exact de chaque type, prix, minuteur, probabilités affichées. */
   app.get('/api/boosters', { preHandler: requireUser }, async (request) => {
     const userId = request.user!.id;
+    const available = await catFor(request);
     const types = await Promise.all(
       Object.entries(BOOSTER_TYPES).map(async ([type, info]) => ({
         type,
@@ -43,8 +47,8 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
         price: economy.boosterPrice,
         size: economy.boosterSize,
         refreshHours: economy.previewRefreshHours,
-        odds: boosterOdds(type as keyof typeof BOOSTER_TYPES, economy, cat()),
-        preview: await ensurePreview(db, userId, type as keyof typeof BOOSTER_TYPES, economy, cat()),
+        odds: boosterOdds(type as keyof typeof BOOSTER_TYPES, economy, available),
+        preview: await ensurePreview(db, userId, type as keyof typeof BOOSTER_TYPES, economy, available),
       })),
     );
     return { types, wallet: await getWallet(db, userId), economy: { recycle: economy.recycle, craft: economy.craft, keepCopies: economy.keepCopies } };
@@ -55,7 +59,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     const body = z.object({ cardIds: z.array(cardId).max(20) }).safeParse(request.body);
     if (!type || !body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy, cat());
+      const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy, await catFor(request));
       return { cards, preview: next, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -66,7 +70,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     const type = typeOf(request.params);
     if (!type) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      const cards = await openFreeBooster(db, request.user!.id, type, economy, cat());
+      const cards = await openFreeBooster(db, request.user!.id, type, economy, await catFor(request));
       return { cards, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -87,7 +91,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     const body = z.object({ cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      return { wallet: await craft(db, request.user!.id, body.data.cardId, economy, cat()) };
+      return { wallet: await craft(db, request.user!.id, body.data.cardId, economy, await catFor(request)) };
     } catch (error) {
       return fail(reply, error);
     }
@@ -97,7 +101,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     const body = z.object({ leaderId: cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      await chooseStarterLeader(db, request.user!.id, body.data.leaderId, cat());
+      await chooseStarterLeader(db, request.user!.id, body.data.leaderId, await catFor(request));
       return { ok: true };
     } catch (error) {
       return fail(reply, error);

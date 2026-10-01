@@ -10,6 +10,7 @@ export interface User {
   locale: string;
   starterLeader: string | null;
   role: 'player' | 'admin';
+  showSensitive: boolean;
   createdAt: string;
 }
 
@@ -23,6 +24,7 @@ export function publicUser(u: User) {
     locale: u.locale,
     starterLeader: u.starterLeader,
     role: u.role,
+    showSensitive: u.showSensitive,
     createdAt: u.createdAt,
   };
 }
@@ -35,6 +37,7 @@ interface UserRow {
   locale: string;
   starter_leader: string | null;
   role: 'player' | 'admin';
+  show_sensitive: boolean;
   created_at: string | Date;
   password_hash: string;
 }
@@ -48,6 +51,7 @@ function toUser(r: UserRow): User {
     locale: r.locale,
     starterLeader: r.starter_leader,
     role: r.role,
+    showSensitive: r.show_sensitive,
     createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
   };
 }

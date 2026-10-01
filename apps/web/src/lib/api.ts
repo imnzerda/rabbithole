@@ -54,6 +54,10 @@ export const api = {
   login: async (email: string, password: string) =>
     request<{ user: PublicUser }>('POST', '/auth/login', { email, password, fp: await deviceFingerprint() }),
   logout: () => request<{ ok: true }>('POST', '/auth/logout'),
+  settings: (showSensitive: boolean) => request<{ showSensitive: boolean }>('POST', '/me/settings', { showSensitive }),
+  report: (target: { type: 'card'; cardId: string } | { type: 'player'; matchId: string }, reason: string, details: string) =>
+    request<{ ok: true }>('POST', '/reports', { target, reason, ...(details.trim() ? { details: details.trim() } : {}) }),
+  takedown: (body: { cardId: string; name: string; contact: string; relation: string; reason: string }) => request<{ id: string; dueAt: string }>('POST', '/takedown', body),
 
   collection: () => request<{ cards: { cardId: string; quantity: number }[] }>('GET', '/collection'),
   wallet: () => request<{ wallet: WalletDto }>('GET', '/wallet'),

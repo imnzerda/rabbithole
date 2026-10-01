@@ -6,6 +6,7 @@ import { PROTOTYPE_DECKS } from '../content.js';
 import { checkDeck, getDeck } from '../decks/decks.js';
 import { awardMatchCoins } from '../economy/economy.js';
 import type { AppDeps } from '../deps.js';
+import { contentFilterFor } from '../moderation/filter.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
 
 interface QueueEntry {
@@ -76,7 +77,7 @@ export class MatchService {
     this.leaveQueue(user.id);
     const deck = await getDeck(this.deps.db, user.id, deckId);
     if (!deck) throw new ServiceError('deck_not_found', 'Deck introuvable.');
-    const errors = await checkDeck(this.deps.db, this.ctx, user.id, deck.leaderId, deck.cardIds);
+    const errors = await checkDeck(this.deps.db, this.ctx, user.id, deck.leaderId, deck.cardIds, (await contentFilterFor(this.deps.db, user, this.deps.catalog.current)).blocked);
     if (errors.length) throw new ServiceError('invalid_deck', errors.join(' '));
     const seat: SeatInfo = { userId: user.id, name: user.displayName, leader: deck.leaderId, deck: deck.cardIds };
 
