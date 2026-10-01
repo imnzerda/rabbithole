@@ -35,9 +35,8 @@ async function autoStep(page: Page): Promise<void> {
 }
 
 /**
- * Les tests tournent en parallèle sur la même machine, donc avec le même HWID et la même
- * empreinte : chaque test simule un appareil distinct en changeant une composante de chacun
- * (le nombre de cœurs pour le HWID, la mémoire pour l'empreinte du navigateur).
+ * Les tests tournent en parallèle sur la même machine, donc avec la même empreinte numérique :
+ * chaque test simule un appareil distinct en changeant deux de ses composantes (cœurs et mémoire).
  */
 let device = 0;
 async function asDevice(context: BrowserContext, id: number): Promise<void> {
@@ -142,7 +141,7 @@ test('inscription sans condition d’âge ; un seul compte par appareil, même a
   };
   await second(page, 'device2');
 
-  // Nouveau navigateur vierge (cookies effacés, navigation privée) sur le même appareil : le HWID suffit.
+  // Nouveau navigateur vierge (cookies effacés, navigation privée) sur le même appareil : l'empreinte suffit.
   const fresh = await browser.newContext({ viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL, locale: 'fr-FR' });
   await asDevice(fresh, device);
   await second(await fresh.newPage(), 'device3');

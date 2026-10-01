@@ -15,11 +15,11 @@ afterEach(async () => {
 const guardCfg = (over: Partial<ServerConfig['guard']>) => ({ guard: { ...testConfig().guard, ...over } });
 
 /** Inscription depuis une IP et un appareil donnés. */
-const signupFrom = (name: string, opts: { hwid?: string; fp?: string; ip?: string; device?: string; body?: Record<string, unknown> } = {}) =>
+const signupFrom = (name: string, opts: { fp?: string; ip?: string; device?: string; body?: Record<string, unknown> } = {}) =>
   t!.app.inject({
     method: 'POST',
     url: '/api/auth/signup',
-    payload: signupPayload(name, { ...(opts.hwid ? { hwid: opts.hwid } : {}), ...(opts.fp ? { fp: opts.fp } : {}), ...opts.body }),
+    payload: signupPayload(name, { ...(opts.fp ? { fp: opts.fp } : {}), ...opts.body }),
     remoteAddress: opts.ip ?? '203.0.113.7',
     ...(opts.device ? { cookies: { rh_device: opts.device } } : {}),
   });
@@ -96,27 +96,27 @@ describe('robots', () => {
 
   it('débit : 3 tentatives par minute et par IP, puis blocage ; le sous-réseau a sa propre limite', async () => {
     t = await startApp(guardCfg({ signupPerIpPerMinute: 3, signupPerSubnetPerMinute: 5 }));
-    for (let i = 0; i < 3; i++) expect((await signupFrom(`ip${i}`, { hwid: `gpu:modele-${i}`, ip: '198.51.100.1' })).statusCode).toBe(201);
-    const blocked = await signupFrom('ip3', { hwid: 'gpu:modele-3', ip: '198.51.100.1' });
+    for (let i = 0; i < 3; i++) expect((await signupFrom(`ip${i}`, { fp: `gpu:modele-${i}`, ip: '198.51.100.1' })).statusCode).toBe(201);
+    const blocked = await signupFrom('ip3', { fp: 'gpu:modele-3', ip: '198.51.100.1' });
     expect(blocked.statusCode).toBe(429);
     expect(blocked.json().error).toBe('too_many_attempts');
     expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0);
     // Même sous-réseau, autre IP : 2 tentatives de plus atteignent la limite du /24.
-    expect((await signupFrom('net1', { hwid: 'gpu:modele-n1', ip: '198.51.100.2' })).statusCode).toBe(201);
-    expect((await signupFrom('net2', { hwid: 'gpu:modele-n2', ip: '198.51.100.3' })).statusCode).toBe(429);
+    expect((await signupFrom('net1', { fp: 'gpu:modele-n1', ip: '198.51.100.2' })).statusCode).toBe(201);
+    expect((await signupFrom('net2', { fp: 'gpu:modele-n2', ip: '198.51.100.3' })).statusCode).toBe(429);
     // Autre réseau : pas concerné.
-    expect((await signupFrom('ailleurs', { hwid: 'gpu:modele-a', ip: '192.0.2.1' })).statusCode).toBe(201);
+    expect((await signupFrom('ailleurs', { fp: 'gpu:modele-a', ip: '192.0.2.1' })).statusCode).toBe(201);
   });
 });
 
 describe('e-mails', () => {
   it('alias refusés : la même adresse avec « + » ou des points (Gmail) est déjà prise', async () => {
     t = await startApp();
-    expect((await signupFrom('alpha', { hwid: 'gpu:alpha-1', body: { email: 'John.Doe@gmail.com' } })).statusCode).toBe(201);
-    const alias = await signupFrom('bravo', { hwid: 'gpu:bravo-1', body: { email: 'johndoe+alt@googlemail.com' } });
+    expect((await signupFrom('alpha', { fp: 'gpu:alpha-1', body: { email: 'John.Doe@gmail.com' } })).statusCode).toBe(201);
+    const alias = await signupFrom('bravo', { fp: 'gpu:bravo-1', body: { email: 'johndoe+alt@googlemail.com' } });
     expect(alias.statusCode).toBe(409);
     expect(alias.json().error).toBe('email_taken');
-    const plus = await signupFrom('charlie', { hwid: 'gpu:charlie', body: { email: 'john.doe+2@gmail.com' } });
+    const plus = await signupFrom('charlie', { fp: 'gpu:charlie', body: { email: 'john.doe+2@gmail.com' } });
     expect(plus.json().error).toBe('email_taken');
   });
 
@@ -130,38 +130,32 @@ describe('e-mails', () => {
 });
 
 describe('appareil', () => {
-  it('même HWID depuis le même réseau : refusé, même si les cookies ont été effacés', async () => {
+  it('même empreinte depuis le même réseau : refusé, même si les cookies ont été effacés', async () => {
     t = await startApp();
-    expect((await signupFrom('premier', { hwid: 'gpu:X|cpu:8' })).statusCode).toBe(201);
-    const second = await signupFrom('second', { hwid: 'gpu:X|cpu:8' });
+    expect((await signupFrom('premier', { fp: 'gpu:X|cpu:8' })).statusCode).toBe(201);
+    const second = await signupFrom('second', { fp: 'gpu:X|cpu:8' });
     expect(second.statusCode).toBe(409);
     expect(second.json().error).toBe('device_has_account');
   });
 
-  it('même empreinte de navigateur depuis le même réseau : refusé', async () => {
+  it('le cookie d’appareil suffit aussi, même avec une empreinte différente', async () => {
     t = await startApp();
-    await signupFrom('premier', { hwid: 'gpu:AAAA|cpu:4', fp: 'canvas:abc|audio:123' });
-    expect((await signupFrom('second', { hwid: 'gpu:BBBB|cpu:4', fp: 'canvas:abc|audio:123' })).statusCode).toBe(409);
-  });
-
-  it('le cookie d’appareil suffit aussi, même avec un HWID différent', async () => {
-    t = await startApp();
-    const first = await signupFrom('premier', { hwid: 'gpu:AAAA|cpu:4' });
+    const first = await signupFrom('premier', { fp: 'gpu:AAAA|cpu:4' });
     const device = first.cookies.find((c) => c.name === 'rh_device')!.value;
-    expect((await signupFrom('second', { hwid: 'gpu:BBBB|cpu:4', device })).statusCode).toBe(409);
+    expect((await signupFrom('second', { fp: 'gpu:BBBB|cpu:4', device })).statusCode).toBe(409);
   });
 
-  it('mode strict : même HWID refusé quel que soit le réseau', async () => {
-    t = await startApp({ hwidStrict: true });
-    await signupFrom('strict-a', { hwid: 'gpu:Apple GPU', ip: '203.0.113.7' });
-    expect((await signupFrom('strict-b', { hwid: 'gpu:Apple GPU', ip: '198.51.100.9' })).statusCode).toBe(409);
+  it('mode strict : même empreinte refusée quel que soit le réseau', async () => {
+    t = await startApp({ fingerprintStrict: true });
+    await signupFrom('strict-a', { fp: 'gpu:Apple GPU', ip: '203.0.113.7' });
+    expect((await signupFrom('strict-b', { fp: 'gpu:Apple GPU', ip: '198.51.100.9' })).statusCode).toBe(409);
   });
 
   it('plusieurs appareils derrière la même IP : inscriptions acceptées, comptes liés', async () => {
     t = await startApp();
     const ids: string[] = [];
     for (let i = 0; i < 4; i++) {
-      const res = await signupFrom(`wifi${i}`, { hwid: `gpu:modele-${i}` });
+      const res = await signupFrom(`wifi${i}`, { fp: `gpu:modele-${i}` });
       expect(res.statusCode).toBe(201);
       ids.push(res.json().user.id);
     }
@@ -175,7 +169,7 @@ describe('appareil', () => {
     const login = await t.app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: 'foyer-b@example.com', password: 'motdepasse1', hwid: 'test-hwid:foyer-a' },
+      payload: { email: 'foyer-b@example.com', password: 'motdepasse1', fp: 'test-fp:foyer-a' },
       cookies: { rh_device: a.device },
     });
     expect(login.statusCode).toBe(200);
@@ -194,8 +188,8 @@ describe('vérification par SMS', () => {
 
   it('appareil déjà vu sur un autre réseau : SMS demandé, puis compte créé et lié', async () => {
     const sms = await setup();
-    const a = await signupFrom('iphone-a', { hwid: 'gpu:Apple GPU', ip: '203.0.113.7' });
-    const pending = await signupFrom('iphone-b', { hwid: 'gpu:Apple GPU', ip: '198.51.100.9' });
+    const a = await signupFrom('iphone-a', { fp: 'gpu:Apple GPU', ip: '203.0.113.7' });
+    const pending = await signupFrom('iphone-b', { fp: 'gpu:Apple GPU', ip: '198.51.100.9' });
     expect(pending.statusCode).toBe(202);
     expect(pending.json().verify).toBe('phone');
     expect(pending.cookies.find((c) => c.name === 'rh_session')).toBeUndefined();
@@ -227,10 +221,10 @@ describe('vérification par SMS', () => {
 
   it('un numéro = un compte ; numéros virtuels refusés', async () => {
     const sms = await setup(guardCfg({ smsMode: 'always' }));
-    const first = await signupFrom('num-a', { hwid: 'gpu:num-a1' });
+    const first = await signupFrom('num-a', { fp: 'gpu:num-a1' });
     expect((await verifyByPhone(sms, first.json().pendingId, '+33 6 11 22 33 44')).statusCode).toBe(201);
 
-    const second = (await signupFrom('num-b', { hwid: 'gpu:num-b1' })).json().pendingId as string;
+    const second = (await signupFrom('num-b', { fp: 'gpu:num-b1' })).json().pendingId as string;
     const taken = await post(`/api/auth/signup/${second}/phone`, { phone: '06 11 22 33 44' });
     expect(taken.statusCode).toBe(409);
     expect(taken.json().error).toBe('phone_taken');
@@ -274,11 +268,11 @@ describe('confidentialité', () => {
   it('aucune IP, aucun identifiant d’appareil, aucun numéro stocké en clair', async () => {
     const sms = new ConsoleSms(() => {});
     t = await startApp(guardCfg({ smsMode: 'always' }), { sms });
-    const pending = await signupFrom('prive', { hwid: 'test-hwid:prive', fp: 'test-fp:prive' });
+    const pending = await signupFrom('prive', { fp: 'test-fp:prive' });
     await verifyByPhone(sms, pending.json().pendingId, '06 12 34 56 78');
 
     const devices = await t.db.query<{ device_hash: string; kind: string }>('SELECT device_hash, kind FROM user_devices ORDER BY kind');
-    expect(devices.map((d) => d.kind)).toEqual(['cookie', 'fp', 'hwid']);
+    expect(devices.map((d) => d.kind)).toEqual(['cookie', 'fp']);
     for (const d of devices) expect(d.device_hash).toMatch(/^[0-9a-f]{64}$/);
     const dump = JSON.stringify([
       await t.db.query('SELECT * FROM users'),
@@ -287,6 +281,6 @@ describe('confidentialité', () => {
       await t.db.query('SELECT * FROM sms_sends'),
       await t.db.query('SELECT * FROM pending_signups'),
     ]);
-    for (const secret of ['test-hwid', 'test-fp', '203.0.113.7', '612345678', '+33']) expect(dump, secret).not.toContain(secret);
+    for (const secret of ['test-fp', '203.0.113.7', '612345678', '+33']) expect(dump, secret).not.toContain(secret);
   });
 });

@@ -20,6 +20,12 @@
 
 ## Journal
 
+### 2026-10-02 — HWID retiré, empreinte numérique seule
+
+- Le **HWID** est supprimé (code, configuration, données : migration `005`). L'appareil est reconnu par son **empreinte numérique** (`apps/web/src/lib/fingerprint.ts`), qui reprend les composantes matérielles utiles (processeur, carte graphique, mémoire, écran, polices installées) en plus du rendu canvas et audio, des paramètres WebGL, des langues et de la plateforme. Le cookie d'appareil reste un second signal.
+- Même règle qu'avant : empreinte connue depuis la même IP → refusé ; depuis une autre IP → SMS. `HWID_STRICT` devient `FINGERPRINT_STRICT`.
+
+
 ### 2026-10-02 — Inscription protégée contre les robots et les doubles comptes
 
 **Robots**
@@ -215,7 +221,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
-- Anti-double compte : garder le mode souple (HWID + même IP, SMS ailleurs) ou passer en strict (`HWID_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
+- Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.

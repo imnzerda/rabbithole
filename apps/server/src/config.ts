@@ -64,11 +64,11 @@ export interface ServerConfig {
   /** Sel des empreintes d'IP et d'appareil (jamais stockées en clair). */
   signalSalt: string;
   /**
-   * Anti-double compte : un HWID déjà connu bloque l'inscription seulement depuis la même IP
-   * (false, par défaut : deux téléphones du même modèle peuvent avoir le même HWID),
+   * Anti-double compte : une empreinte déjà connue bloque l'inscription seulement depuis la même IP
+   * (false, par défaut : deux téléphones du même modèle peuvent avoir la même empreinte ; ailleurs, SMS),
    * ou partout (true).
    */
-  hwidStrict: boolean;
+  fingerprintStrict: boolean;
   guard: GuardConfig;
   /** Attente avant de proposer un adversaire fantôme (matchmaking). */
   ghostDelayMs: number;
@@ -123,7 +123,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE === 'true' : production,
     trustProxy: env.TRUST_PROXY ? env.TRUST_PROXY === 'true' : false,
     signalSalt: env.SIGNAL_SALT ?? 'dev-only-salt',
-    hwidStrict: env.HWID_STRICT === 'true',
+    fingerprintStrict: env.FINGERPRINT_STRICT === 'true',
     guard: {
       turnstile: env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET ? { siteKey: env.TURNSTILE_SITE_KEY, secret: env.TURNSTILE_SECRET } : null,
       signupPerIpPerMinute: int(env.SIGNUP_PER_IP_PER_MINUTE, 3),

@@ -19,7 +19,7 @@ export const signupPayload = (name: string, over: Record<string, unknown> = {}) 
   email: `${name}@example.com`,
   password: 'motdepasse1',
   displayName: name,
-  hwid: `test-hwid:${name}`,
+  fp: `test-fp:${name}`,
   country: 'FR',
   locale: 'fr',
   ...over,

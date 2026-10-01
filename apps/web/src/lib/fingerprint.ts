@@ -1,36 +1,30 @@
 /**
- * Empreintes de l'appareil, pour l'anti-double compte. Le serveur n'en garde qu'une empreinte salée.
+ * Empreinte numérique de l'appareil, pour l'anti-double compte. Le serveur n'en garde
+ * qu'une empreinte salée.
  *
- * - `hardwareId()` (« HWID ») : caractéristiques matérielles et système stables, communes à tous
- *   les navigateurs de l'appareil (carte graphique, cœurs, écran, tactile, fuseau horaire,
- *   polices installées). Elles ne changent pas quand on efface ses cookies ou qu'on passe
- *   en navigation privée. Un navigateur n'a pas accès au vrai identifiant matériel.
- * - `browserFingerprint()` : plus précise mais propre au navigateur (rendu canvas et audio,
- *   langues, plateforme, réglages de la carte graphique).
+ * Elle combine des caractéristiques matérielles (processeur, carte graphique, mémoire, écran,
+ * tactile), système (fuseau horaire, polices installées, langues, plateforme) et de rendu
+ * (canvas, audio, paramètres WebGL). Elle ne change pas quand on efface ses cookies ou qu'on
+ * passe en navigation privée.
  *
  * Volontairement exclus, car instables : zoom (devicePixelRatio), version du navigateur,
  * orientation de l'écran.
  */
-export function hardwareId(): string {
+export async function deviceFingerprint(): Promise<string> {
   const [short, long] = [screen.width, screen.height].sort((a, b) => a - b);
   return [
     `gpu:${gpu()}`,
     `cpu:${navigator.hardwareConcurrency ?? 0}`,
+    `mem:${(navigator as { deviceMemory?: number }).deviceMemory ?? 0}`,
     `screen:${short}x${long}x${screen.colorDepth}`,
     `touch:${navigator.maxTouchPoints ?? 0}`,
     `tz:${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
     `fonts:${installedFonts()}`,
-  ].join('|');
-}
-
-export async function browserFingerprint(): Promise<string> {
-  return [
+    `lang:${navigator.languages?.join(',') ?? navigator.language}`,
+    `platform:${navigator.platform}`,
     `canvas:${hash(canvasRender())}`,
     `audio:${await audioRender()}`,
     `webgl:${hash(webglParams())}`,
-    `lang:${navigator.languages?.join(',') ?? navigator.language}`,
-    `platform:${navigator.platform}`,
-    `mem:${(navigator as { deviceMemory?: number }).deviceMemory ?? 0}`,
   ].join('|');
 }
 

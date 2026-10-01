@@ -15,7 +15,7 @@ declare module 'fastify' {
   }
 }
 
-/** Empreintes calculées par le navigateur (`apps/web/src/lib/hwid.ts`), hachées dès réception. */
+/** Empreinte numérique calculée par le navigateur (`apps/web/src/lib/fingerprint.ts`), hachée dès réception. */
 const clientSignal = z.string().min(8).max(2000).optional();
 
 const signupSchema = z.object({
@@ -28,7 +28,6 @@ const signupSchema = z.object({
     .toUpperCase()
     .regex(/^[A-Z]{2}$/),
   locale: z.enum(['fr', 'en', 'es', 'pt-BR', 'de']),
-  hwid: clientSignal,
   fp: clientSignal,
   /** Jeton Cloudflare Turnstile (captcha invisible). */
   captchaToken: z.string().max(4096).optional(),
@@ -39,7 +38,6 @@ const signupSchema = z.object({
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(1).max(200),
-  hwid: clientSignal,
   fp: clientSignal,
 });
 

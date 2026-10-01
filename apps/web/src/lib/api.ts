@@ -1,4 +1,4 @@
-import { browserFingerprint, hardwareId } from './hwid';
+import { deviceFingerprint } from './fingerprint';
 import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
@@ -47,12 +47,12 @@ export const api = {
   me: () => request<{ user: PublicUser }>('GET', '/me'),
   session: () => request<{ user: PublicUser | null }>('GET', '/session'),
   authConfig: () => request<AuthConfigDto>('GET', '/auth/config'),
-  // Le HWID et l'empreinte du navigateur accompagnent l'inscription et la connexion (anti-double compte).
-  signup: async (input: SignupInput) => request<SignupResponse>('POST', '/auth/signup', { ...input, hwid: hardwareId(), fp: await browserFingerprint() }),
+  // L'empreinte numérique de l'appareil accompagne l'inscription et la connexion (anti-double compte).
+  signup: async (input: SignupInput) => request<SignupResponse>('POST', '/auth/signup', { ...input, fp: await deviceFingerprint() }),
   signupPhone: (pendingId: string, phone: string) => request<{ phone: string }>('POST', `/auth/signup/${pendingId}/phone`, { phone }),
   signupVerify: (pendingId: string, code: string) => request<{ user: PublicUser }>('POST', `/auth/signup/${pendingId}/verify`, { code }),
   login: async (email: string, password: string) =>
-    request<{ user: PublicUser }>('POST', '/auth/login', { email, password, hwid: hardwareId(), fp: await browserFingerprint() }),
+    request<{ user: PublicUser }>('POST', '/auth/login', { email, password, fp: await deviceFingerprint() }),
   logout: () => request<{ ok: true }>('POST', '/auth/logout'),
 
   collection: () => request<{ cards: { cardId: string; quantity: number }[] }>('GET', '/collection'),
