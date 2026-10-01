@@ -2,8 +2,10 @@ import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import websocket from '@fastify/websocket';
 import Fastify, { type FastifyInstance } from 'fastify';
+import { syncAdminRoles } from './auth/accounts.js';
 import { createGuard, type Guard } from './auth/guard.js';
 import { Catalog } from './catalog/catalog.js';
+import { registerAdmin } from './admin/routes.js';
 import { registerAuth } from './auth/routes.js';
 import type { ServerConfig } from './config.js';
 import { createPgDb, createPgliteDb, type Db } from './db/db.js';
@@ -25,6 +27,7 @@ export interface App {
 export async function buildApp(config: ServerConfig, services: Partial<Guard> = {}): Promise<App> {
   const db = config.databaseUrl ? createPgDb(config.databaseUrl) : await createPgliteDb(config.pgliteDir);
   await migrate(db);
+  await syncAdminRoles(db, config.adminEmails);
 
   const app = Fastify({ logger: { level: config.logLevel }, trustProxy: config.trustProxy, bodyLimit: 64 * 1024 });
   await app.register(cookie);
@@ -40,6 +43,7 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   registerDecks(app, deps);
   registerEconomy(app, deps);
   registerMatches(app, deps, matches);
+  registerAdmin(app, deps);
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {

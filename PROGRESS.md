@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 et 2 sur 5 terminées : catalogue en base, pipeline).
+**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 à 3 sur 5 terminées : catalogue en base, pipeline, outil d'admin).
 
 | Phase | Statut |
 |---|---|
@@ -19,6 +19,19 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 4, étape 3 : outil d'administration (`apps/admin`)
+
+- **Accès** : rôle `admin` donné aux e-mails de `ADMIN_EMAILS` (aucun autre moyen). L'outil tourne sur http://localhost:5174 (`pnpm dev` lance maintenant serveur, site et admin) et partage la session du site.
+- **Candidats** : import du fichier du pipeline, filtres (catégorie, statut, politique, score, nom ou Q-id), retenir / rejeter, **créer la carte** : brouillon prérempli (nom en 5 langues, catégories, pays, drapeaux, rareté « iconique » pour les iconiques, image créditée ou carte typographique). Un sujet exclu ne devient jamais une carte.
+- **Éditeur de cartes** : stats, catégories, mots-clés, effets en DSL JSON, textes d'ambiance en 5 langues, drapeaux ; **aperçu en direct** (validation du moteur, budget de puissance détaillé, texte de la carte).
+- **Publication** : brouillon → relecture → publiée → retirée. Bloquée tant que la définition est invalide, que la politique de contenu n'a pas été validée (note obligatoire) ou qu'il n'y a ni image créditée ni carte typographique. Publier une carte ou une série met à jour le catalogue joué.
+- **Images** : crédit complet, retrait en un clic (la carte passe en typographique).
+- **Séries** : création (base, mondiale, pays), publication, dépublication.
+- **Équilibrage** : **budget de puissance** (moteur, `cardBudget`, valeurs dans `DEFAULT_BUDGET`) calibré sur le prototype (46 cartes sur 52 dans la norme), et **simulations IA contre IA** (`simulateMatchup`).
+- **Journal d'audit** : chaque action d'administration est horodatée.
+- **Tests** : 79 moteur (budget, simulations), 56 serveur (dont 6 admin), 21 E2E (dont le parcours admin complet sur PC).
+
 
 ### 2026-10-02 — Phase 4, étape 2 : pipeline de contenu (`tools/pipeline`)
 

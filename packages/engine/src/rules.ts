@@ -1,4 +1,4 @@
-import type { Action } from './types.js';
+import type { Action, Duration, KeywordId, Trigger } from './types.js';
 
 /**
  * Valeurs de format et d'équilibrage (modèle « duel » inspiré du TCG One Piece,
@@ -102,3 +102,68 @@ function merge<T>(base: T, override: unknown): T {
 export function mergeRules(override: RulesOverride = {}, base: RulesConfig = DEFAULT_RULES): RulesConfig {
   return merge(base, override);
 }
+
+/**
+ * Budget de puissance (section 3.9) : valeur des mots-clés et des effets, en points de puissance.
+ * Outil d'équilibrage de l'admin (`cardBudget`), calibré sur le prototype équilibré par simulation.
+ */
+export interface BudgetConfig {
+  /** Puissance de référence d'un Personnage sans effet, par coût (≈ coût + 1). */
+  basePower: number[];
+  /** Ajustement selon la valeur de Contre : sans Contre +1, Contre 2 −1. */
+  counter: number[];
+  keywords: Partial<Record<KeywordId, number>>;
+  actions: {
+    addPower: Record<Duration, number>;
+    ko: number;
+    rest: number;
+    refresh: number;
+    bounce: number;
+    steal: number;
+    cancelEffects: number;
+    draw: number;
+    discard: number;
+    addCard: number;
+    addBuzz: number;
+  };
+  /** Cible multiple (alliés, ennemis) : la valeur est multipliée. */
+  massMultiplier: number;
+  /** Estimation d'un montant variable (« par allié »…). */
+  countAmountEstimate: number;
+  /** Moment de l'effet : un effet répétable vaut plus, un effet de KO ou de Vie vaut moins. */
+  triggers: Record<Trigger, number>;
+  /** Un effet sous condition vaut moins. */
+  conditionFactor: number;
+  /** Chaque Buzz à payer pour une activation retire de la valeur. */
+  buzzCostValue: number;
+  /** Un Événement doit valoir à peu près référence × facteur. */
+  eventFactor: number;
+  /** Écart toléré avant de signaler une carte. */
+  tolerance: number;
+}
+
+export const DEFAULT_BUDGET: BudgetConfig = {
+  basePower: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  counter: [1, 0, -1],
+  keywords: { elan: 0.5, bloqueur: 0.5, viral: 1.5, ratio: 0.5, clickbait: 0.5, croissance: 0.5, rickroll: 1.5, cancel: 1, seduction: 1.5, shitpost: 0.5 },
+  actions: {
+    addPower: { turn: 0.5, battle: 0.5, permanent: 1 },
+    ko: 3,
+    rest: 1.5,
+    refresh: 1,
+    bounce: 2,
+    steal: 3,
+    cancelEffects: 1.5,
+    draw: 1,
+    discard: 1,
+    addCard: 1,
+    addBuzz: 1,
+  },
+  massMultiplier: 2,
+  countAmountEstimate: 2,
+  triggers: { on_play: 1, on_attack: 1.5, on_ko: 0.7, on_trigger: 0.3, continuous: 2, activate_main: 1.5, end_of_turn: 1.5, main: 1, counter: 1 },
+  conditionFactor: 0.7,
+  buzzCostValue: 0.5,
+  eventFactor: 0.6,
+  tolerance: 1,
+};

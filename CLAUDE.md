@@ -22,7 +22,7 @@ Monorepo pnpm (`apps/web`, `apps/server`, `apps/admin`, `packages/engine`, `pack
 
 ```bash
 pnpm install
-pnpm dev         # serveur de jeu (:3000) + site (:5173) ; ouvrir http://localhost:5173
+pnpm dev         # serveur de jeu (:3000) + site (:5173) + admin (:5174) ; ouvrir http://localhost:5173
 pnpm dev:lan     # idem, accessible depuis un téléphone du même Wi-Fi
 pnpm test        # tests unitaires (moteur, contenu, serveur)
 pnpm typecheck   # tsc / svelte-check strict sur tous les packages
@@ -80,6 +80,8 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
   - `validate.ts` : validation des cartes et des decks.
   - `glossary.ts` : texte des mots-clés, des règles et des cartes, généré depuis la config et le DSL.
   - `ai.ts` : IA simple, qui ne lit que les informations publiques et sa propre main.
+  - `budget.ts` : budget de puissance (section 3.9), valeurs dans `DEFAULT_BUDGET` (`rules.ts`).
+  - `simulate.ts` : simulations IA contre IA pour l'équilibrage.
 - `packages/engine/test/` : `fixtures.ts` contient un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`, classe `Duel`) pour écrire des scénarios, et `playOut` pour simuler des parties.
 - [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans sa base au premier démarrage ; le site ne l'utilise plus que pour l'entraînement hors ligne. Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
@@ -92,6 +94,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
+- [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : candidats, éditeur de cartes, séries, équilibrage, journal. API : `apps/server/src/admin/`. Accès : `ADMIN_EMAILS`.
 - [tools/pipeline/](tools/pipeline/) : pipeline de contenu (Wikidata, notoriété, politique de contenu, images Commons), avec un README. Réglages dans `src/config.ts`, résultats dans `out/` (hors dépôt).
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.

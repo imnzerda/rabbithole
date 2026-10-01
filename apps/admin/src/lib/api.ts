@@ -1,0 +1,155 @@
+import type { BudgetReport, CardDef, CategoryId, SimulationResult } from '@rabbithole/engine';
+import type { PublicUser } from '@rabbithole/shared';
+
+/** Erreur de l'API : `code` = champ `error`, `details` = précisions (erreurs de validation, blocages…). */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+    readonly details: unknown,
+  ) {
+    super(code);
+  }
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    method,
+    credentials: 'same-origin',
+    headers: body === undefined ? {} : { 'content-type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) throw new ApiError(res.status, String(json.error ?? 'error'), json.details);
+  return json as T;
+}
+
+/** Texte lisible d'une erreur (détails compris). */
+export function errorMessage(err: unknown): string {
+  if (!(err instanceof ApiError)) return String(err);
+  const d = err.details;
+  if (Array.isArray(d)) return `${err.code} : ${d.join(' · ')}`;
+  if (d && typeof d === 'object') return `${err.code} : ${JSON.stringify(d)}`;
+  return err.code;
+}
+
+export type PolicyStatus = 'ok' | 'needs_review' | 'excluded';
+export type CardStatus = 'draft' | 'review' | 'published' | 'retired';
+
+export interface CandidateRow {
+  qid: string;
+  status: 'new' | 'shortlisted' | 'rejected' | 'carded';
+  cardId: string | null;
+  name: string;
+  description: string;
+  kind: string;
+  categories: CategoryId[];
+  countries: string[];
+  sitelinks: number;
+  views12: number | null;
+  score: { total: number; iconic: boolean; meetsThreshold: boolean } | null;
+  policy: { status: PolicyStatus; reasons: string[] } | null;
+  flags: { adult?: boolean; sensitive?: boolean; politicallySensitive?: boolean };
+  image: { thumb: string | null; license: string; accepted: boolean; author: string } | null;
+}
+
+export interface CardRow {
+  id: string;
+  series: string;
+  status: CardStatus;
+  name: string;
+  type: CardDef['type'];
+  rarity: string;
+  categories: CategoryId[];
+  cost: number;
+  power: number;
+  policy: PolicyStatus;
+  policyCleared: boolean;
+  budget: { delta: number; verdict: BudgetReport['verdict'] } | null;
+}
+
+export interface CardImage {
+  id: string;
+  source_url: string;
+  file_page: string;
+  author: string;
+  license: string;
+  license_url: string | null;
+  personality_warning: boolean;
+  active: boolean;
+}
+
+export interface Preview {
+  errors: string[];
+  budget: BudgetReport | null;
+  text: { keyword?: string; text: string }[];
+}
+
+export interface CardDetail extends Preview {
+  id: string;
+  series: string;
+  status: CardStatus;
+  version: number;
+  def: CardDef;
+  policy: { status: PolicyStatus; reasons: string[]; cleared: boolean; note: string | null };
+  images: CardImage[];
+}
+
+export interface SeriesRow {
+  id: string;
+  type: string;
+  country: string | null;
+  name: Record<string, string>;
+  status: 'draft' | 'review' | 'published';
+  cards: number;
+  published: number;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  target: string | null;
+  payload: unknown;
+  created_at: string;
+  admin: string | null;
+}
+
+const qs = (params: Record<string, string | number | undefined>) => {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') p.set(k, String(v));
+  const s = p.toString();
+  return s ? `?${s}` : '';
+};
+
+export const api = {
+  session: () => request<{ user: PublicUser | null }>('GET', '/session'),
+  login: (email: string, password: string) => request<{ user: PublicUser }>('POST', '/auth/login', { email, password }),
+  logout: () => request<{ ok: true }>('POST', '/auth/logout'),
+
+  overview: () => request<{ counts: Record<string, number>; catalogVersion: string }>('GET', '/admin/overview'),
+
+  importCandidates: (run: unknown) => request<{ imported: number; updated: number }>('POST', '/admin/candidates/import', run),
+  candidates: (f: { category?: string; status?: string; policy?: string; q?: string; minScore?: number; limit?: number; offset?: number }) =>
+    request<{ total: number; candidates: CandidateRow[] }>('GET', `/admin/candidates${qs(f)}`),
+  candidateStatus: (qid: string, status: 'new' | 'shortlisted' | 'rejected') => request<{ ok: true }>('POST', `/admin/candidates/${qid}/status`, { status }),
+  cardFromCandidate: (qid: string, series: string, type: CardDef['type']) => request<{ card: CardDef }>('POST', `/admin/candidates/${qid}/card`, { series, type }),
+
+  cards: (f: { series?: string; status?: string; q?: string }) => request<{ cards: CardRow[] }>('GET', `/admin/cards${qs(f)}`),
+  card: (id: string) => request<CardDetail>('GET', `/admin/cards/${encodeURIComponent(id)}`),
+  createCard: (series: string, type: CardDef['type'], name: string) => request<{ card: CardDef }>('POST', '/admin/cards', { series, type, name }),
+  preview: (def: CardDef) => request<Preview>('POST', '/admin/cards/preview', { def }),
+  saveCard: (id: string, def: CardDef) => request<{ status: CardStatus; version: number }>('PUT', `/admin/cards/${encodeURIComponent(id)}`, { def }),
+  cardStatus: (id: string, status: CardStatus) => request<{ ok: true; catalogVersion: string }>('POST', `/admin/cards/${encodeURIComponent(id)}/status`, { status }),
+  clearPolicy: (id: string, note: string) => request<{ ok: true }>('POST', `/admin/cards/${encodeURIComponent(id)}/clear-policy`, { note }),
+  imageActive: (id: string, imageId: string, active: boolean) => request<{ ok: true }>('POST', `/admin/cards/${encodeURIComponent(id)}/images/${imageId}`, { active }),
+
+  series: () => request<{ series: SeriesRow[] }>('GET', '/admin/series'),
+  createSeries: (s: { id: string; type: string; country: string | null; name: { fr: string; en: string } }) => request<{ ok: true }>('POST', '/admin/series', s),
+  seriesStatus: (id: string, status: SeriesRow['status']) => request<{ ok: true; catalogVersion: string }>('POST', `/admin/series/${id}/status`, { status }),
+
+  budget: () => request<{ cards: { id: string; status: string; report: BudgetReport }[] }>('GET', '/admin/budget'),
+  decks: () => request<{ decks: { id: string; name: Record<string, string>; leader: string }[] }>('GET', '/admin/decks'),
+  simulate: (body: { a: { prebuilt: string }; b: { prebuilt: string }; games: number; includeDrafts: boolean }) => request<SimulationResult>('POST', '/admin/simulate', body),
+
+  audit: (limit = 200) => request<{ entries: AuditEntry[] }>('GET', `/admin/audit${qs({ limit })}`),
+};

@@ -1,6 +1,7 @@
 export * from './types.js';
 export { Rng, type RngState } from './rng.js';
-export { DEFAULT_RULES, mergeRules, type RulesConfig, type RulesOverride } from './rules.js';
+export { DEFAULT_RULES, DEFAULT_BUDGET, mergeRules, type RulesConfig, type RulesOverride, type BudgetConfig } from './rules.js';
+export { cardBudget, catalogBudget, actionValue, effectValue, referencePower, type BudgetReport, type BudgetLine } from './budget.js';
 export { EngineError, type EngineErrorCode } from './errors.js';
 export { createContext, getCardDef, type MatchContext } from './context.js';
 export {
@@ -37,3 +38,4 @@ export {
   type CardTextLine,
 } from './glossary.js';
 export { chooseAction } from './ai.js';
+export { simulateMatchup, type SimDeck, type SimulationResult } from './simulate.js';

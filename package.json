@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.5.0",
   "scripts": {
-    "dev": "pnpm --parallel --filter @rabbithole/server --filter @rabbithole/web dev",
+    "dev": "pnpm --parallel --filter @rabbithole/server --filter @rabbithole/web --filter @rabbithole/admin dev",
     "dev:lan": "pnpm --parallel --filter @rabbithole/server --filter @rabbithole/web dev:lan",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",

@@ -59,6 +59,8 @@ export interface PublicUser {
   locale: string;
   /** Leader de départ choisi (null tant que le joueur ne l'a pas choisi). */
   starterLeader: string | null;
+  /** `admin` : accès à l'outil d'administration. */
+  role: 'player' | 'admin';
   createdAt: string;
 }
 

@@ -193,7 +193,8 @@ export interface CardDef {
   keywords: KeywordId[];
   effects: Effect[];
   flavor?: LocalizedText;
-  flags?: { adult?: boolean; politicallySensitive?: boolean };
+  /** `adult` : filtrage par pays ; `politicallySensitive` : idem ; `sensitive` : masqué si le joueur coupe le contenu sensible. */
+  flags?: { adult?: boolean; politicallySensitive?: boolean; sensitive?: boolean };
   image?: { assetId: string | null; fallback: boolean };
 }
 

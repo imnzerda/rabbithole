@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import type { AppDeps } from '../deps.js';
-import { canonicalEmailTaken, checkCredentials, createSession, deleteSession, hashPassword, publicUser, userForToken, type User } from './accounts.js';
+import { canonicalEmailTaken, checkCredentials, createSession, deleteSession, getUser, hashPassword, publicUser, syncAdminRoles, userForToken, type User } from './accounts.js';
 import { checkDevices, ensureDevice, recordSignals, requestSignals, signalHash } from './antiabuse.js';
 import { canonicalEmail, ConsoleSms, subnetOf } from './guard.js';
 import { createPending, finishSignup, sendPhoneCode, SignupError, verifyPhoneCode, type RiskReason } from './signup.js';
@@ -78,6 +78,12 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     });
 
   const limited = { config: { rateLimit: { max: config.authRateLimit, timeWindow: '1 minute' } } };
+  /** Applique le rôle admin (ADMIN_EMAILS) et relit le compte. */
+  const withRole = async (user: User): Promise<User> => {
+    if (!config.adminEmails.includes(user.email.toLowerCase())) return user;
+    await syncAdminRoles(db, config.adminEmails);
+    return (await getUser(db, user.id)) ?? user;
+  };
   const ipHash = (request: FastifyRequest) => signalHash(`ip:${request.ip}`, config);
   const fail = (reply: FastifyReply, err: unknown) => {
     if (err instanceof SignupError) return reply.code(err.status).send({ error: err.code, ...err.extra });
@@ -141,8 +147,9 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     }
     try {
       const user = await finishSignup(db, config, payload, signals, null);
+      const fresh = await withRole(user);
       setSession(reply, await createSession(db, user.id, config.sessionDays));
-      return reply.code(201).send({ user: publicUser(user) });
+      return reply.code(201).send({ user: publicUser(fresh) });
     } catch (err) {
       return fail(reply, err);
     }
@@ -165,8 +172,9 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     if (!body.success) return reply.code(400).send({ error: 'bad_code' });
     try {
       const user = await verifyPhoneCode(db, config, idParams.parse(request.params).id, body.data.code);
+      const fresh = await withRole(user);
       setSession(reply, await createSession(db, user.id, config.sessionDays));
-      return reply.code(201).send({ user: publicUser(user) });
+      return reply.code(201).send({ user: publicUser(fresh) });
     } catch (err) {
       return fail(reply, err);
     }
@@ -179,8 +187,9 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     if (!user) return reply.code(401).send({ error: 'invalid_credentials' });
     // La connexion reste possible depuis un appareil partagé, mais les comptes liés sont signalés.
     await recordSignals(db, user.id, requestSignals(request, config, parsed.data));
-    setSession(reply, await createSession(db, user.id, config.sessionDays));
-    return { user: publicUser(user) };
+    const fresh = await withRole(user);
+      setSession(reply, await createSession(db, user.id, config.sessionDays));
+    return { user: publicUser(fresh) };
   });
 
   app.post('/api/auth/logout', async (request, reply) => {

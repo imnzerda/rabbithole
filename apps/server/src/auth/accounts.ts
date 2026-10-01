@@ -9,6 +9,7 @@ export interface User {
   country: string;
   locale: string;
   starterLeader: string | null;
+  role: 'player' | 'admin';
   createdAt: string;
 }
 
@@ -21,6 +22,7 @@ export function publicUser(u: User) {
     country: u.country,
     locale: u.locale,
     starterLeader: u.starterLeader,
+    role: u.role,
     createdAt: u.createdAt,
   };
 }
@@ -32,6 +34,7 @@ interface UserRow {
   country: string;
   locale: string;
   starter_leader: string | null;
+  role: 'player' | 'admin';
   created_at: string | Date;
   password_hash: string;
 }
@@ -44,6 +47,7 @@ function toUser(r: UserRow): User {
     country: r.country,
     locale: r.locale,
     starterLeader: r.starter_leader,
+    role: r.role,
     createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
   };
 }
@@ -136,4 +140,13 @@ export async function userForToken(db: Db, token: string): Promise<User | null> 
 
 export async function deleteSession(db: Db, token: string): Promise<void> {
   await db.query('DELETE FROM sessions WHERE token_hash = $1', [tokenHash(token)]);
+}
+
+/**
+ * Comptes administrateurs : les e-mails listés dans `ADMIN_EMAILS` reçoivent le rôle `admin`
+ * (au démarrage, à l'inscription et à la connexion). Aucun autre moyen de devenir admin.
+ */
+export async function syncAdminRoles(db: Db, adminEmails: string[]): Promise<void> {
+  if (adminEmails.length === 0) return;
+  await db.query("UPDATE users SET role = 'admin' WHERE lower(email) = ANY($1::text[]) AND role <> 'admin'", [adminEmails.map((e) => e.trim().toLowerCase())]);
 }

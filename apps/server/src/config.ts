@@ -70,6 +70,8 @@ export interface ServerConfig {
    */
   fingerprintStrict: boolean;
   guard: GuardConfig;
+  /** E-mails des administrateurs (outil d'admin). */
+  adminEmails: string[];
   /** Attente avant de proposer un adversaire fantôme (matchmaking). */
   ghostDelayMs: number;
   /** Minuteurs de décision côté serveur. `null` → valeurs des règles du jeu. */
@@ -124,6 +126,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     trustProxy: env.TRUST_PROXY ? env.TRUST_PROXY === 'true' : false,
     signalSalt: env.SIGNAL_SALT ?? 'dev-only-salt',
     fingerprintStrict: env.FINGERPRINT_STRICT === 'true',
+    adminEmails: (env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean),
     guard: {
       turnstile: env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET ? { siteKey: env.TURNSTILE_SITE_KEY, secret: env.TURNSTILE_SECRET } : null,
       signupPerIpPerMinute: int(env.SIGNUP_PER_IP_PER_MINUTE, 3),
