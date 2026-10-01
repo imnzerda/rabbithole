@@ -20,6 +20,27 @@
 
 ## Journal
 
+### 2026-10-02 — Inscription protégée contre les robots et les doubles comptes
+
+**Robots**
+- **Captcha invisible Cloudflare Turnstile** : rien à faire pour un humain, une case n'apparaît qu'en cas de doute. Jeton vérifié par le serveur.
+- **Pot de miel** : champ caché hors écran ; rempli → inscription refusée.
+- **Débit** : 3 tentatives d'inscription par minute et par IP, 10 par sous-réseau (/24 en IPv4, /64 en IPv6), puis **blocage de 15 min**.
+
+**Humains malintentionnés**
+- **E-mails jetables** : liste à jour (paquet `disposable-email-domains-js`, 8 883 domaines) + liste communautaire téléchargée chaque jour en production + ajouts manuels.
+- **Alias interdits** : `moncompte+1@…` = `moncompte@…` (et points ignorés chez Gmail) avant le contrôle d'unicité.
+- **Vérification par SMS** : code à 6 chiffres (10 min, 5 essais), **un numéro = un compte**, numéros virtuels (VoIP), surtaxés et fixes refusés (`libphonenumber-js`), pays limités aux pays de lancement, 3 SMS par numéro et 5 par IP et par heure (contre la fraude aux SMS). Mode `SMS_MODE` : `risky` (par défaut : seulement si VPN ou appareil déjà vu ailleurs), `always` ou `off`. Envoi par Twilio en production ; en développement, le code s'affiche dans le journal du serveur.
+
+**Analyse technique**
+- **Empreinte d'appareil** : le HWID gagne la détection des polices installées ; nouvelle **empreinte du navigateur** (rendu canvas et audio, paramètres WebGL, langues, plateforme, mémoire). Même HWID ou même empreinte depuis la même IP → refusé ; depuis une autre IP → SMS.
+- **VPN et proxys** détectés avec proxycheck.io (cache 1 h) → SMS demandé ; si les SMS sont désactivés, inscription refusée.
+
+**Config de production** : `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` (obligatoires), `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (obligatoires si `SMS_MODE` n'est pas `off`), `PROXYCHECK_KEY` (facultative : 100 vérifications par jour sans clé).
+
+**Tests** : 47 serveur (dont 24 anti-abus), **20 E2E** (dont l'inscription avec SMS sur smartphone et sur PC).
+
+
 ### 2026-10-02 — Plus de condition d'âge, anti-double compte par HWID
 
 - **Plus aucune condition d'âge** : la case « 21 ans ou plus » est retirée, ainsi que la colonne `age_confirmed_at` (migration `003`). À la place viendront un **système de signalement** et un **interrupteur « contenu sensible »**.
@@ -194,5 +215,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
-- Anti-double compte : garder le mode souple (HWID + même IP) ou passer en strict (`HWID_STRICT=true`) ?
+- Anti-double compte : garder le mode souple (HWID + même IP, SMS ailleurs) ou passer en strict (`HWID_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
+- Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
+- Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.

@@ -4,13 +4,15 @@ import type { ServerConfig } from '../config.js';
 import type { Db } from '../db/db.js';
 
 /**
- * Anti-double compte (section 6.5) :
- * - un appareil ne crée qu'un compte, reconnu par son **HWID** (empreinte matérielle calculée
- *   par le navigateur) ou par le cookie d'appareil posé par le serveur ;
- * - les e-mails jetables sont refusés ;
- * - les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`)
- *   et ne pourront pas échanger entre eux (phase 5).
+ * Anti-double compte par l'appareil (section 14). Trois signaux, calculés ou posés côté navigateur :
+ * - **cookie** d'appareil httpOnly posé par le serveur (un navigateur) ;
+ * - **HWID** : empreinte matérielle (carte graphique, cœurs, écran, polices…), commune aux navigateurs
+ *   d'un même appareil, qui résiste à l'effacement des cookies et à la navigation privée ;
+ * - **empreinte du navigateur** (`fp`) : rendu canvas et audio, langues, extensions… plus précise.
+ * Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`)
+ * et ne pourront pas échanger entre eux (phase 5).
  * Aucune IP ni aucun identifiant d'appareil n'est stocké en clair : uniquement des empreintes salées.
+ * Les autres protections (captcha, débit, e-mails, SMS, VPN) sont dans `guard.ts` et `signup.ts`.
  */
 
 export const DEVICE_COOKIE = 'rh_device';
@@ -21,28 +23,25 @@ declare module 'fastify' {
   }
 }
 
-export type DeviceKind = 'cookie' | 'hwid';
+export type DeviceKind = 'cookie' | 'hwid' | 'fp';
 
-/** Signaux d'une requête, déjà hachés. `hwid` est absent si le navigateur ne l'a pas fourni. */
+/** Signaux d'une requête, déjà hachés. `hwid` et `fp` sont absents si le navigateur ne les a pas fournis. */
 export interface Signals {
   cookie: string;
   hwid: string | null;
+  fp: string | null;
   ip: string;
-}
-
-export function isDisposable(email: string, config: ServerConfig): boolean {
-  const domain = email.trim().toLowerCase().split('@')[1] ?? '';
-  return config.disposableDomains.some((d) => domain === d || domain.endsWith(`.${d}`));
 }
 
 export function signalHash(value: string, config: ServerConfig): string {
   return createHash('sha256').update(`${config.signalSalt}:${value}`).digest('hex');
 }
 
-export function requestSignals(request: FastifyRequest, config: ServerConfig, hwid: string | undefined): Signals {
+export function requestSignals(request: FastifyRequest, config: ServerConfig, client: { hwid?: string | undefined; fp?: string | undefined }): Signals {
   return {
     cookie: signalHash(`device:${request.deviceId}`, config),
-    hwid: hwid ? signalHash(`hwid:${hwid}`, config) : null,
+    hwid: client.hwid ? signalHash(`hwid:${client.hwid}`, config) : null,
+    fp: client.fp ? signalHash(`fp:${client.fp}`, config) : null,
     ip: signalHash(`ip:${request.ip}`, config),
   };
 }
@@ -59,25 +58,33 @@ export function ensureDevice(request: FastifyRequest, reply: FastifyReply, confi
   reply.setCookie(DEVICE_COOKIE, id, { path: '/', httpOnly: true, sameSite: 'lax', secure: config.cookieSecure, maxAge: 2 * 365 * 24 * 3600 });
 }
 
+export interface DeviceCheck {
+  /** Appareil déjà associé à un compte : inscription refusée. */
+  blocked: boolean;
+  /** HWID ou empreinte déjà vus sur un compte, mais depuis une autre IP : vérification renforcée (SMS). */
+  seenElsewhere: boolean;
+}
+
 /**
  * Un appareil = un compte. Refusé si :
  * - le cookie d'appareil appartient déjà à un compte ;
- * - le HWID appartient déjà à un compte vu depuis la même IP. Deux téléphones du même modèle
- *   peuvent avoir le même HWID : ailleurs, l'inscription passe mais les comptes sont liés.
- *   `hwidStrict` refuse dès que le HWID est connu, quelle que soit l'IP.
+ * - le HWID ou l'empreinte appartiennent déjà à un compte vu depuis la même IP.
+ * Ailleurs (deux téléphones du même modèle peuvent avoir le même HWID), l'appareil est « vu ailleurs » :
+ * l'inscription demande alors une vérification par SMS. `hwidStrict` refuse dans tous les cas.
  */
-export async function checkSignup(db: Db, config: ServerConfig, s: Signals): Promise<'device_has_account' | null> {
+export async function checkDevices(db: Db, config: ServerConfig, s: Signals): Promise<DeviceCheck> {
   const [cookie] = await db.query(`SELECT 1 FROM user_devices WHERE device_hash = $1 AND kind = 'cookie' LIMIT 1`, [s.cookie]);
-  if (cookie) return 'device_has_account';
-  if (!s.hwid) return null;
-  const [hwid] = await db.query(
-    `SELECT 1 FROM user_devices d
-     WHERE d.device_hash = $1 AND d.kind = 'hwid'
-       AND ($3::boolean OR EXISTS (SELECT 1 FROM user_ips i WHERE i.user_id = d.user_id AND i.ip_hash = $2))
-     LIMIT 1`,
-    [s.hwid, s.ip, config.hwidStrict],
+  if (cookie) return { blocked: true, seenElsewhere: false };
+  const hashes = [s.hwid, s.fp].filter((h): h is string => h !== null);
+  if (hashes.length === 0) return { blocked: false, seenElsewhere: false };
+  const rows = await db.query<{ same_ip: boolean }>(
+    `SELECT EXISTS (SELECT 1 FROM user_ips i WHERE i.user_id = d.user_id AND i.ip_hash = $2) AS same_ip
+     FROM user_devices d WHERE d.device_hash = ANY($1::text[]) AND d.kind IN ('hwid', 'fp')`,
+    [hashes, s.ip],
   );
-  return hwid ? 'device_has_account' : null;
+  if (rows.length === 0) return { blocked: false, seenElsewhere: false };
+  if (config.hwidStrict || rows.some((r) => r.same_ip)) return { blocked: true, seenElsewhere: false };
+  return { blocked: false, seenElsewhere: true };
 }
 
 /**
@@ -87,6 +94,7 @@ export async function checkSignup(db: Db, config: ServerConfig, s: Signals): Pro
 export async function recordSignals(db: Db, userId: string, s: Signals): Promise<void> {
   const devices: [string, DeviceKind][] = [[s.cookie, 'cookie']];
   if (s.hwid) devices.push([s.hwid, 'hwid']);
+  if (s.fp) devices.push([s.fp, 'fp']);
   for (const [hash, kind] of devices) {
     await db.query(
       `INSERT INTO user_devices (device_hash, user_id, kind) VALUES ($1, $2, $3)

@@ -32,6 +32,16 @@ export type ServerMessage =
   | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null }
   | { t: 'error'; code: string; message: string };
 
+/** Réglages publics du formulaire d'inscription. */
+export interface AuthConfigDto {
+  /** Clé de site Cloudflare Turnstile ; `null` : captcha désactivé (développement). */
+  turnstileSiteKey: string | null;
+  smsMode: 'off' | 'risky' | 'always';
+}
+
+/** Réponse à l'inscription : compte créé, ou vérification par SMS demandée. */
+export type SignupResponse = { user: PublicUser } | { pendingId: string; verify: 'phone' };
+
 export interface PublicUser {
   id: string;
   email: string;

@@ -35,12 +35,16 @@ async function autoStep(page: Page): Promise<void> {
 }
 
 /**
- * Les tests tournent en parallèle sur la même machine, donc avec le même HWID : chaque test
- * simule un appareil distinct en changeant une composante du HWID (le nombre de cœurs).
+ * Les tests tournent en parallèle sur la même machine, donc avec le même HWID et la même
+ * empreinte : chaque test simule un appareil distinct en changeant une composante de chacun
+ * (le nombre de cœurs pour le HWID, la mémoire pour l'empreinte du navigateur).
  */
 let device = 0;
 async function asDevice(context: BrowserContext, id: number): Promise<void> {
-  await context.addInitScript((n) => Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { get: () => n }), id);
+  await context.addInitScript((n) => {
+    Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { get: () => n });
+    Object.defineProperty(Navigator.prototype, 'deviceMemory', { get: () => n });
+  }, id);
 }
 test.beforeEach(async ({ context }) => {
   device = 1000 + Math.floor(Math.random() * 1e9);
@@ -143,4 +147,30 @@ test('inscription sans condition d’âge ; un seul compte par appareil, même a
   await asDevice(fresh, device);
   await second(await fresh.newPage(), 'device3');
   await fresh.close();
+});
+
+test('VPN détecté : vérification du numéro par SMS, puis compte créé', async ({ page, context }, info) => {
+  // Le serveur de test traite cet en-tête comme une IP de VPN (jamais en production).
+  await context.setExtraHTTPHeaders({ 'x-test-risk': 'vpn' });
+  await page.goto('/signup?next=/collection');
+  await page.getByTestId('name').fill('Voyageur');
+  await page.getByTestId('email').fill(`vpn-${info.project.name}-${Date.now()}@example.com`);
+  await page.getByTestId('password').fill('motdepasse1');
+  await page.getByTestId('submit').click();
+
+  await expect(page.getByRole('heading', { name: 'Vérifie ton numéro' })).toBeVisible();
+  const digits = String(Math.floor(Math.random() * 1e8)).padStart(8, '0');
+  await page.getByTestId('phone').fill(`06${digits}`);
+  await page.getByTestId('send-code').click();
+  await expect(page.getByRole('status')).toContainText('Code envoyé au +336');
+
+  const sms = await (await page.request.get(`/api/test/sms?phone=${encodeURIComponent(`+336${digits}`)}`)).json();
+  const code = /\d{6}/.exec(sms.text as string)![0];
+  await page.getByTestId('code').fill(code === '000000' ? '111111' : '000000');
+  await page.getByTestId('verify-code').click();
+  await expect(page.getByRole('alert')).toContainText('Code incorrect. Encore 4 essai(s).');
+  await page.getByTestId('code').fill(code);
+  await page.getByTestId('verify-code').click();
+  await expect(page).toHaveURL(/\/collection$/);
+  await expect(page.getByTestId('wallet')).toContainText('🎁 6');
 });

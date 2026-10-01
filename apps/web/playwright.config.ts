@@ -12,10 +12,20 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // Serveur de jeu de test : base en mémoire, fantôme rapide, données de test.
+      // Serveur de jeu de test : base en mémoire, fantôme rapide, données de test, SMS lus par une route de test.
       command: 'pnpm --filter @rabbithole/server start',
       url: 'http://localhost:3000/api/health',
-      env: { PORT: '3000', PGLITE_DIR: '', GHOST_DELAY_MS: '1500', LOG_LEVEL: 'warn', TEST_FIXTURES: '1' },
+      env: {
+        PORT: '3000',
+        PGLITE_DIR: '',
+        GHOST_DELAY_MS: '1500',
+        LOG_LEVEL: 'warn',
+        TEST_FIXTURES: '1',
+        // Tous les tests s'inscrivent depuis la même IP locale, en parallèle.
+        SIGNUP_PER_IP_PER_MINUTE: '1000',
+        SIGNUP_PER_SUBNET_PER_MINUTE: '1000',
+        SMS_PER_IP_PER_HOUR: '1000',
+      },
       reuseExistingServer: true,
       timeout: 60_000,
     },

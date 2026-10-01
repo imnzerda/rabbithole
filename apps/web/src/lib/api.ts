@@ -1,5 +1,5 @@
-import { hardwareId } from './hwid';
-import type { BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, WalletDto } from '@rabbithole/shared';
+import { browserFingerprint, hardwareId } from './hwid';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -30,6 +30,10 @@ export interface SignupInput {
   displayName: string;
   country: string;
   locale: string;
+  /** Jeton du captcha invisible (Turnstile), s'il est activé. */
+  captchaToken?: string;
+  /** Pot de miel : toujours vide pour un humain. */
+  website: string;
 }
 
 export interface DeckInput {
@@ -42,9 +46,13 @@ export interface DeckInput {
 export const api = {
   me: () => request<{ user: PublicUser }>('GET', '/me'),
   session: () => request<{ user: PublicUser | null }>('GET', '/session'),
-  // Le HWID accompagne l'inscription et la connexion (anti-double compte).
-  signup: (input: SignupInput) => request<{ user: PublicUser }>('POST', '/auth/signup', { ...input, hwid: hardwareId() }),
-  login: (email: string, password: string) => request<{ user: PublicUser }>('POST', '/auth/login', { email, password, hwid: hardwareId() }),
+  authConfig: () => request<AuthConfigDto>('GET', '/auth/config'),
+  // Le HWID et l'empreinte du navigateur accompagnent l'inscription et la connexion (anti-double compte).
+  signup: async (input: SignupInput) => request<SignupResponse>('POST', '/auth/signup', { ...input, hwid: hardwareId(), fp: await browserFingerprint() }),
+  signupPhone: (pendingId: string, phone: string) => request<{ phone: string }>('POST', `/auth/signup/${pendingId}/phone`, { phone }),
+  signupVerify: (pendingId: string, code: string) => request<{ user: PublicUser }>('POST', `/auth/signup/${pendingId}/verify`, { code }),
+  login: async (email: string, password: string) =>
+    request<{ user: PublicUser }>('POST', '/auth/login', { email, password, hwid: hardwareId(), fp: await browserFingerprint() }),
   logout: () => request<{ ok: true }>('POST', '/auth/logout'),
 
   collection: () => request<{ cards: { cardId: string; quantity: number }[] }>('GET', '/collection'),

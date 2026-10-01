@@ -57,6 +57,12 @@ export async function findUserByEmail(db: Db, email: string): Promise<(User & { 
   return row ? { ...toUser(row), passwordHash: row.password_hash } : null;
 }
 
+/** Unicité des comptes : l'e-mail canonique (alias et points Gmail ignorés, voir `canonicalEmail`). */
+export async function canonicalEmailTaken(db: Db, canonical: string): Promise<boolean> {
+  const [row] = await db.query('SELECT 1 FROM users WHERE canonical_email = $1', [canonical]);
+  return !!row;
+}
+
 export async function getUser(db: Db, id: string): Promise<User | null> {
   const [row] = await db.query<UserRow>('SELECT * FROM users WHERE id = $1', [id]);
   return row ? toUser(row) : null;
@@ -66,6 +72,8 @@ export async function createUser(
   db: Db,
   input: {
     email: string;
+    canonicalEmail: string;
+    phoneHash: string | null;
     passwordHash: string;
     displayName: string;
     country: string;
@@ -74,9 +82,9 @@ export async function createUser(
   },
 ): Promise<User> {
   const [row] = await db.query<UserRow>(
-    `INSERT INTO users (email, password_hash, display_name, country, locale)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [input.email, input.passwordHash, input.displayName, input.country, input.locale],
+    `INSERT INTO users (email, canonical_email, phone_hash, password_hash, display_name, country, locale)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [input.email, input.canonicalEmail, input.phoneHash, input.passwordHash, input.displayName, input.country, input.locale],
   );
   const user = toUser(row!);
   // Pas de cartes offertes : des boosters de bienvenue à ouvrir, pour construire sa collection.

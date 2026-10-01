@@ -85,7 +85,6 @@ const fr = {
   display_name: "Pseudo",
   birth_date: "Date de naissance",
   country: "Pays",
-  err_too_young: "Tu dois avoir au moins {n} ans pour jouer.",
   err_email_taken: "Cet e-mail est déjà utilisé.",
   err_invalid_credentials: "E-mail ou mot de passe incorrect.",
   err_invalid_input: "Vérifie les champs du formulaire.",
@@ -117,6 +116,25 @@ const fr = {
   back_lobby: "Salon",
   err_device_has_account: "Un compte existe déjà sur cet appareil : connecte-toi avec celui-ci.",
   err_disposable_email: "Les adresses e-mail jetables ne sont pas acceptées.",
+  err_captcha_failed: "Vérification anti-robot échouée. Recharge la page et réessaie.",
+  err_too_many_attempts: "Trop de tentatives. Réessaie dans {n} min.",
+  err_vpn_blocked: "Les inscriptions via VPN ou proxy ne sont pas acceptées. Désactive-le et réessaie.",
+  phone_title: "Vérifie ton numéro",
+  phone_intro: "Une dernière étape pour protéger le jeu des faux comptes : on t'envoie un code par SMS. Un numéro ne sert qu'à un seul compte et n'est jamais stocké en clair.",
+  phone_label: "Numéro de mobile",
+  phone_send: "Recevoir le code",
+  phone_sent: "Code envoyé au {phone}.",
+  phone_resend: "Renvoyer le code",
+  code_label: "Code reçu (6 chiffres)",
+  code_verify: "Valider",
+  err_invalid_phone: "Ce numéro de mobile n'est pas valide.",
+  err_virtual_phone: "Les numéros virtuels ne sont pas acceptés.",
+  err_phone_country: "Ce pays n'est pas encore pris en charge pour les SMS.",
+  err_phone_taken: "Ce numéro est déjà associé à un compte.",
+  err_sms_rate_limited: "Trop de SMS envoyés. Réessaie dans une heure.",
+  err_bad_code: "Code incorrect. Encore {n} essai(s).",
+  err_code_expired: "Code expiré : demande un nouveau code.",
+  err_pending_expired: "L'inscription a expiré. Recommence.",
   err_not_enough_coins: "Pas assez de pièces.",
   err_preview_changed: "L'aperçu a changé : regarde les nouvelles cartes avant d'acheter.",
   err_not_enough_essence: "Pas assez d'essence.",
@@ -253,7 +271,6 @@ const en: Record<Key, string> = {
   display_name: "Username",
   birth_date: "Date of birth",
   country: "Country",
-  err_too_young: "You must be at least {n} to play.",
   err_email_taken: "This email is already in use.",
   err_invalid_credentials: "Wrong email or password.",
   err_invalid_input: "Please check the form fields.",
@@ -285,6 +302,25 @@ const en: Record<Key, string> = {
   back_lobby: "Lobby",
   err_device_has_account: "An account already exists on this device: log in with it.",
   err_disposable_email: "Disposable email addresses are not accepted.",
+  err_captcha_failed: "Anti-bot check failed. Reload the page and try again.",
+  err_too_many_attempts: "Too many attempts. Try again in {n} min.",
+  err_vpn_blocked: "Sign-ups through a VPN or proxy aren't accepted. Turn it off and try again.",
+  phone_title: "Verify your number",
+  phone_intro: "One last step to keep fake accounts out: we'll text you a code. A number can only be used for one account and is never stored in plain text.",
+  phone_label: "Mobile number",
+  phone_send: "Send the code",
+  phone_sent: "Code sent to {phone}.",
+  phone_resend: "Resend the code",
+  code_label: "Code received (6 digits)",
+  code_verify: "Confirm",
+  err_invalid_phone: "This mobile number isn't valid.",
+  err_virtual_phone: "Virtual numbers aren't accepted.",
+  err_phone_country: "This country isn't supported for text messages yet.",
+  err_phone_taken: "This number is already linked to an account.",
+  err_sms_rate_limited: "Too many text messages sent. Try again in an hour.",
+  err_bad_code: "Wrong code. {n} attempt(s) left.",
+  err_code_expired: "Code expired: request a new one.",
+  err_pending_expired: "The sign-up expired. Start again.",
   err_not_enough_coins: "Not enough coins.",
   err_preview_changed: "The preview changed: check the new cards before buying.",
   err_not_enough_essence: "Not enough essence.",
@@ -347,4 +383,10 @@ export function t(key: Key, params: Record<string, string | number> = {}): strin
 export function loc(text: LocalizedText | undefined): string {
   if (!text) return '';
   return text[locale] ?? text.fr ?? Object.values(text)[0] ?? '';
+}
+
+/** Message d'une erreur de l'API (clé `err_<code>`), ou message générique si le code est inconnu. */
+export function errorText(code: string, params: Record<string, string | number> = {}): string {
+  const key = `err_${code}`;
+  return key in fr ? t(key as Key, params) : t('err_generic');
 }

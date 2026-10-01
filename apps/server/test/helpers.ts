@@ -3,10 +3,11 @@ import type { GameAction, PlayerView } from '@rabbithole/engine';
 import type { ClientMessage, ServerMessage } from '@rabbithole/shared';
 import WebSocket from 'ws';
 import { buildApp, type App } from '../src/app.js';
+import type { Guard } from '../src/auth/guard.js';
 import { testConfig, type ServerConfig } from '../src/config.js';
 
-export async function startApp(overrides: Partial<ServerConfig> = {}): Promise<App & { url: string }> {
-  const built = await buildApp(testConfig(overrides));
+export async function startApp(overrides: Partial<ServerConfig> = {}, services: Partial<Guard> = {}): Promise<App & { url: string }> {
+  const built = await buildApp(testConfig(overrides), services);
   await built.app.listen({ port: 0, host: '127.0.0.1' });
   const { port } = built.app.server.address() as AddressInfo;
   return { ...built, url: `127.0.0.1:${port}` };

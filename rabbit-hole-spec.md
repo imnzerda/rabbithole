@@ -439,7 +439,14 @@ Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `
 - **Âge** : aucune condition d'âge à l'inscription (ni date de naissance, ni déclaration).
 - **Contenu sensible** (à venir) : un interrupteur on/off par joueur masque les cartes marquées sensibles (`flags` de la carte), en plus du filtrage par pays (section 9).
 - **Signalement** (à venir) : tout joueur peut signaler une carte, un pseudo ou un comportement ; les signalements arrivent dans l'outil d'administration.
-- **Un compte par appareil** : HWID (empreinte matérielle calculée par le navigateur : carte graphique, cœurs, écran, tactile, fuseau horaire) et cookie d'appareil httpOnly. Un HWID déjà connu bloque l'inscription depuis la même IP ; ailleurs (deux téléphones du même modèle peuvent avoir le même HWID), l'inscription passe mais les comptes sont liés. `HWID_STRICT=true` bloque partout. E-mails jetables refusés. Appareils et IP ne sont stockés que sous forme d'empreinte salée. Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`) ; ces liens serviront à bloquer les échanges entre comptes liés (section 6.5).
+- **Inscription protégée** (`apps/server/src/auth/`) :
+  - **robots** : captcha invisible Cloudflare Turnstile (la case n'apparaît qu'en cas de doute) ; champ pot de miel caché ; 3 tentatives par minute et par IP, 10 par sous-réseau (/24 ou /64), puis blocage de 15 min ;
+  - **e-mails** : domaines jetables refusés (liste embarquée de plusieurs milliers de domaines + liste communautaire rafraîchie chaque jour) ; alias interdits (tout ce qui suit un « + » est retiré, points ignorés chez Gmail) avant le contrôle d'unicité ;
+  - **appareil** : un compte par appareil, reconnu par le cookie d'appareil, le **HWID** (carte graphique, cœurs, écran, tactile, fuseau horaire, polices installées : commun à tous les navigateurs) ou l'**empreinte du navigateur** (rendu canvas et audio, langues, plateforme…). Un HWID ou une empreinte déjà connus bloquent l'inscription depuis la même IP ; depuis une autre IP (deux téléphones du même modèle peuvent se ressembler), un SMS est demandé. `HWID_STRICT=true` bloque partout ;
+  - **VPN et proxys** détectés (proxycheck.io) → SMS demandé ;
+  - **SMS** (`SMS_MODE` : `off`, `risky` par défaut, `always`) : code à 6 chiffres valable 10 min, 5 essais ; **un numéro = un compte** ; numéros virtuels (VoIP), surtaxés, fixes et pays hors liste refusés ; 3 SMS par numéro et 5 par IP et par heure. Si les SMS sont désactivés, les VPN sont refusés ;
+  - IP, appareils et numéros ne sont stockés que sous forme d'**empreinte salée**. Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`) ; ces liens serviront à bloquer les échanges entre comptes liés (section 6.5).
+  - ⚠️ RGPD : empreinte d'appareil et vérification d'IP par un tiers relèvent de l'intérêt légitime (lutte contre la fraude) et doivent figurer dans la politique de confidentialité.
 - **Paiement** : interface `PaymentProvider` (`createCheckout`, `handleWebhook`, `refund`). Les produits ne sont crédités **que** via webhook serveur vérifié et idempotent (`provider_transaction_id` unique). Gestion des remboursements et rétrofacturations.
 - ⚠️ Le choix du prestataire n'est pas arrêté : la présence de cartes liées à l'industrie X peut faire classer le site « adulte ». Prévoir l'implémentation sandbox d'un prestataire classique **et** la possibilité d'en brancher un spécialisé (CCBill, Segpay, Verotel) sans changer le reste du code.
 - **RGPD** : consentement cookies, export et suppression des données.
@@ -459,8 +466,11 @@ KPIs : rétention J1 / J7 / J30, parties par jour, durée moyenne de partie, con
 ## 16. Modèle de données (PostgreSQL, simplifié)
 
 ```sql
-users(id, created_at, country, locale, email UNIQUE, starter_leader, auth_provider, status)
-user_devices(device_hash, user_id, kind /*hwid|cookie*/, first_seen, last_seen) / user_ips(ip_hash, user_id, first_seen, last_seen)
+users(id, created_at, country, locale, email UNIQUE, canonical_email UNIQUE, phone_hash UNIQUE,
+      phone_verified_at, starter_leader, auth_provider, status)
+pending_signups(id, payload JSONB, signals JSONB, reasons TEXT[], phone_hash, code_hash, attempts, expires_at)
+sms_sends(phone_hash, ip_hash, created_at)
+user_devices(device_hash, user_id, kind /*cookie|hwid|fp*/, first_seen, last_seen) / user_ips(ip_hash, user_id, first_seen, last_seen)
 account_flags(user_id, other_user_id, reason /*shared_device|shared_ip*/, created_at)
 cards(id, wikidata_id, series_id, rarity, cost, power, categories TEXT[], keywords TEXT[],
       effects JSONB, names JSONB, flavor JSONB, flags JSONB, image_asset_id, status, version)

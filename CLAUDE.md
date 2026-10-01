@@ -60,7 +60,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
 - Le contenu `adult` est filtré par pays (`country_rules`).
 - **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À venir : un **système de signalement** et un **interrupteur « contenu sensible »** (on/off) par joueur.
-- **Un compte par appareil** (HWID + cookie d'appareil), e-mails jetables refusés, comptes partageant un appareil ou une IP signalés. Signaux stockés uniquement en empreinte salée.
+- **Inscription protégée** : captcha invisible (Turnstile), pot de miel, débit limité par IP et sous-réseau, e-mails jetables et alias refusés, un compte par appareil (HWID, empreinte du navigateur, cookie), SMS demandé en cas de risque (VPN, appareil vu ailleurs) avec un compte par numéro. Comptes partageant un appareil ou une IP signalés. IP, appareils et numéros stockés uniquement en empreinte salée.
 - **Pas de kit de départ** : les joueurs construisent leur deck en ouvrant des boosters.
 
 ### Méthode de travail
@@ -84,9 +84,9 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - [packages/content/](packages/content/) : Leaders, cartes et decks en JSON (`data/prototype/`), chargés par `prototypeContext()`.
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
 - [apps/server/](apps/server/) : Fastify, PostgreSQL (PGlite en dev et en test), WebSocket.
-  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `HWID_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
+  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `HWID_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
   - `src/db/` : accès base (`pg` / PGlite) et migrations SQL.
-  - `src/auth/` : comptes, Argon2, sessions ; `antiabuse.ts` : anti-double compte (HWID, cookie d'appareil, comptes liés). Le HWID est calculé par `apps/web/src/lib/hwid.ts`.
+  - `src/auth/` : comptes, Argon2, sessions  ; inscription protégée : `antiabuse.ts` (appareils, comptes liés), `guard.ts` (captcha, SMS, VPN, débit, e-mails jetables et alias), `phone.ts` (numéros), `signup.ts` (vérification par SMS). Le HWID et l'empreinte sont calculés par `apps/web/src/lib/hwid.ts`.
   - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, Leader de départ, pièces de fin de partie.
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).

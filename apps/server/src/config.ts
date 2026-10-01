@@ -19,6 +19,35 @@ export interface EconomyConfig {
   rewards: { win: number; loss: number; draw: number; dailyCap: number };
 }
 
+/** Vérification par SMS : jamais, seulement pour les inscriptions à risque (VPN, appareil connu ailleurs), ou toujours. */
+export type SmsMode = 'off' | 'risky' | 'always';
+
+/** Protection de l'inscription contre les robots et les doubles comptes (section 14). */
+export interface GuardConfig {
+  /** Cloudflare Turnstile (captcha invisible). Sans clés : désactivé (développement, tests). */
+  turnstile: { siteKey: string; secret: string } | null;
+  /** Tentatives d'inscription par minute, par IP et par sous-réseau (/24 en IPv4, /64 en IPv6). */
+  signupPerIpPerMinute: number;
+  signupPerSubnetPerMinute: number;
+  /** Durée du blocage temporaire quand une limite est dépassée. */
+  signupBlockMinutes: number;
+  /** Liste d'e-mails jetables téléchargée et rafraîchie chaque jour, en plus de la liste embarquée. */
+  disposableListUrl: string | null;
+  /** Domaines jetables ajoutés à la main. */
+  disposableExtra: string[];
+  smsMode: SmsMode;
+  /** Envoi des SMS (Twilio). Sans identifiants : les codes sont écrits dans le journal du serveur (développement). */
+  twilio: { accountSid: string; authToken: string; from: string } | null;
+  /** Pays dont les numéros sont acceptés (limite la fraude aux SMS surtaxés). */
+  smsCountries: string[];
+  smsCodeMinutes: number;
+  smsMaxAttempts: number;
+  smsPerPhonePerHour: number;
+  smsPerIpPerHour: number;
+  /** Détection de VPN et de proxys (proxycheck.io). `null` : désactivée. */
+  proxycheck: { key: string | null } | null;
+}
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -40,8 +69,7 @@ export interface ServerConfig {
    * ou partout (true).
    */
   hwidStrict: boolean;
-  /** Domaines d'e-mails jetables refusés à l'inscription. */
-  disposableDomains: string[];
+  guard: GuardConfig;
   /** Attente avant de proposer un adversaire fantôme (matchmaking). */
   ghostDelayMs: number;
   /** Minuteurs de décision côté serveur. `null` → valeurs des règles du jeu. */
@@ -67,8 +95,11 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
   rewards: { win: 40, loss: 15, draw: 20, dailyCap: 400 },
 };
 
-/** Fournisseurs d'e-mails jetables courants (liste complétée en production). */
-const DISPOSABLE = ['mailinator.com', 'yopmail.com', 'guerrillamail.com', 'trashmail.com', '10minutemail.com', 'temp-mail.org', 'tempmail.com', 'sharklasers.com', 'getnada.com', 'dispostable.com'];
+/** Pays de lancement (section 4.5) : seuls leurs numéros reçoivent des SMS. */
+const SMS_COUNTRIES = ['FR', 'BE', 'CH', 'CA', 'US', 'GB', 'BR', 'MX', 'ES', 'DE', 'IT', 'PL', 'JP', 'PH'];
+
+/** Liste communautaire des domaines jetables, mise à jour en continu. */
+const DISPOSABLE_LIST_URL = 'https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf';
 
 function int(value: string | undefined, fallback: number): number {
   const n = value === undefined ? NaN : Number(value);
@@ -79,6 +110,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const production = env.NODE_ENV === 'production';
   if (production && !env.SIGNAL_SALT) throw new Error('SIGNAL_SALT est obligatoire en production.');
   if (production && env.TEST_FIXTURES === '1') throw new Error('TEST_FIXTURES est interdit en production.');
+  if (production && !(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET)) throw new Error('TURNSTILE_SITE_KEY et TURNSTILE_SECRET sont obligatoires en production.');
+  const smsMode = (env.SMS_MODE ?? 'risky') as SmsMode;
+  if (!['off', 'risky', 'always'].includes(smsMode)) throw new Error(`SMS_MODE inconnu : ${smsMode}`);
+  if (production && smsMode !== 'off' && !env.TWILIO_ACCOUNT_SID) throw new Error('TWILIO_* est obligatoire en production quand SMS_MODE est actif.');
   return {
     port: int(env.PORT, 3000),
     host: env.HOST ?? '0.0.0.0',
@@ -89,7 +124,25 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     trustProxy: env.TRUST_PROXY ? env.TRUST_PROXY === 'true' : false,
     signalSalt: env.SIGNAL_SALT ?? 'dev-only-salt',
     hwidStrict: env.HWID_STRICT === 'true',
-    disposableDomains: env.DISPOSABLE_DOMAINS ? env.DISPOSABLE_DOMAINS.split(',') : DISPOSABLE,
+    guard: {
+      turnstile: env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET ? { siteKey: env.TURNSTILE_SITE_KEY, secret: env.TURNSTILE_SECRET } : null,
+      signupPerIpPerMinute: int(env.SIGNUP_PER_IP_PER_MINUTE, 3),
+      signupPerSubnetPerMinute: int(env.SIGNUP_PER_SUBNET_PER_MINUTE, 10),
+      signupBlockMinutes: int(env.SIGNUP_BLOCK_MINUTES, 15),
+      disposableListUrl: env.DISPOSABLE_LIST_URL ?? (production ? DISPOSABLE_LIST_URL : null),
+      disposableExtra: env.DISPOSABLE_DOMAINS ? env.DISPOSABLE_DOMAINS.split(',') : [],
+      smsMode,
+      twilio:
+        env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_FROM
+          ? { accountSid: env.TWILIO_ACCOUNT_SID, authToken: env.TWILIO_AUTH_TOKEN, from: env.TWILIO_FROM }
+          : null,
+      smsCountries: env.SMS_COUNTRIES ? env.SMS_COUNTRIES.split(',') : SMS_COUNTRIES,
+      smsCodeMinutes: 10,
+      smsMaxAttempts: 5,
+      smsPerPhonePerHour: int(env.SMS_PER_PHONE_PER_HOUR, 3),
+      smsPerIpPerHour: int(env.SMS_PER_IP_PER_HOUR, 5),
+      proxycheck: env.PROXYCHECK === 'off' ? null : env.PROXYCHECK_KEY || production || env.PROXYCHECK === 'on' ? { key: env.PROXYCHECK_KEY || null } : null,
+    },
     ghostDelayMs: int(env.GHOST_DELAY_MS, 15_000),
     turnTimerMs: env.TURN_TIMER_MS ? int(env.TURN_TIMER_MS, 60_000) : null,
     reactionTimerMs: env.REACTION_TIMER_MS ? int(env.REACTION_TIMER_MS, 20_000) : null,
@@ -111,6 +164,7 @@ export function testConfig(overrides: Partial<ServerConfig> = {}): ServerConfig 
     reactionTimerMs: 3_600_000,
     authRateLimit: 1000,
     testFixtures: true,
+    guard: { ...loadConfig({ NODE_ENV: 'test' }).guard, signupPerIpPerMinute: 1000, signupPerSubnetPerMinute: 1000, smsPerIpPerHour: 1000 },
     logLevel: 'silent',
     ...overrides,
   };
