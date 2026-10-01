@@ -1,38 +1,172 @@
 [
   {
     "id": "internet_party",
-    "name": { "fr": "Internet Party", "en": "Internet Party" },
-    "description": { "fr": "Viral, Ratio et Clickbait. Ça buzze, ça clashe.", "en": "Viral, Ratio and Clickbait. It buzzes, it clashes." },
+    "name": {
+      "fr": "Internet Party",
+      "en": "Internet Party"
+    },
+    "description": {
+      "fr": "Viral, Ratio et Clickbait : ton Leader booste toute l’équipe.",
+      "en": "Viral, Ratio and Clickbait: your Leader hypes up the whole squad."
+    },
+    "leader": "proto_l_influenceuse",
     "cards": [
-      "proto_miniature", "proto_dj", "proto_complotiste", "proto_streamer", "proto_rappeur", "proto_gala",
-      "proto_troll", "proto_lien_piege", "proto_diva", "proto_moderateur", "proto_rock", "proto_icone_pop"
+      "proto_dj",
+      "proto_dj",
+      "proto_rappeur",
+      "proto_rappeur",
+      "proto_diva",
+      "proto_diva",
+      "proto_rock",
+      "proto_rock",
+      "proto_rappel",
+      "proto_rappel",
+      "proto_miniature",
+      "proto_miniature",
+      "proto_streamer",
+      "proto_streamer",
+      "proto_troll",
+      "proto_troll",
+      "proto_moderateur",
+      "proto_moderateur",
+      "proto_signalement",
+      "proto_signalement"
     ]
   },
   {
     "id": "ordre_et_pouvoir",
-    "name": { "fr": "Ordre et pouvoir", "en": "Order & Power" },
-    "description": { "fr": "Élan en début de partie, armée en fin de partie.", "en": "Early momentum, late-game army." },
+    "name": {
+      "fr": "Ordre et pouvoir",
+      "en": "Order & Power"
+    },
+    "description": {
+      "fr": "Élan pour frapper vite, l’Empereur pour finir.",
+      "en": "Rush to hit fast, the Emperor to finish."
+    },
+    "leader": "proto_l_president",
     "cards": [
-      "proto_sprinteur", "proto_figurant", "proto_buteur", "proto_ultra", "proto_chevalier", "proto_championne",
-      "proto_sosie", "proto_general", "proto_club", "proto_reine_guerriere", "proto_genie", "proto_empereur"
+      "proto_chevalier",
+      "proto_chevalier",
+      "proto_garde",
+      "proto_garde",
+      "proto_general",
+      "proto_general",
+      "proto_empereur",
+      "proto_empereur",
+      "proto_mobilisation",
+      "proto_mobilisation",
+      "proto_sprinteur",
+      "proto_sprinteur",
+      "proto_ultra",
+      "proto_ultra",
+      "proto_buteur",
+      "proto_buteur",
+      "proto_championne",
+      "proto_championne",
+      "proto_remontada",
+      "proto_remontada"
     ]
   },
   {
     "id": "coups_tordus",
-    "name": { "fr": "Coups tordus", "en": "Dirty Tricks" },
-    "description": { "fr": "Vol, destruction et hasard. Ton adversaire ne va pas aimer.", "en": "Theft, destruction and chaos. Your opponent won't like it." },
+    "name": {
+      "fr": "Coups tordus",
+      "en": "Dirty Tricks"
+    },
+    "description": {
+      "fr": "KO, renvois et hasard. Ton adversaire ne va pas aimer.",
+      "en": "K.O., bounces and chaos. Your opponent won't like it."
+    },
+    "leader": "proto_l_baronne",
     "cards": [
-      "proto_pickpocket", "proto_fetard", "proto_complotiste", "proto_scandale", "proto_zone51", "proto_reine_nuit",
-      "proto_lien_piege", "proto_cambrioleur", "proto_mechant", "proto_yeti", "proto_bermudes", "proto_parrain"
+      "proto_pickpocket",
+      "proto_pickpocket",
+      "proto_scandale",
+      "proto_scandale",
+      "proto_cambrioleur",
+      "proto_cambrioleur",
+      "proto_parrain",
+      "proto_parrain",
+      "proto_contrat",
+      "proto_contrat",
+      "proto_complotiste",
+      "proto_complotiste",
+      "proto_zone51",
+      "proto_zone51",
+      "proto_yeti",
+      "proto_yeti",
+      "proto_bermudes",
+      "proto_bermudes",
+      "proto_theorie",
+      "proto_theorie"
     ]
   },
   {
     "id": "longue_route",
-    "name": { "fr": "La longue route", "en": "The Long Road" },
-    "description": { "fr": "Croissance et science : lent au début, imparable à la fin.", "en": "Growth and science: slow start, unstoppable finish." },
+    "name": {
+      "fr": "La longue route",
+      "en": "The Long Road"
+    },
+    "description": {
+      "fr": "Pioche, Buzz et Croissance : lent au début, imparable à la fin.",
+      "en": "Draw, Buzz and Growth: slow start, unstoppable finish."
+    },
+    "leader": "proto_l_professeur",
     "cards": [
-      "proto_navigateur", "proto_figurant", "proto_alpiniste", "proto_chercheuse", "proto_zone51", "proto_robot",
-      "proto_suite", "proto_diva", "proto_astronaute", "proto_general", "proto_genie", "proto_yeti"
+      "proto_cobaye",
+      "proto_cobaye",
+      "proto_chercheuse",
+      "proto_chercheuse",
+      "proto_robot",
+      "proto_robot",
+      "proto_genie",
+      "proto_genie",
+      "proto_eureka",
+      "proto_eureka",
+      "proto_navigateur",
+      "proto_navigateur",
+      "proto_alpiniste",
+      "proto_alpiniste",
+      "proto_explorateur",
+      "proto_explorateur",
+      "proto_astronaute",
+      "proto_astronaute",
+      "proto_expedition",
+      "proto_expedition"
+    ]
+  },
+  {
+    "id": "tapis_rouge",
+    "name": {
+      "fr": "Tapis rouge",
+      "en": "Red Carpet"
+    },
+    "description": {
+      "fr": "Bloqueurs et contres : la Star ne tombe jamais.",
+      "en": "Blockers and counters: the Star never falls."
+    },
+    "leader": "proto_l_star",
+    "cards": [
+      "proto_fetard",
+      "proto_fetard",
+      "proto_gala",
+      "proto_gala",
+      "proto_reine_nuit",
+      "proto_reine_nuit",
+      "proto_club",
+      "proto_club",
+      "proto_afterparty",
+      "proto_afterparty",
+      "proto_figurant",
+      "proto_figurant",
+      "proto_cascadeur",
+      "proto_cascadeur",
+      "proto_suite",
+      "proto_suite",
+      "proto_mechant",
+      "proto_mechant",
+      "proto_coup_theatre",
+      "proto_coup_theatre"
     ]
   }
 ]

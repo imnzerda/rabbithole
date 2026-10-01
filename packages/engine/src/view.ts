@@ -1,121 +1,131 @@
 import { getCardDef, type MatchContext } from './context.js';
+import { legalActions, pendingDecision, type Decision, type LegalActions } from './match.js';
 import { computePowers } from './power.js';
-import { isTrending, manaForTurn, playCost } from './query.js';
-import { other, type CardInstance, type MatchResult, type MatchState, type PlayerIndex } from './types.js';
+import { boardOf, isTrending } from './query.js';
+import { other, type CardInstance, type CardType, type MatchResult, type MatchState, type PlayerIndex } from './types.js';
 
 export interface VisibleCard {
   uid: string;
-  /** `null` = face cachée (non révélée ou cachée par un effet). */
-  defId: string | null;
-  /** Puissance affichée. `null` si inconnue. */
-  power: number | null;
-  /** Coût de base, uniquement pour les cartes en main. */
-  cost?: number;
-  /** Coût réel sur chaque terrain (modificateurs de terrain inclus), uniquement pour les cartes en main. */
-  costByTerrain?: number[];
-  owner: PlayerIndex;
-  hidden: boolean;
-  clickbait: boolean;
+  defId: string;
+  type: CardType;
+  /** Puissance effective (en jeu) ou imprimée + modifications (en main). */
+  power: number;
+  cost: number;
+  counter: number;
+  rested: boolean;
+  buzz: number;
+  cancelled: boolean;
   trending: boolean;
+  /** Posée ce tour (ne peut pas attaquer, sauf Élan). */
+  fresh: boolean;
 }
 
-export interface TerrainView {
-  /** `null` tant que le terrain n'est pas révélé. */
-  defId: string | null;
-  revealed: boolean;
-  cards: [VisibleCard[], VisibleCard[]];
-  /** Puissance visible par le joueur (hors cartes cachées adverses). */
-  power: [number, number];
+export interface SideView {
+  leader: VisibleCard;
+  characters: VisibleCard[];
+  life: number;
+  handCount: number;
+  deckCount: number;
+  trashCount: number;
+  /** Dernière carte de la défausse (publique). */
+  trashTop: string | null;
+  buzzActive: number;
+  buzzRested: number;
+  /** Buzz encore dans la réserve. */
+  buzzDeck: number;
+  hypeDeclared: boolean;
+}
+
+export interface BattleView {
+  attacker: string;
+  target: string;
+  declaredTarget: string;
+  attackerPower: number;
+  defenderPower: number;
+  blocked: boolean;
 }
 
 export interface PlayerView {
   you: PlayerIndex;
   turn: number;
+  active: PlayerIndex;
+  first: PlayerIndex;
   phase: MatchState['phase'];
-  mana: number;
+  decision: Decision | null;
+  me: SideView & { hand: VisibleCard[] };
+  opponent: SideView;
+  battle: BattleView | null;
+  /** Carte Vie révélée en attente de décision Déclencheur (publique). */
+  revealedTrigger: { player: PlayerIndex; defId: string } | null;
   stake: number;
-  hypeDeclared: [boolean, boolean];
-  revealFirst: PlayerIndex;
-  revealFirstReason: MatchState['revealFirstReason'];
-  hand: VisibleCard[];
-  deckCount: number;
-  opponentHandCount: number;
-  opponentDeckCount: number;
-  terrains: TerrainView[];
+  /** Actions possibles, seulement quand c'est à ce joueur de décider. */
+  legal: LegalActions | null;
   result: MatchResult | null;
 }
 
 /**
- * Ce qu'un joueur a le droit de voir : jamais la main, la pioche ni les cartes
- * face cachée de l'adversaire. Le serveur n'envoie que cette vue au client.
+ * Ce qu'un joueur a le droit de voir : jamais la main, la pioche ni les Vies
+ * de l'adversaire. Le serveur n'envoie que cette vue au client.
  */
 export function getPlayerView(ctx: MatchContext, s: MatchState, viewer: PlayerIndex): PlayerView {
   const powers = computePowers(ctx, s);
-
   const visible = (c: CardInstance): VisibleCard => {
-    const mine = c.controller === viewer;
-    const faceDown = !c.revealed || (c.hidden && !mine);
-    const real = powers[c.uid] ?? null;
+    const def = getCardDef(ctx, c.defId);
     return {
       uid: c.uid,
-      defId: faceDown ? null : c.defId,
-      power: faceDown ? null : real,
-      owner: c.owner,
-      hidden: c.hidden,
-      clickbait: !faceDown && c.clickbaitUntilTurn !== null,
-      trending: !faceDown && isTrending(s, c),
+      defId: c.defId,
+      type: def.type,
+      power: powers[c.uid] ?? def.power + c.permMod,
+      cost: def.cost,
+      counter: def.counter ?? 0,
+      rested: c.rested,
+      buzz: c.buzz,
+      cancelled: c.effectsCancelled,
+      trending: isTrending(s, c),
+      fresh: c.playedTurn === s.turn,
     };
   };
-
-  const terrains: TerrainView[] = s.terrains.map((t) => {
-    const cards = t.slots.map((uids) => uids.map((uid) => visible(s.cards[uid]!))) as [VisibleCard[], VisibleCard[]];
-    const sum = (list: VisibleCard[]) => list.reduce((acc, c) => acc + (c.power ?? 0), 0);
+  const side = (p: PlayerIndex): SideView => {
+    const ps = s.players[p];
+    const [leader, ...characters] = boardOf(s, p);
     return {
-      defId: t.revealed ? t.defId : null,
-      revealed: t.revealed,
-      cards,
-      power: [sum(cards[0]), sum(cards[1])],
+      leader: visible(leader!),
+      characters: characters.map(visible),
+      life: ps.life.length,
+      handCount: ps.hand.length,
+      deckCount: ps.deck.length,
+      trashCount: ps.trash.length,
+      trashTop: ps.trash.length ? s.cards[ps.trash[ps.trash.length - 1]!]!.defId : null,
+      buzzActive: ps.buzzActive,
+      buzzRested: ps.buzzRested,
+      buzzDeck: ps.buzzDeck,
+      hypeDeclared: ps.hypeDeclared,
     };
-  });
-
-  const me = s.players[viewer];
-  const opp = s.players[other(viewer)];
+  };
+  const b = s.battle;
+  const trigger = s.damage?.trigger ? s.cards[s.damage.trigger] : undefined;
   return {
     you: viewer,
     turn: s.turn,
+    active: s.active,
+    first: s.first,
     phase: s.phase,
-    mana: manaForTurn(ctx, s.turn),
+    decision: pendingDecision(s),
+    me: { ...side(viewer), hand: s.players[viewer].hand.map((uid) => visible(s.cards[uid]!)) },
+    opponent: side(other(viewer)),
+    battle: b
+      ? {
+          attacker: b.attacker,
+          target: b.target,
+          declaredTarget: b.declaredTarget,
+          attackerPower: powers[b.attacker] ?? 0,
+          defenderPower: powers[b.target] ?? 0,
+          blocked: b.blocked,
+        }
+      : null,
+    revealedTrigger: trigger && s.damage ? { player: s.damage.player, defId: trigger.defId } : null,
     stake: s.stake,
-    hypeDeclared: [s.players[0].hypeDeclared, s.players[1].hypeDeclared],
-    revealFirst: s.revealFirst,
-    revealFirstReason: s.revealFirstReason,
-    hand: me.hand.map((uid) => {
-      const c = s.cards[uid]!;
-      return {
-        uid,
-        defId: c.defId,
-        power: c.powerBase + c.powerMod,
-        cost: getCardDef(ctx, c.defId).cost,
-        costByTerrain: s.terrains.map((_, i) => playCost(ctx, s, c, i)),
-        owner: c.owner,
-        hidden: false,
-        clickbait: false,
-        trending: isTrending(s, c),
-      };
-    }),
-    deckCount: me.deck.length,
-    opponentHandCount: opp.hand.length,
-    opponentDeckCount: opp.deck.length,
-    terrains,
+    legal: legalActions(ctx, s, viewer),
     result: s.result,
   };
-}
-
-/** Coût de chaque carte de la main sur chaque terrain (aide à l'UI pour les réductions de terrain). */
-export function handCosts(ctx: MatchContext, s: MatchState, player: PlayerIndex): Record<string, number[]> {
-  const out: Record<string, number[]> = {};
-  for (const uid of s.players[player].hand) {
-    out[uid] = s.terrains.map((_, i) => playCost(ctx, s, s.cards[uid]!, i));
-  }
-  return out;
 }

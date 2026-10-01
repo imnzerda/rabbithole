@@ -1,12 +1,15 @@
-import type { CardDef, TerrainDef } from '../src/index.js';
+import type { CardDef } from '../src/index.js';
 
+/** Personnage de test (catégorie Internet par défaut). */
 export function card(id: string, p: Partial<CardDef> = {}): CardDef {
   return {
     id,
+    type: 'character',
     name: { fr: id, en: id },
     categories: ['internet'],
     cost: 1,
     power: 2,
+    counter: 0,
     rarity: 'basique',
     series: 'test',
     keywords: [],
@@ -15,146 +18,85 @@ export function card(id: string, p: Partial<CardDef> = {}): CardDef {
   };
 }
 
-/** Cartes de remplissage des decks de test : chères, sans puissance, jamais jouées. */
-export const FILLERS: CardDef[] = Array.from({ length: 12 }, (_, i) =>
+export function leader(id: string, p: Partial<CardDef> = {}): CardDef {
+  return card(id, { type: 'leader', categories: ['internet', 'science'], cost: 0, power: 5, life: 4, counter: undefined, ...p });
+}
+
+export function event(id: string, p: Partial<CardDef> = {}): CardDef {
+  return card(id, { type: 'event', power: 0, counter: undefined, ...p });
+}
+
+export const LEADERS: CardDef[] = [leader('leader_a'), leader('leader_b')];
+
+/** Cartes de remplissage : chères, sans puissance, jamais jouées (catégorie Science, compatible avec les Leaders de test). */
+export const FILLERS: CardDef[] = Array.from({ length: 10 }, (_, i) =>
   card(`filler_${i}`, { cost: 9, power: 0, categories: ['science'] }),
 );
 
-export const TERRAINS: TerrainDef[] = [
-  { id: 'neutral_1', name: { fr: 'Neutre 1' }, modifiers: [] },
-  { id: 'neutral_2', name: { fr: 'Neutre 2' }, modifiers: [] },
-  { id: 'neutral_3', name: { fr: 'Neutre 3' }, modifiers: [] },
-  {
-    id: 'prohibition',
-    name: { fr: 'Prohibition', en: 'Prohibition' },
-    favoredCategory: 'crimes_scandales',
-    modifiers: [{ type: 'power', filter: { categories: ['crimes_scandales'] }, amount: 2 }],
-  },
-  { id: 'stade', name: { fr: 'Stade', en: 'Stadium' }, favoredCategory: 'sport', modifiers: [{ type: 'elan_always' }] },
-  { id: 'las_vegas', name: { fr: 'Las Vegas', en: 'Las Vegas' }, modifiers: [{ type: 'random_twice' }] },
-  {
-    id: 'tribunal',
-    name: { fr: 'Tribunal', en: 'Courtroom' },
-    modifiers: [{ type: 'power', filter: { categories: ['crimes_scandales'] }, amount: -2 }],
-  },
-  {
-    id: 'concert',
-    name: { fr: 'Concert', en: 'Concert' },
-    favoredCategory: 'musique',
-    modifiers: [{ type: 'aura', filter: { categories: ['musique'] }, amount: 1 }],
-  },
-  {
-    id: 'serveur_discord',
-    name: { fr: 'Serveur Discord', en: 'Discord Server' },
-    favoredCategory: 'internet',
-    modifiers: [{ type: 'cost', filter: { categories: ['internet'] }, amount: -1 }],
-  },
-  { id: 'metro_parisien', name: { fr: 'Le métro parisien', en: 'Paris Metro' }, favoredCountry: 'FR', modifiers: [] },
-];
-
-/** Pool couvrant tous les mots-clés et toutes les actions, pour les parties aléatoires. */
+/** Pool couvrant tous les mots-clés, déclencheurs et actions, pour les parties aléatoires. */
 export const POOL: CardDef[] = [
-  card('p_viral', { cost: 2, power: 3, keywords: ['viral'] }),
-  card('p_ratio', { cost: 4, power: 7, keywords: ['ratio'] }),
+  card('p_elan', { cost: 2, power: 3, keywords: ['elan'], counter: 1 }),
+  card('p_bloqueur', { cost: 2, power: 3, keywords: ['bloqueur'], counter: 1 }),
+  card('p_viral', { cost: 4, power: 5, keywords: ['viral'] }),
+  card('p_ratio', { cost: 3, power: 4, keywords: ['ratio'], counter: 1 }),
+  card('p_clickbait', { cost: 1, power: 2, keywords: ['clickbait'], counter: 2 }),
+  card('p_croissance', { cost: 2, power: 2, keywords: ['croissance'], counter: 1 }),
+  card('p_rickroll', { cost: 3, power: 3, keywords: ['rickroll'], counter: 1 }),
   card('p_cancel', { cost: 3, power: 4, keywords: ['cancel'] }),
-  card('p_clickbait', { cost: 1, power: 1, keywords: ['clickbait'] }),
-  card('p_rickroll', { cost: 2, power: 3, keywords: ['rickroll'] }),
-  card('p_live', { cost: 2, power: 2, keywords: ['croissance'], categories: ['internet', 'musique'] }),
-  card('p_shitpost', { cost: 1, power: 1, keywords: ['shitpost'] }),
-  card('p_seduction', { cost: 3, power: 3, keywords: ['seduction'], categories: ['nuits_exces'] }),
-  card('p_elan', { cost: 1, power: 1, keywords: ['elan'], categories: ['sport'] }),
-  card('p_croissance', { cost: 2, power: 1, keywords: ['croissance'], categories: ['exploration'] }),
-  card('p_vanilla6', { cost: 6, power: 11, categories: ['guerre_pouvoir'], country: 'FR' }),
-  card('p_vanilla3', { cost: 3, power: 5, categories: ['crimes_scandales'] }),
-  card('p_music_aura', {
-    cost: 3,
-    power: 3,
-    categories: ['musique'],
-    effects: [{ trigger: 'continuous', action: { type: 'add_power', target: 'allies_here', amount: 1 } }],
-  }),
-  card('p_destroyer', {
-    cost: 5,
-    power: 5,
-    categories: ['crimes_scandales'],
-    effects: [{ trigger: 'on_reveal', action: { type: 'destroy', target: 'strongest_enemy_here' } }],
-  }),
-  card('p_mover', {
-    cost: 2,
-    power: 3,
-    categories: ['mysteres'],
-    effects: [{ trigger: 'on_reveal', action: { type: 'move', target: 'random_enemy_here', to: 'random_other' } }],
-  }),
-  card('p_copycat', {
-    cost: 3,
-    power: 2,
-    categories: ['series_cinema'],
-    effects: [{ trigger: 'on_reveal', action: { type: 'copy', target: 'opposite_card', to: 'here' } }],
-  }),
-  card('p_transformer', {
+  card('p_seduction', { cost: 4, power: 4, keywords: ['seduction'] }),
+  card('p_shitpost', { cost: 1, power: 1, keywords: ['shitpost'], counter: 2 }),
+  card('p_vanilla', { cost: 5, power: 7 }),
+  card('p_aura', {
     cost: 4,
     power: 4,
-    categories: ['series_cinema'],
-    effects: [{ trigger: 'on_reveal', action: { type: 'transform', target: 'weakest_enemy_here', into: ['p_token'] } }],
+    effects: [{ trigger: 'continuous', condition: { type: 'my_turn' }, action: { type: 'add_power', target: 'allies', amount: 1 } }],
   }),
-  card('p_thief', {
-    cost: 4,
-    power: 3,
-    categories: ['crimes_scandales'],
-    effects: [{ trigger: 'end_of_game', action: { type: 'steal', target: 'opposite_card' } }],
-  }),
-  card('p_scientist', {
+  card('p_ko', { cost: 6, power: 6, effects: [{ trigger: 'on_play', action: { type: 'ko', target: 'strongest_enemy', filter: { maxCost: 4 } } }] }),
+  card('p_bounce', { cost: 3, power: 3, effects: [{ trigger: 'on_play', action: { type: 'bounce', target: 'random_enemy' } }] }),
+  card('p_draw', {
     cost: 2,
     power: 2,
+    counter: 1,
     categories: ['science'],
-    effects: [
-      { trigger: 'on_reveal', action: { type: 'draw', amount: 1 } },
-      { trigger: 'on_reveal', action: { type: 'add_card_to_hand', cards: ['p_token'] } },
-    ],
+    effects: [{ trigger: 'on_ko', action: { type: 'draw', amount: 1 } }],
   }),
-  card('p_hider', {
-    cost: 2,
-    power: 4,
-    categories: ['mysteres'],
-    effects: [
-      { trigger: 'on_reveal', action: { type: 'hide', target: 'self' } },
-      { trigger: 'on_reveal', action: { type: 'discard', amount: 1, side: 'enemy' } },
-    ],
-  }),
-  card('p_gambler', {
+  card('p_attack', {
     cost: 3,
+    power: 4,
+    effects: [{ trigger: 'on_attack', action: { type: 'discard', amount: 1, side: 'enemy' } }],
+  }),
+  card('p_trigger', {
+    cost: 2,
     power: 3,
-    categories: ['mysteres'],
+    counter: 1,
+    effects: [{ trigger: 'on_trigger', action: { type: 'add_card_to_hand', cards: ['p_token'] } }],
+  }),
+  card('p_buzz', { cost: 2, power: 2, effects: [{ trigger: 'on_play', action: { type: 'add_buzz', amount: 1 } }] }),
+  card('p_end', { cost: 1, power: 3, counter: 1, effects: [{ trigger: 'end_of_turn', action: { type: 'add_power', target: 'self', amount: -1, duration: 'permanent' } }] }),
+  event('e_ko', {
+    cost: 3,
+    effects: [
+      { trigger: 'main', action: { type: 'ko', target: 'strongest_enemy', filter: { maxCost: 3 } } },
+      { trigger: 'on_trigger', action: { type: 'rest', target: 'strongest_enemy' } },
+    ],
+  }),
+  event('e_counter', { cost: 1, effects: [{ trigger: 'counter', action: { type: 'add_power', target: 'battle_target', amount: 3, duration: 'battle' } }] }),
+  event('e_random', {
+    cost: 1,
     effects: [
       {
-        trigger: 'on_reveal',
+        trigger: 'main',
         action: {
           type: 'random_of',
           options: [
-            { type: 'add_power', target: 'self', amount: 4 },
-            { type: 'set_power', target: 'random_enemy_here', amount: 1 },
-            { type: 'cancel_effects', target: 'enemies_here' },
+            { type: 'draw', amount: 1 },
+            { type: 'refresh', target: 'strongest_ally' },
+            { type: 'cancel_effects', target: 'strongest_enemy' },
+            { type: 'steal', target: 'weakest_enemy', filter: { maxCost: 1 } },
           ],
         },
       },
     ],
   }),
-  card('p_grower', {
-    cost: 1,
-    power: 1,
-    categories: ['exploration'],
-    effects: [{ trigger: 'end_of_turn', action: { type: 'add_power', target: 'hand', amount: 1 } }],
-  }),
-  card('p_musician', {
-    cost: 2,
-    power: 2,
-    categories: ['musique'],
-    effects: [
-      {
-        trigger: 'on_reveal',
-        condition: { type: 'terrain_has_category', category: 'musique', min: 2 },
-        action: { type: 'add_power', target: 'self', amount: 3 },
-      },
-    ],
-  }),
-  card('p_token', { cost: 1, power: 1, categories: ['internet'] }),
+  card('p_token', { cost: 1, power: 2, counter: 1 }),
 ];

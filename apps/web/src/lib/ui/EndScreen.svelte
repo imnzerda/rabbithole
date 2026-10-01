@@ -1,25 +1,19 @@
 <script lang="ts">
-  import type { MatchContext, MatchResult, PlayerIndex } from '@rabbithole/engine';
-  import { loc, t } from '../i18n';
+  import type { MatchResult, PlayerIndex } from '@rabbithole/engine';
+  import { t } from '../i18n';
 
   interface Props {
-    ctx: MatchContext;
     result: MatchResult;
     you: PlayerIndex;
-    terrainIds: (string | null)[];
     onreplay: () => void;
     onmenu: () => void;
   }
-  let { ctx, result, you, terrainIds, onreplay, onmenu }: Props = $props();
+  let { result, you, onreplay, onmenu }: Props = $props();
 
   const opp = $derived(you === 0 ? 1 : 0);
   const outcome = $derived(result.winner === null ? 'draw' : result.winner === you ? 'victory' : 'defeat');
   const reason = $derived(
-    result.reason === 'fold'
-      ? result.winner === you
-        ? t('reason_fold_them')
-        : t('reason_fold_you')
-      : t(`reason_${result.reason}`),
+    result.reason === 'fold' ? (result.winner === you ? t('reason_fold_them') : t('reason_fold_you')) : t(`reason_${result.reason}`),
   );
   const points = $derived(outcome === 'draw' ? '±0' : `${outcome === 'victory' ? '+' : '−'}${result.stake}`);
 </script>
@@ -29,18 +23,9 @@
     <p class="kicker">{reason}</p>
     <h2>{t(outcome)}</h2>
     <p class="points">{points} <span>{t('rank_points')}</span></p>
-
-    <ul class="lanes">
-      {#each result.terrainPowers as powers, i (i)}
-        {@const mine = powers[you]}
-        {@const theirs = powers[opp]}
-        <li class:won={result.controllers[i] === you} class:lost={result.controllers[i] === opp}>
-          <span class="name">{loc(ctx.terrains[terrainIds[i] ?? '']?.name)}</span>
-          <span class="score">{mine} – {theirs}</span>
-        </li>
-      {/each}
-    </ul>
-
+    <p class="stats">
+      {t('lives_left', { me: result.life[you], them: result.life[opp] })} · {t('turns_played', { n: result.turns })}
+    </p>
     <div class="actions">
       <button class="btn" onclick={onmenu}>{t('menu')}</button>
       <button class="btn btn-primary" onclick={onreplay} data-testid="replay">{t('play_again')}</button>
@@ -79,29 +64,9 @@
     color: var(--muted);
     font-weight: 500;
   }
-  .lanes {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0 0;
-    display: grid;
-    gap: 8px;
-  }
-  .lanes li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-  }
-  .lanes li.won {
-    border-color: var(--win);
-  }
-  .lanes li.lost {
-    border-color: var(--lose);
-  }
-  .score {
-    font-weight: 700;
+  .stats {
+    color: var(--muted);
+    margin: 12px 0 0;
   }
   .actions {
     display: flex;

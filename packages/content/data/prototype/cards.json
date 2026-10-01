@@ -1,382 +1,1808 @@
 [
   {
-    "id": "proto_fetard",
-    "name": { "fr": "Le Fêtard", "en": "The Party Animal" },
-    "categories": ["nuits_exces"],
-    "cost": 1, "power": 5, "rarity": "tendance", "series": "prototype",
+    "id": "proto_l_influenceuse",
+    "type": "leader",
+    "name": {
+      "fr": "L'Influenceuse",
+      "en": "The Influencer"
+    },
+    "categories": [
+      "internet",
+      "musique"
+    ],
+    "cost": 0,
+    "power": 5,
+    "life": 4,
+    "rarity": "iconique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "end_of_turn", "action": { "type": "add_power", "target": "self", "amount": -1 } }],
-    "flavor": { "fr": "Arrivé le premier, reparti le dernier, debout jamais.", "en": "First in, last out, never standing." }
+    "effects": [
+      {
+        "trigger": "continuous",
+        "condition": {
+          "type": "my_turn"
+        },
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn",
+          "filter": {
+            "categories": [
+              "internet"
+            ]
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Deux millions d’abonnés, et autant d’avis.",
+      "en": "Two million followers, and as many opinions."
+    }
+  },
+  {
+    "id": "proto_l_president",
+    "type": "leader",
+    "name": {
+      "fr": "Le Président",
+      "en": "The President"
+    },
+    "categories": [
+      "guerre_pouvoir",
+      "sport"
+    ],
+    "cost": 0,
+    "power": 5,
+    "life": 5,
+    "rarity": "iconique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "activate_main",
+        "action": {
+          "type": "add_power",
+          "target": "strongest_ally",
+          "amount": 2,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il ne gouverne pas. Il préside.",
+      "en": "He doesn't govern. He presides."
+    }
+  },
+  {
+    "id": "proto_l_baronne",
+    "type": "leader",
+    "name": {
+      "fr": "La Baronne du Crime",
+      "en": "The Crime Baroness"
+    },
+    "categories": [
+      "crimes_scandales",
+      "mysteres"
+    ],
+    "cost": 0,
+    "power": 5,
+    "life": 4,
+    "rarity": "iconique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "on_attack",
+        "action": {
+          "type": "add_power",
+          "target": "strongest_enemy",
+          "amount": -1,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Personne ne l’a jamais vue. Tout le monde lui doit quelque chose.",
+      "en": "Nobody has ever seen her. Everybody owes her something."
+    }
+  },
+  {
+    "id": "proto_l_professeur",
+    "type": "leader",
+    "name": {
+      "fr": "Le Professeur",
+      "en": "The Professor"
+    },
+    "categories": [
+      "science",
+      "exploration"
+    ],
+    "cost": 0,
+    "power": 5,
+    "life": 5,
+    "rarity": "iconique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "activate_main",
+        "action": {
+          "type": "add_power",
+          "target": "weakest_ally",
+          "amount": 1,
+          "duration": "permanent"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il a une théorie. Et un tableau blanc.",
+      "en": "He has a theory. And a whiteboard."
+    }
+  },
+  {
+    "id": "proto_l_star",
+    "type": "leader",
+    "name": {
+      "fr": "La Star de Cinéma",
+      "en": "The Movie Star"
+    },
+    "categories": [
+      "series_cinema",
+      "nuits_exces"
+    ],
+    "cost": 0,
+    "power": 5,
+    "life": 5,
+    "rarity": "iconique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "continuous",
+        "condition": {
+          "type": "opponent_turn"
+        },
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Toujours en tête d’affiche, même en défense.",
+      "en": "Always top billing, even on defense."
+    }
+  },
+  {
+    "id": "proto_fetard",
+    "type": "character",
+    "name": {
+      "fr": "Le Fêtard",
+      "en": "The Party Animal"
+    },
+    "categories": [
+      "nuits_exces"
+    ],
+    "cost": 1,
+    "power": 4,
+    "counter": 0,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "end_of_turn",
+        "action": {
+          "type": "add_power",
+          "target": "self",
+          "amount": -1,
+          "duration": "permanent"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Arrivé le premier, reparti le dernier, debout jamais.",
+      "en": "First in, last out, never standing."
+    }
   },
   {
     "id": "proto_gala",
-    "name": { "fr": "Le Gala", "en": "The Gala" },
-    "categories": ["nuits_exces"],
-    "cost": 2, "power": 3, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Gala",
+      "en": "The Gala"
+    },
+    "categories": [
+      "nuits_exces"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_power", "target": "allies_here", "amount": 1 } }],
-    "flavor": { "fr": "Tenue correcte exigée, comportement non.", "en": "Dress code enforced. Behaviour code, not so much." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Tenue correcte exigée, comportement non.",
+      "en": "Dress code enforced. Behaviour code, not so much."
+    }
   },
   {
     "id": "proto_reine_nuit",
-    "name": { "fr": "La Reine de la Nuit", "en": "The Queen of the Night" },
-    "categories": ["nuits_exces"],
-    "cost": 3, "power": 3, "rarity": "viral", "series": "prototype",
-    "keywords": ["seduction"], "effects": [],
-    "flavor": { "fr": "Elle ne drague pas. Elle recrute.", "en": "She doesn't flirt. She recruits." }
+    "type": "character",
+    "name": {
+      "fr": "La Reine de la Nuit",
+      "en": "The Queen of the Night"
+    },
+    "categories": [
+      "nuits_exces"
+    ],
+    "cost": 4,
+    "power": 4,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "seduction"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Elle ne drague pas. Elle recrute.",
+      "en": "She doesn't flirt. She recruits."
+    }
   },
   {
     "id": "proto_club",
-    "name": { "fr": "Le Club Mythique", "en": "The Legendary Club" },
-    "categories": ["nuits_exces"],
-    "cost": 4, "power": 7, "rarity": "tendance", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Club Mythique",
+      "en": "The Legendary Club"
+    },
+    "categories": [
+      "nuits_exces"
+    ],
+    "cost": 5,
+    "power": 7,
+    "counter": 0,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
     "effects": [
-      { "trigger": "on_reveal", "action": { "type": "add_power", "target": "allies_here", "amount": 2 } },
-      { "trigger": "end_of_turn", "action": { "type": "add_power", "target": "self", "amount": -1 } }
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn"
+        }
+      },
+      {
+        "trigger": "end_of_turn",
+        "action": {
+          "type": "add_power",
+          "target": "self",
+          "amount": -1,
+          "duration": "permanent"
+        }
+      }
     ],
-    "flavor": { "fr": "Personne ne se souvient de la soirée. Tout le monde en parle.", "en": "Nobody remembers the night. Everybody talks about it." }
+    "flavor": {
+      "fr": "Personne ne se souvient de la soirée. Tout le monde en parle.",
+      "en": "Nobody remembers the night. Everybody talks about it."
+    }
+  },
+  {
+    "id": "proto_afterparty",
+    "type": "event",
+    "name": {
+      "fr": "L'Afterparty",
+      "en": "The Afterparty"
+    },
+    "categories": [
+      "nuits_exces"
+    ],
+    "cost": 1,
+    "power": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "counter",
+        "action": {
+          "type": "add_power",
+          "target": "battle_target",
+          "amount": 3,
+          "duration": "battle"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il est 6 h, et personne ne veut rentrer.",
+      "en": "It's 6 a.m. and nobody wants to go home."
+    }
   },
   {
     "id": "proto_pickpocket",
-    "name": { "fr": "Le Pickpocket", "en": "The Pickpocket" },
-    "categories": ["crimes_scandales"],
-    "cost": 1, "power": 1, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Pickpocket",
+      "en": "The Pickpocket"
+    },
+    "categories": [
+      "crimes_scandales"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "discard", "amount": 1, "side": "enemy", "pick": "random" } }],
-    "flavor": { "fr": "Tu cherches quelque chose ?", "en": "Looking for something?" }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "discard",
+          "amount": 1,
+          "side": "enemy",
+          "pick": "random"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Tu cherches quelque chose ?",
+      "en": "Looking for something?"
+    }
   },
   {
     "id": "proto_scandale",
-    "name": { "fr": "Le Scandale d'État", "en": "The State Scandal" },
-    "categories": ["crimes_scandales"],
-    "cost": 2, "power": 3, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Scandale d'État",
+      "en": "The State Scandal"
+    },
+    "categories": [
+      "crimes_scandales"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "end_of_game", "action": { "type": "add_power", "target": "enemies_here", "amount": -1 } }],
-    "flavor": { "fr": "Démenti officiel prévu pour mardi.", "en": "Official denial scheduled for Tuesday." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_power",
+          "target": "strongest_enemy",
+          "amount": -2,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Démenti officiel prévu pour mardi.",
+      "en": "Official denial scheduled for Tuesday."
+    }
   },
   {
     "id": "proto_cambrioleur",
-    "name": { "fr": "Le Cambrioleur", "en": "The Burglar" },
-    "categories": ["crimes_scandales"],
-    "cost": 4, "power": 3, "rarity": "tendance", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Cambrioleur",
+      "en": "The Burglar"
+    },
+    "categories": [
+      "crimes_scandales"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "end_of_game", "action": { "type": "steal", "target": "opposite_card" } }],
-    "flavor": { "fr": "Il attend toujours la fin de la soirée.", "en": "He always waits until the party's over." }
+    "effects": [
+      {
+        "trigger": "on_attack",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il attend toujours la fin de la soirée.",
+      "en": "He always waits until the party's over."
+    }
   },
   {
     "id": "proto_parrain",
-    "name": { "fr": "Le Parrain", "en": "The Godfather" },
-    "categories": ["crimes_scandales"],
-    "cost": 6, "power": 5, "rarity": "iconique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Parrain",
+      "en": "The Godfather"
+    },
+    "categories": [
+      "crimes_scandales"
+    ],
+    "cost": 7,
+    "power": 8,
+    "counter": 0,
+    "rarity": "iconique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "destroy", "target": "strongest_enemy_here" } }],
-    "flavor": { "fr": "Une offre que ton deck ne peut pas refuser.", "en": "An offer your deck can't refuse." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "ko",
+          "target": "strongest_enemy",
+          "filter": {
+            "maxCost": 5
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Une offre que ton deck ne peut pas refuser.",
+      "en": "An offer your deck can't refuse."
+    }
+  },
+  {
+    "id": "proto_contrat",
+    "type": "event",
+    "name": {
+      "fr": "Le Contrat",
+      "en": "The Hit"
+    },
+    "categories": [
+      "crimes_scandales"
+    ],
+    "cost": 4,
+    "power": 0,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "main",
+        "action": {
+          "type": "ko",
+          "target": "strongest_enemy",
+          "filter": {
+            "maxCost": 3
+          }
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "ko",
+          "target": "strongest_enemy",
+          "filter": {
+            "maxCost": 3
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Rien de personnel.",
+      "en": "Nothing personal."
+    }
   },
   {
     "id": "proto_complotiste",
-    "name": { "fr": "Le Complotiste", "en": "The Conspiracy Theorist" },
-    "categories": ["mysteres"],
-    "cost": 1, "power": 1, "rarity": "basique", "series": "prototype",
-    "keywords": ["shitpost"], "effects": [],
-    "flavor": { "fr": "Il a fait ses propres recherches.", "en": "He did his own research." }
+    "type": "character",
+    "name": {
+      "fr": "Le Complotiste",
+      "en": "The Conspiracy Theorist"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 1,
+    "power": 1,
+    "counter": 2,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "shitpost"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il a fait ses propres recherches.",
+      "en": "He did his own research."
+    }
   },
   {
     "id": "proto_zone51",
-    "name": { "fr": "La Zone 51", "en": "Area 51" },
-    "categories": ["mysteres"],
-    "cost": 2, "power": 2, "rarity": "tendance", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "La Zone 51",
+      "en": "Area 51"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{
-      "trigger": "on_reveal",
-      "action": { "type": "random_of", "options": [
-        { "type": "add_power", "target": "self", "amount": 4 },
-        { "type": "move", "target": "random_enemy_here", "to": "random_other" },
-        { "type": "add_card_to_hand", "cards": ["proto_ovni"] }
-      ] }
-    }],
-    "flavor": { "fr": "Il ne s'y passe rien. Absolument rien.", "en": "Nothing happens there. Absolutely nothing." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "random_of",
+          "options": [
+            {
+              "type": "add_card_to_hand",
+              "cards": [
+                "proto_ovni"
+              ]
+            },
+            {
+              "type": "rest",
+              "target": "strongest_enemy"
+            },
+            {
+              "type": "add_power",
+              "target": "self",
+              "amount": 2,
+              "duration": "permanent"
+            }
+          ]
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il ne s’y passe rien. Absolument rien.",
+      "en": "Nothing happens there. Absolutely nothing."
+    }
   },
   {
     "id": "proto_yeti",
-    "name": { "fr": "Le Yéti", "en": "The Yeti" },
-    "categories": ["mysteres"],
-    "cost": 5, "power": 6, "rarity": "tendance", "series": "prototype",
-    "keywords": [],
-    "effects": [{
-      "trigger": "on_reveal",
-      "action": { "type": "random_of", "options": [
-        { "type": "add_power", "target": "self", "amount": 4 },
-        { "type": "add_power", "target": "random_enemy_here", "amount": -4 }
-      ] }
-    }],
-    "flavor": { "fr": "Photographié 300 fois. Toujours flou.", "en": "Photographed 300 times. Always blurry." }
+    "type": "character",
+    "name": {
+      "fr": "Le Yéti",
+      "en": "The Yeti"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 4,
+    "power": 5,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [
+      "bloqueur"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Photographié 300 fois. Toujours flou.",
+      "en": "Photographed 300 times. Always blurry."
+    }
   },
   {
     "id": "proto_bermudes",
-    "name": { "fr": "Le Triangle des Bermudes", "en": "The Bermuda Triangle" },
-    "categories": ["mysteres"],
-    "cost": 5, "power": 4, "rarity": "viral", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Triangle des Bermudes",
+      "en": "The Bermuda Triangle"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 6,
+    "power": 7,
+    "counter": 0,
+    "rarity": "viral",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "destroy", "target": "random_enemy_here" } }],
-    "flavor": { "fr": "Entrée libre. Sortie non garantie.", "en": "Free entry. Exit not guaranteed." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "bounce",
+          "target": "random_enemy"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Entrée libre. Sortie non garantie.",
+      "en": "Free entry. Exit not guaranteed."
+    }
+  },
+  {
+    "id": "proto_theorie",
+    "type": "event",
+    "name": {
+      "fr": "La Théorie du complot",
+      "en": "The Conspiracy Theory"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 2,
+    "power": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "counter",
+        "action": {
+          "type": "random_of",
+          "options": [
+            {
+              "type": "add_power",
+              "target": "battle_target",
+              "amount": 2,
+              "duration": "battle"
+            },
+            {
+              "type": "add_power",
+              "target": "battle_target",
+              "amount": 4,
+              "duration": "battle"
+            }
+          ]
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "add_card_to_hand",
+          "cards": [
+            "proto_ovni"
+          ]
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Ouvre les yeux.",
+      "en": "Open your eyes."
+    }
   },
   {
     "id": "proto_chevalier",
-    "name": { "fr": "Le Chevalier", "en": "The Knight" },
-    "categories": ["guerre_pouvoir"],
-    "cost": 2, "power": 4, "rarity": "basique", "series": "prototype",
-    "keywords": [], "effects": [],
-    "flavor": { "fr": "Pas d'effet. Juste une armure et des convictions.", "en": "No effect. Just armour and convictions." }
+    "type": "character",
+    "name": {
+      "fr": "Le Chevalier",
+      "en": "The Knight"
+    },
+    "categories": [
+      "guerre_pouvoir"
+    ],
+    "cost": 2,
+    "power": 5,
+    "counter": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [],
+    "flavor": {
+      "fr": "Pas d’effet. Juste une armure et des convictions.",
+      "en": "No effect. Just armour and convictions."
+    }
+  },
+  {
+    "id": "proto_garde",
+    "type": "character",
+    "name": {
+      "fr": "Le Garde Royal",
+      "en": "The Royal Guard"
+    },
+    "categories": [
+      "guerre_pouvoir"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "bloqueur"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il ne bouge pas. Sauf pour toi.",
+      "en": "He doesn't move. Except for you."
+    }
   },
   {
     "id": "proto_general",
-    "name": { "fr": "Le Général", "en": "The General" },
-    "categories": ["guerre_pouvoir"],
-    "cost": 4, "power": 6, "rarity": "tendance", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Général",
+      "en": "The General"
+    },
+    "categories": [
+      "guerre_pouvoir"
+    ],
+    "cost": 5,
+    "power": 6,
+    "counter": 0,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "continuous", "action": { "type": "add_power", "target": "allies_here", "amount": 1 } }],
-    "flavor": { "fr": "Il motive les troupes. Surtout en criant.", "en": "He motivates the troops. Mostly by yelling." }
-  },
-  {
-    "id": "proto_reine_guerriere",
-    "name": { "fr": "La Reine Guerrière", "en": "The Warrior Queen" },
-    "categories": ["guerre_pouvoir"],
-    "cost": 5, "power": 8, "rarity": "tendance", "series": "prototype",
-    "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_power", "target": "allies_here", "amount": 1 } }],
-    "flavor": { "fr": "Elle n'a pas hérité du trône. Elle l'a pris.", "en": "She didn't inherit the throne. She took it." }
+    "effects": [
+      {
+        "trigger": "continuous",
+        "condition": {
+          "type": "my_turn"
+        },
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il motive les troupes. Surtout en criant.",
+      "en": "He motivates the troops. Mostly by yelling."
+    }
   },
   {
     "id": "proto_empereur",
-    "name": { "fr": "L'Empereur", "en": "The Emperor" },
-    "categories": ["guerre_pouvoir"],
-    "cost": 6, "power": 10, "rarity": "goat", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "L'Empereur",
+      "en": "The Emperor"
+    },
+    "categories": [
+      "guerre_pouvoir"
+    ],
+    "cost": 8,
+    "power": 9,
+    "counter": 0,
+    "rarity": "goat",
+    "series": "prototype",
+    "keywords": [
+      "viral"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Petit, mais a quand même ratio tout le continent.",
+      "en": "Short, but still ratioed the whole continent."
+    }
+  },
+  {
+    "id": "proto_mobilisation",
+    "type": "event",
+    "name": {
+      "fr": "La Mobilisation générale",
+      "en": "General Mobilization"
+    },
+    "categories": [
+      "guerre_pouvoir"
+    ],
+    "cost": 3,
+    "power": 0,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "continuous", "action": { "type": "add_power", "target": "allies_here", "amount": 1 } }],
-    "flavor": { "fr": "Petit, mais a quand même ratio tout le continent.", "en": "Short, but still ratioed the whole continent." }
+    "effects": [
+      {
+        "trigger": "main",
+        "action": {
+          "type": "add_power",
+          "target": "all_mine",
+          "amount": 2,
+          "duration": "turn"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Tout le monde sur le pont.",
+      "en": "All hands on deck."
+    }
   },
   {
     "id": "proto_sprinteur",
-    "name": { "fr": "Le Sprinteur", "en": "The Sprinter" },
-    "categories": ["sport"],
-    "cost": 1, "power": 2, "rarity": "basique", "series": "prototype",
-    "keywords": ["elan"], "effects": [],
-    "flavor": { "fr": "Neuf secondes de gloire, quatre ans d'entraînement.", "en": "Nine seconds of glory, four years of training." }
+    "type": "character",
+    "name": {
+      "fr": "Le Sprinteur",
+      "en": "The Sprinter"
+    },
+    "categories": [
+      "sport"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "elan"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Neuf secondes de gloire, quatre ans d’entraînement.",
+      "en": "Nine seconds of glory, four years of training."
+    }
   },
   {
     "id": "proto_ultra",
-    "name": { "fr": "L'Ultra", "en": "The Ultra" },
-    "categories": ["sport"],
-    "cost": 2, "power": 2, "rarity": "basique", "series": "prototype",
-    "keywords": ["elan"],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_power", "target": "allies_here", "filter": { "categories": ["sport"] }, "amount": 1 } }],
-    "flavor": { "fr": "Il a perdu sa voix en 2014. Il ne l'a jamais retrouvée.", "en": "Lost his voice in 2014. Never got it back." }
+    "type": "character",
+    "name": {
+      "fr": "L'Ultra",
+      "en": "The Ultra"
+    },
+    "categories": [
+      "sport"
+    ],
+    "cost": 2,
+    "power": 2,
+    "counter": 2,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn",
+          "filter": {
+            "categories": [
+              "sport"
+            ]
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il a perdu sa voix en 2014. Il ne l’a jamais retrouvée.",
+      "en": "Lost his voice in 2014. Never got it back."
+    }
   },
   {
     "id": "proto_buteur",
-    "name": { "fr": "Le Buteur", "en": "The Striker" },
-    "categories": ["sport"],
-    "cost": 2, "power": 3, "rarity": "basique", "series": "prototype",
-    "keywords": ["elan"], "effects": [],
-    "flavor": { "fr": "Deux buts, trois célébrations.", "en": "Two goals, three celebrations." }
+    "type": "character",
+    "name": {
+      "fr": "Le Buteur",
+      "en": "The Striker"
+    },
+    "categories": [
+      "sport"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [
+      "elan"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Deux buts, trois célébrations.",
+      "en": "Two goals, three celebrations."
+    }
   },
   {
     "id": "proto_championne",
-    "name": { "fr": "La Championne", "en": "The Champion" },
-    "categories": ["sport"],
-    "cost": 3, "power": 4, "rarity": "tendance", "series": "prototype",
-    "keywords": ["elan"], "effects": [],
-    "flavor": { "fr": "Médaille d'or, et en plus elle est sympa.", "en": "Gold medal, and she's nice too." }
+    "type": "character",
+    "name": {
+      "fr": "La Championne",
+      "en": "The Champion"
+    },
+    "categories": [
+      "sport"
+    ],
+    "cost": 5,
+    "power": 6,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "elan"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Médaille d’or, et en plus elle est sympa.",
+      "en": "Gold medal, and she's nice too."
+    }
+  },
+  {
+    "id": "proto_remontada",
+    "type": "event",
+    "name": {
+      "fr": "La Remontada",
+      "en": "The Comeback"
+    },
+    "categories": [
+      "sport"
+    ],
+    "cost": 1,
+    "power": 0,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "counter",
+        "action": {
+          "type": "add_power",
+          "target": "battle_target",
+          "amount": 2,
+          "duration": "battle"
+        }
+      },
+      {
+        "trigger": "counter",
+        "condition": {
+          "type": "count",
+          "zone": "life",
+          "max": 2
+        },
+        "action": {
+          "type": "add_power",
+          "target": "battle_target",
+          "amount": 2,
+          "duration": "battle"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "refresh",
+          "target": "my_leader"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Rien n’est jamais fini.",
+      "en": "It's never over."
+    }
   },
   {
     "id": "proto_dj",
-    "name": { "fr": "Le DJ", "en": "The DJ" },
-    "categories": ["musique"],
-    "cost": 1, "power": 1, "rarity": "tendance", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le DJ",
+      "en": "The DJ"
+    },
+    "categories": [
+      "musique"
+    ],
+    "cost": 1,
+    "power": 1,
+    "counter": 2,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "continuous", "action": { "type": "add_power", "target": "allies_here", "filter": { "categories": ["musique"] }, "amount": 2 } }],
-    "flavor": { "fr": "Il appuie sur play avec beaucoup d'émotion.", "en": "He presses play with real emotion." }
+    "effects": [
+      {
+        "trigger": "continuous",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn",
+          "filter": {
+            "categories": [
+              "musique"
+            ]
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il appuie sur play avec beaucoup d’émotion.",
+      "en": "He presses play with real emotion."
+    }
   },
   {
     "id": "proto_rappeur",
-    "name": { "fr": "Le Rappeur", "en": "The Rapper" },
-    "categories": ["musique"],
-    "cost": 2, "power": 3, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Rappeur",
+      "en": "The Rapper"
+    },
+    "categories": [
+      "musique"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{
-      "trigger": "on_reveal",
-      "condition": { "type": "terrain_has_category", "category": "musique", "min": 1, "side": "allies" },
-      "action": { "type": "add_power", "target": "self", "amount": 2 }
-    }],
-    "flavor": { "fr": "Feat. tout le monde.", "en": "Feat. everybody." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "condition": {
+          "type": "count",
+          "zone": "allies",
+          "filter": {
+            "categories": [
+              "musique"
+            ]
+          },
+          "min": 1
+        },
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Feat. tout le monde.",
+      "en": "Feat. everybody."
+    }
   },
   {
     "id": "proto_diva",
-    "name": { "fr": "La Diva", "en": "The Diva" },
-    "categories": ["musique"],
-    "cost": 3, "power": 3, "rarity": "viral", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "La Diva",
+      "en": "The Diva"
+    },
+    "categories": [
+      "musique"
+    ],
+    "cost": 4,
+    "power": 5,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "continuous", "action": { "type": "add_power", "target": "allies_here", "amount": 1 } }],
-    "flavor": { "fr": "Une note, et tout le stade pleure.", "en": "One note, and the whole stadium cries." }
+    "effects": [
+      {
+        "trigger": "on_attack",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "turn"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Une note, et tout le stade pleure.",
+      "en": "One note, and the whole stadium cries."
+    }
   },
   {
     "id": "proto_rock",
-    "name": { "fr": "Le Groupe de Rock", "en": "The Rock Band" },
-    "categories": ["musique"],
-    "cost": 5, "power": 6, "rarity": "viral", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Groupe de Rock",
+      "en": "The Rock Band"
+    },
+    "categories": [
+      "musique"
+    ],
+    "cost": 6,
+    "power": 6,
+    "counter": 0,
+    "rarity": "viral",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_power", "target": "self", "amount": { "type": "count", "zone": "allies_here" } } }],
-    "flavor": { "fr": "Tournée d'adieu, cinquième édition.", "en": "Farewell tour, fifth edition." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_power",
+          "target": "self",
+          "amount": {
+            "type": "count",
+            "zone": "allies"
+          },
+          "duration": "permanent"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Tournée d’adieu, cinquième édition.",
+      "en": "Farewell tour, fifth edition."
+    }
+  },
+  {
+    "id": "proto_rappel",
+    "type": "event",
+    "name": {
+      "fr": "Le Rappel",
+      "en": "The Encore"
+    },
+    "categories": [
+      "musique"
+    ],
+    "cost": 2,
+    "power": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "main",
+        "action": {
+          "type": "refresh",
+          "target": "strongest_ally",
+          "filter": {
+            "rested": true
+          }
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Une dernière ! Une dernière !",
+      "en": "One more! One more!"
+    }
   },
   {
     "id": "proto_figurant",
-    "name": { "fr": "Le Figurant", "en": "The Extra" },
-    "categories": ["series_cinema"],
-    "cost": 1, "power": 2, "rarity": "basique", "series": "prototype",
-    "keywords": [], "effects": [],
-    "flavor": { "fr": "Passant n°3. Il a donné tout ce qu'il avait.", "en": "Passer-by #3. He gave it everything." }
+    "type": "character",
+    "name": {
+      "fr": "Le Figurant",
+      "en": "The Extra"
+    },
+    "categories": [
+      "series_cinema"
+    ],
+    "cost": 1,
+    "power": 1,
+    "counter": 2,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [],
+    "flavor": {
+      "fr": "Passant n°3. Il a donné tout ce qu’il avait.",
+      "en": "Passer-by #3. He gave it everything."
+    }
   },
   {
-    "id": "proto_sosie",
-    "name": { "fr": "Le Sosie", "en": "The Lookalike" },
-    "categories": ["series_cinema"],
-    "cost": 3, "power": 2, "rarity": "tendance", "series": "prototype",
-    "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "copy", "target": "opposite_card", "to": "here" } }],
-    "flavor": { "fr": "Payé moins cher, rend le même service.", "en": "Paid less, does the same job." }
+    "id": "proto_cascadeur",
+    "type": "character",
+    "name": {
+      "fr": "Le Cascadeur",
+      "en": "The Stuntman"
+    },
+    "categories": [
+      "series_cinema"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "bloqueur"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il prend les coups à la place des stars.",
+      "en": "He takes the hits so the stars don’t have to."
+    }
   },
   {
     "id": "proto_suite",
-    "name": { "fr": "La Suite", "en": "The Sequel" },
-    "categories": ["series_cinema"],
-    "cost": 3, "power": 4, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "La Suite",
+      "en": "The Sequel"
+    },
+    "categories": [
+      "series_cinema"
+    ],
+    "cost": 4,
+    "power": 5,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "copy", "target": "self", "to": "hand", "powerDelta": -1 } }],
-    "flavor": { "fr": "Moins bien que le premier. Comme d'habitude.", "en": "Not as good as the first one. As usual." }
+    "effects": [
+      {
+        "trigger": "on_ko",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Moins bien que le premier. Comme d’habitude.",
+      "en": "Not as good as the first one. As usual."
+    }
   },
   {
     "id": "proto_mechant",
-    "name": { "fr": "Le Méchant de Film", "en": "The Movie Villain" },
-    "categories": ["series_cinema"],
-    "cost": 4, "power": 4, "rarity": "viral", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Méchant de Film",
+      "en": "The Movie Villain"
+    },
+    "categories": [
+      "series_cinema"
+    ],
+    "cost": 5,
+    "power": 6,
+    "counter": 0,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "rickroll"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il explique toujours son plan avant de l’exécuter.",
+      "en": "Always explains the plan before executing it."
+    }
+  },
+  {
+    "id": "proto_coup_theatre",
+    "type": "event",
+    "name": {
+      "fr": "Le Coup de théâtre",
+      "en": "The Plot Twist"
+    },
+    "categories": [
+      "series_cinema"
+    ],
+    "cost": 3,
+    "power": 0,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "transform", "target": "strongest_enemy_here", "into": ["proto_figurant"] } }],
-    "flavor": { "fr": "Il explique toujours son plan avant de l'exécuter.", "en": "Always explains the plan before executing it." }
+    "effects": [
+      {
+        "trigger": "counter",
+        "action": {
+          "type": "add_power",
+          "target": "battle_target",
+          "amount": 4,
+          "duration": "battle"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "bounce",
+          "target": "weakest_enemy",
+          "filter": {
+            "maxCost": 2
+          }
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Personne ne l’avait vu venir.",
+      "en": "Nobody saw that coming."
+    }
   },
   {
     "id": "proto_miniature",
-    "name": { "fr": "La Miniature Clickbait", "en": "The Clickbait Thumbnail" },
-    "categories": ["internet"],
-    "cost": 1, "power": 1, "rarity": "basique", "series": "prototype",
-    "keywords": ["clickbait"], "effects": [],
-    "flavor": { "fr": "VOUS N'ALLEZ PAS CROIRE CE QUI SE PASSE AU TOUR 2 😱", "en": "YOU WON'T BELIEVE WHAT HAPPENS ON TURN 2 😱" }
+    "type": "character",
+    "name": {
+      "fr": "La Miniature Clickbait",
+      "en": "The Clickbait Thumbnail"
+    },
+    "categories": [
+      "internet"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "clickbait"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "VOUS N’ALLEZ PAS CROIRE CE QUI SE PASSE AU TOUR 3 😱",
+      "en": "YOU WON'T BELIEVE WHAT HAPPENS ON TURN 3 😱"
+    }
   },
   {
     "id": "proto_streamer",
-    "name": { "fr": "Le Streamer", "en": "The Streamer" },
-    "categories": ["internet"],
-    "cost": 2, "power": 3, "rarity": "viral", "series": "prototype",
-    "keywords": ["viral"], "effects": [],
-    "flavor": { "fr": "En live depuis 14 heures. N'oublie pas de follow.", "en": "Live for 14 hours. Don't forget to follow." }
+    "type": "character",
+    "name": {
+      "fr": "Le Streamer",
+      "en": "The Streamer"
+    },
+    "categories": [
+      "internet"
+    ],
+    "cost": 3,
+    "power": 3,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "viral"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "En live depuis 14 heures. N’oublie pas de follow.",
+      "en": "Live for 14 hours. Don't forget to follow."
+    }
   },
   {
     "id": "proto_troll",
-    "name": { "fr": "Le Troll", "en": "The Troll" },
-    "categories": ["internet"],
-    "cost": 3, "power": 4, "rarity": "viral", "series": "prototype",
-    "keywords": ["ratio"], "effects": [],
-    "flavor": { "fr": "Il n'a pas d'avis. Il a des réponses.", "en": "He has no opinions. Only replies." }
-  },
-  {
-    "id": "proto_lien_piege",
-    "name": { "fr": "Le Lien Piégé", "en": "The Trap Link" },
-    "categories": ["internet"],
-    "cost": 3, "power": 3, "rarity": "tendance", "series": "prototype",
-    "keywords": ["rickroll"], "effects": [],
-    "flavor": { "fr": "Never gonna give you up.", "en": "Never gonna give you up." }
+    "type": "character",
+    "name": {
+      "fr": "Le Troll",
+      "en": "The Troll"
+    },
+    "categories": [
+      "internet"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "ratio"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il n’a pas d’avis. Il a des réponses.",
+      "en": "He has no opinions. Only replies."
+    }
   },
   {
     "id": "proto_moderateur",
-    "name": { "fr": "Le Modérateur", "en": "The Moderator" },
-    "categories": ["internet"],
-    "cost": 4, "power": 5, "rarity": "tendance", "series": "prototype",
-    "keywords": ["cancel"], "effects": [],
-    "flavor": { "fr": "Bénévole. Inflexible. Jamais remercié.", "en": "Unpaid. Unbending. Never thanked." }
+    "type": "character",
+    "name": {
+      "fr": "Le Modérateur",
+      "en": "The Moderator"
+    },
+    "categories": [
+      "internet"
+    ],
+    "cost": 4,
+    "power": 4,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [
+      "bloqueur",
+      "cancel"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Bénévole. Inflexible. Jamais remercié.",
+      "en": "Unpaid. Unbending. Never thanked."
+    }
+  },
+  {
+    "id": "proto_signalement",
+    "type": "event",
+    "name": {
+      "fr": "Le Signalement",
+      "en": "The Report"
+    },
+    "categories": [
+      "internet"
+    ],
+    "cost": 2,
+    "power": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "counter",
+        "action": {
+          "type": "add_power",
+          "target": "battle_target",
+          "amount": 2,
+          "duration": "battle"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "rest",
+          "target": "strongest_enemy"
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Ce contenu enfreint nos règles.",
+      "en": "This content violates our guidelines."
+    }
+  },
+  {
+    "id": "proto_cobaye",
+    "type": "character",
+    "name": {
+      "fr": "Le Cobaye",
+      "en": "The Test Subject"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 2,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "on_ko",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Volontaire, plus ou moins.",
+      "en": "Volunteer, more or less."
+    }
   },
   {
     "id": "proto_chercheuse",
-    "name": { "fr": "La Chercheuse", "en": "The Researcher" },
-    "categories": ["science"],
-    "cost": 2, "power": 2, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "La Chercheuse",
+      "en": "The Researcher"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "draw", "amount": 1 } }],
-    "flavor": { "fr": "Résultats prometteurs. Financement à renouveler.", "en": "Promising results. Funding pending renewal." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Résultats prometteurs. Financement à renouveler.",
+      "en": "Promising results. Funding pending renewal."
+    }
   },
   {
     "id": "proto_robot",
-    "name": { "fr": "Le Robot", "en": "The Robot" },
-    "categories": ["science"],
-    "cost": 3, "power": 3, "rarity": "basique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Robot",
+      "en": "The Robot"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_card_to_hand", "cards": ["proto_drone"] } }],
-    "flavor": { "fr": "Il a appris à se reproduire. Personne n'est inquiet.", "en": "It learned to self-replicate. Nobody is worried." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_card_to_hand",
+          "cards": [
+            "proto_drone"
+          ]
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il a appris à se reproduire. Personne n’est inquiet.",
+      "en": "It learned to self-replicate. Nobody is worried."
+    }
   },
   {
     "id": "proto_genie",
-    "name": { "fr": "Le Génie", "en": "The Genius" },
-    "categories": ["science"],
-    "cost": 5, "power": 6, "rarity": "iconique", "series": "prototype",
+    "type": "character",
+    "name": {
+      "fr": "Le Génie",
+      "en": "The Genius"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 6,
+    "power": 7,
+    "counter": 0,
+    "rarity": "iconique",
+    "series": "prototype",
     "keywords": [],
-    "effects": [{ "trigger": "on_reveal", "action": { "type": "add_power", "target": "hand", "amount": 1 } }],
-    "flavor": { "fr": "Il a une théorie sur tout. Elles sont toutes vraies.", "en": "He has a theory about everything. They're all true." }
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "draw",
+          "amount": 2
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il a une théorie sur tout. Elles sont toutes vraies.",
+      "en": "He has a theory about everything. They're all true."
+    }
+  },
+  {
+    "id": "proto_eureka",
+    "type": "event",
+    "name": {
+      "fr": "Eurêka",
+      "en": "Eureka"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 1,
+    "power": 0,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "main",
+        "action": {
+          "type": "draw",
+          "amount": 2
+        }
+      },
+      {
+        "trigger": "main",
+        "action": {
+          "type": "discard",
+          "amount": 1,
+          "pick": "highest_cost"
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Dans la baignoire, évidemment.",
+      "en": "In the bathtub, obviously."
+    }
   },
   {
     "id": "proto_navigateur",
-    "name": { "fr": "Le Navigateur", "en": "The Navigator" },
-    "categories": ["exploration"],
-    "cost": 1, "power": 1, "rarity": "basique", "series": "prototype",
-    "keywords": ["croissance"], "effects": [],
-    "flavor": { "fr": "Il savait où il allait. À peu près.", "en": "He knew where he was going. Roughly." }
+    "type": "character",
+    "name": {
+      "fr": "Le Navigateur",
+      "en": "The Navigator"
+    },
+    "categories": [
+      "exploration"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "croissance"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Il savait où il allait. À peu près.",
+      "en": "He knew where he was going. Roughly."
+    }
   },
   {
     "id": "proto_alpiniste",
-    "name": { "fr": "L'Alpiniste", "en": "The Climber" },
-    "categories": ["exploration"],
-    "cost": 2, "power": 2, "rarity": "basique", "series": "prototype",
-    "keywords": ["croissance"], "effects": [],
-    "flavor": { "fr": "Un pas après l'autre. Pendant six tours.", "en": "One step at a time. For six turns." }
+    "type": "character",
+    "name": {
+      "fr": "L'Alpiniste",
+      "en": "The Climber"
+    },
+    "categories": [
+      "exploration"
+    ],
+    "cost": 2,
+    "power": 3,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype",
+    "keywords": [
+      "croissance"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "Un pas après l’autre.",
+      "en": "One step at a time."
+    }
+  },
+  {
+    "id": "proto_explorateur",
+    "type": "character",
+    "name": {
+      "fr": "L'Explorateur",
+      "en": "The Explorer"
+    },
+    "categories": [
+      "exploration"
+    ],
+    "cost": 3,
+    "power": 4,
+    "counter": 1,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "on_play",
+        "action": {
+          "type": "add_buzz",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Il revient toujours avec quelque chose.",
+      "en": "He always comes back with something."
+    }
   },
   {
     "id": "proto_astronaute",
-    "name": { "fr": "L'Astronaute", "en": "The Astronaut" },
-    "categories": ["exploration"],
-    "cost": 4, "power": 4, "rarity": "tendance", "series": "prototype",
-    "keywords": ["croissance"], "effects": [],
-    "flavor": { "fr": "La Terre vue d'en haut : beaucoup moins de drama.", "en": "Earth from above: way less drama." }
+    "type": "character",
+    "name": {
+      "fr": "L'Astronaute",
+      "en": "The Astronaut"
+    },
+    "categories": [
+      "exploration"
+    ],
+    "cost": 4,
+    "power": 5,
+    "counter": 1,
+    "rarity": "viral",
+    "series": "prototype",
+    "keywords": [
+      "croissance"
+    ],
+    "effects": [],
+    "flavor": {
+      "fr": "La Terre vue d’en haut : beaucoup moins de drama.",
+      "en": "Earth from above: way less drama."
+    }
   },
   {
-    "id": "proto_icone_pop",
-    "name": { "fr": "L'Icône Pop", "en": "The Pop Icon" },
-    "categories": ["musique", "internet"],
-    "cost": 6, "power": 8, "rarity": "iconique", "series": "prototype",
-    "keywords": ["viral"], "effects": [],
-    "flavor": { "fr": "Un album surprise à minuit, et internet s'arrête.", "en": "A surprise album at midnight, and the internet stops." }
+    "id": "proto_expedition",
+    "type": "event",
+    "name": {
+      "fr": "L'Expédition",
+      "en": "The Expedition"
+    },
+    "categories": [
+      "exploration"
+    ],
+    "cost": 2,
+    "power": 0,
+    "rarity": "tendance",
+    "series": "prototype",
+    "keywords": [],
+    "effects": [
+      {
+        "trigger": "main",
+        "action": {
+          "type": "add_power",
+          "target": "allies",
+          "amount": 1,
+          "duration": "permanent",
+          "filter": {
+            "keywords": [
+              "croissance"
+            ]
+          }
+        }
+      },
+      {
+        "trigger": "on_trigger",
+        "action": {
+          "type": "add_buzz",
+          "amount": 1
+        }
+      }
+    ],
+    "flavor": {
+      "fr": "Destination : inconnue. Retour : incertain.",
+      "en": "Destination: unknown. Return: uncertain."
+    }
   },
   {
     "id": "proto_ovni",
-    "name": { "fr": "L'OVNI", "en": "The UFO" },
-    "categories": ["mysteres"],
-    "cost": 1, "power": 3, "rarity": "basique", "series": "prototype_tokens",
-    "keywords": [], "effects": [],
-    "flavor": { "fr": "Non identifié, mais très motivé.", "en": "Unidentified, but highly motivated." }
+    "type": "character",
+    "name": {
+      "fr": "L'OVNI",
+      "en": "The UFO"
+    },
+    "categories": [
+      "mysteres"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype_tokens",
+    "keywords": [],
+    "effects": [],
+    "flavor": {
+      "fr": "Non identifié, mais très motivé.",
+      "en": "Unidentified, but highly motivated."
+    }
   },
   {
     "id": "proto_drone",
-    "name": { "fr": "Le Drone", "en": "The Drone" },
-    "categories": ["science"],
-    "cost": 1, "power": 2, "rarity": "basique", "series": "prototype_tokens",
-    "keywords": [], "effects": [],
-    "flavor": { "fr": "Il filme tout. Il ne juge personne.", "en": "It films everything. It judges no one." }
+    "type": "character",
+    "name": {
+      "fr": "Le Drone",
+      "en": "The Drone"
+    },
+    "categories": [
+      "science"
+    ],
+    "cost": 1,
+    "power": 2,
+    "counter": 1,
+    "rarity": "basique",
+    "series": "prototype_tokens",
+    "keywords": [],
+    "effects": [],
+    "flavor": {
+      "fr": "Il filme tout. Il ne juge personne.",
+      "en": "It films everything. It judges no one."
+    }
   }
 ]

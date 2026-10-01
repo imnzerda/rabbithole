@@ -1,6 +1,6 @@
 import { CATEGORIES, validateCatalog, validateDeck } from '@rabbithole/engine';
 import { describe, expect, it } from 'vitest';
-import { COLLECTIBLE_CARDS, PROTOTYPE_DECKS, PROTOTYPE_TERRAINS, prototypeContext } from '../src/index.js';
+import { COLLECTIBLE_CARDS, LEADER_CARDS, PROTOTYPE_CARDS, PROTOTYPE_DECKS, prototypeContext } from '../src/index.js';
 
 const ctx = prototypeContext();
 
@@ -9,39 +9,36 @@ describe('contenu du prototype', () => {
     expect(validateCatalog(ctx)).toEqual({});
   });
 
-  it('40 cartes à collectionner, 10 terrains', () => {
-    expect(COLLECTIBLE_CARDS).toHaveLength(40);
-    expect(PROTOTYPE_TERRAINS).toHaveLength(10);
+  it('5 Leaders et 50 cartes : 5 par catégorie (4 Personnages + 1 Événement)', () => {
+    expect(LEADER_CARDS).toHaveLength(5);
+    expect(COLLECTIBLE_CARDS).toHaveLength(50);
+    for (const cat of CATEGORIES) {
+      const cards = COLLECTIBLE_CARDS.filter((c) => c.categories.includes(cat));
+      expect(cards.filter((c) => c.type === 'character'), cat).toHaveLength(4);
+      expect(cards.filter((c) => c.type === 'event'), cat).toHaveLength(1);
+    }
   });
 
-  it('ids uniques', () => {
-    const ids = [...COLLECTIBLE_CARDS.map((c) => c.id), ...PROTOTYPE_TERRAINS.map((t) => t.id)];
-    expect(new Set(ids).size).toBe(ids.length);
+  it('les Leaders couvrent les 10 catégories, sans chevauchement', () => {
+    const covered = LEADER_CARDS.flatMap((l) => l.categories);
+    expect(new Set(covered).size).toBe(10);
+    expect(covered).toHaveLength(10);
   });
 
-  it('courbe de coût de la section 4.3 (20/25/20/15/12/8 %)', () => {
-    const counts = [1, 2, 3, 4, 5, 6].map((cost) => COLLECTIBLE_CARDS.filter((c) => c.cost === cost).length);
-    expect(counts).toEqual([8, 10, 8, 6, 5, 3]);
+  it('ids uniques ; nom et texte d’ambiance en français et en anglais', () => {
+    expect(new Set(PROTOTYPE_CARDS.map((c) => c.id)).size).toBe(PROTOTYPE_CARDS.length);
+    for (const c of PROTOTYPE_CARDS) expect(c.name.fr && c.name.en && c.flavor?.fr && c.flavor?.en, c.id).toBeTruthy();
   });
 
-  it('toutes les catégories sont représentées, avec au moins une carte multi-catégorie', () => {
-    for (const cat of CATEGORIES) expect(COLLECTIBLE_CARDS.some((c) => c.categories.includes(cat))).toBe(true);
-    expect(COLLECTIBLE_CARDS.some((c) => c.categories.length === 2)).toBe(true);
-  });
-
-  it('chaque carte a un nom et un texte d’ambiance en français et en anglais', () => {
-    for (const c of COLLECTIBLE_CARDS) {
-      expect(c.name.fr && c.name.en && c.flavor?.fr && c.flavor?.en, c.id).toBeTruthy();
+  it('puissance proche de la courbe de référence (coût → puissance)', () => {
+    const reference = (cost: number) => cost + 1;
+    for (const c of COLLECTIBLE_CARDS.filter((x) => x.type === 'character')) {
+      expect(Math.abs(c.power - reference(c.cost)), c.id).toBeLessThanOrEqual(2);
     }
   });
 
   it('decks préconstruits valides', () => {
-    expect(PROTOTYPE_DECKS.length).toBeGreaterThanOrEqual(4);
-    for (const d of PROTOTYPE_DECKS) expect(validateDeck(ctx, d.cards), d.id).toEqual([]);
-  });
-
-  it('chaque carte à collectionner apparaît dans au moins un deck', () => {
-    const used = new Set(PROTOTYPE_DECKS.flatMap((d) => d.cards));
-    expect(COLLECTIBLE_CARDS.filter((c) => !used.has(c.id)).map((c) => c.id)).toEqual([]);
+    expect(PROTOTYPE_DECKS).toHaveLength(5);
+    for (const d of PROTOTYPE_DECKS) expect(validateDeck(ctx, d.leader, d.cards), d.id).toEqual([]);
   });
 });

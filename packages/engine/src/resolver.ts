@@ -1,24 +1,23 @@
 import { getCardDef, type MatchContext } from './context.js';
 import { EngineError } from './errors.js';
 import { computePowers, type PowerMap } from './power.js';
-import { isOnBoard, staticTargets, terrainAt, type Source } from './query.js';
+import { candidateTargets, type Source } from './query.js';
 import { Rng } from './rng.js';
 import type {
   CardDef,
   CardFilter,
   CardInstance,
   CardZone,
+  Duration,
   MatchEvent,
   MatchState,
-  MoveDestination,
   PlayerIndex,
-  Side,
   TargetSelector,
 } from './types.js';
 
 /**
- * Porte l'état mutable pendant une étape de résolution (clone de l'état d'entrée),
- * le RNG et le journal d'événements destiné à l'animation.
+ * Porte l'état mutable pendant une étape (clone de l'état d'entrée), le RNG
+ * et le journal d'événements destiné à l'animation.
  */
 export class Resolver {
   readonly rng: Rng;
@@ -53,18 +52,16 @@ export class Resolver {
     return computePowers(this.ctx, this.s);
   }
 
-  /** Puissance effective si la carte est révélée en jeu, sinon puissance de base + modifications. */
-  displayPower(uid: string): number {
-    const c = this.card(uid);
-    return this.powers()[uid] ?? c.powerBase + c.powerMod;
+  power(uid: string): number {
+    return this.powers()[uid] ?? 0;
   }
 
   // -------------------------------------------------------------------------
-  // Création et zones
+  // Zones
   // -------------------------------------------------------------------------
 
   createInstance(defId: string, owner: PlayerIndex, zone: CardZone, token: boolean): CardInstance {
-    const def = getCardDef(this.ctx, defId);
+    getCardDef(this.ctx, defId);
     const uid = `k${this.s.nextUid++}`;
     const c: CardInstance = {
       uid,
@@ -72,94 +69,109 @@ export class Resolver {
       owner,
       controller: owner,
       zone,
-      terrain: null,
-      powerBase: def.power,
-      powerMod: 0,
-      revealed: false,
+      rested: false,
       playedTurn: null,
-      token,
+      buzz: 0,
+      permMod: 0,
+      turnMod: 0,
+      battleMod: 0,
       effectsCancelled: false,
-      continuousCancelled: false,
-      hidden: false,
-      clickbaitUntilTurn: null,
+      activatedTurn: null,
+      token,
     };
     this.s.cards[uid] = c;
     return c;
   }
 
-  hasRoom(terrain: number, player: PlayerIndex): boolean {
-    return terrainAt(this.s, terrain).slots[player].length < this.ctx.rules.maxCardsPerTerrain;
+  /** Retire une carte de la liste de sa zone actuelle. */
+  private detach(c: CardInstance): void {
+    const p = this.s.players[c.controller];
+    const lists: Partial<Record<CardZone, string[]>> = {
+      deck: p.deck,
+      hand: p.hand,
+      life: p.life,
+      field: p.characters,
+      trash: p.trash,
+    };
+    const list = lists[c.zone];
+    if (list) {
+      const i = list.indexOf(c.uid);
+      if (i >= 0) list.splice(i, 1);
+    }
+    if (c.zone === 'field' && c.buzz > 0) {
+      // Les Buzz attachés retournent, épuisés, dans la zone de coût du contrôleur.
+      p.buzzRested += c.buzz;
+      c.buzz = 0;
+    }
   }
 
-  /** Terrains où un joueur peut recevoir une carte (place libre, terrain jouable). */
-  openTerrains(player: PlayerIndex, exclude: number | null): number[] {
-    const out: number[] = [];
-    this.s.terrains.forEach((t, i) => {
-      if (i === exclude) return;
-      if (!t.revealed && !this.ctx.rules.allowPlayOnUnrevealedTerrain) return;
-      if (this.hasRoom(i, player)) out.push(i);
-    });
-    return out;
+  /** Remet à zéro l'état d'une carte qui quitte le terrain. */
+  private resetCard(c: CardInstance): void {
+    c.rested = false;
+    c.permMod = 0;
+    c.turnMod = 0;
+    c.battleMod = 0;
+    c.effectsCancelled = false;
+    c.activatedTurn = null;
   }
 
-  placeOnBoard(c: CardInstance, terrain: number, player: PlayerIndex): void {
-    terrainAt(this.s, terrain).slots[player].push(c.uid);
-    c.zone = 'board';
-    c.terrain = terrain;
+  moveTo(c: CardInstance, zone: Exclude<CardZone, 'leader'>, player: PlayerIndex = c.owner, top = false): void {
+    this.detach(c);
+    if (zone !== 'field') this.resetCard(c);
+    c.zone = zone;
     c.controller = player;
-  }
-
-  removeFromBoard(c: CardInstance): void {
-    if (c.terrain === null) return;
-    const slots = terrainAt(this.s, c.terrain).slots[c.controller];
-    const i = slots.indexOf(c.uid);
-    if (i >= 0) slots.splice(i, 1);
-    c.terrain = null;
-  }
-
-  removeFromHand(c: CardInstance): void {
-    const hand = this.s.players[c.controller].hand;
-    const i = hand.indexOf(c.uid);
-    if (i >= 0) hand.splice(i, 1);
-  }
-
-  draw(player: PlayerIndex): void {
     const p = this.s.players[player];
-    if (p.deck.length === 0) {
-      this.emit({ type: 'draw_failed', player, reason: 'deck_empty' });
-      return;
+    const list = { deck: p.deck, hand: p.hand, life: p.life, field: p.characters, trash: p.trash }[zone];
+    if (top) list.unshift(c.uid);
+    else list.push(c.uid);
+  }
+
+  /** Pioche une carte. Renvoie `false` si la pioche est vide. */
+  draw(player: PlayerIndex): boolean {
+    const p = this.s.players[player];
+    const uid = p.deck[0];
+    if (!uid) {
+      this.emit({ type: 'draw_failed', player });
+      return false;
     }
-    if (p.hand.length >= this.ctx.rules.maxHandSize) {
-      this.emit({ type: 'draw_failed', player, reason: 'hand_full' });
-      return;
-    }
-    const uid = p.deck.shift() as string;
-    p.hand.push(uid);
-    this.card(uid).zone = 'hand';
+    this.moveTo(this.card(uid), 'hand', player);
     this.emit({ type: 'card_drawn', player, uid });
+    return true;
+  }
+
+  gainBuzz(player: PlayerIndex, amount: number, rested: boolean): void {
+    const p = this.s.players[player];
+    const n = Math.min(amount, p.buzzDeck);
+    if (n <= 0) return;
+    p.buzzDeck -= n;
+    if (rested) p.buzzRested += n;
+    else p.buzzActive += n;
+    this.emit({ type: 'buzz_gained', player, amount: n, rested });
   }
 
   // -------------------------------------------------------------------------
   // Ciblage
   // -------------------------------------------------------------------------
 
-  selectTargets(src: Source, selector: TargetSelector, filter: CardFilter | undefined, side: Side | undefined): string[] {
-    const pool = staticTargets(this.ctx, this.s, src, selector, filter, side);
+  /** Résout un sélecteur. Égalité « plus fort / plus faible » → la carte posée en premier. */
+  selectTargets(src: Source, selector: TargetSelector, filter: CardFilter | undefined): string[] {
+    const pool = candidateTargets(this.ctx, this.s, src, selector, filter);
+    if (pool.length === 0) return [];
     switch (selector) {
-      case 'random_enemy_here':
-        return pool.length ? [this.rng.pick(pool).uid] : [];
-      case 'strongest_enemy_here':
-        return this.extreme(pool, 'max');
-      case 'weakest_enemy_here':
-        return this.extreme(pool, 'min');
+      case 'random_enemy':
+        return [this.rng.pick(pool).uid];
+      case 'strongest_enemy':
+      case 'strongest_ally':
+        return [this.extreme(pool, 'max')];
+      case 'weakest_enemy':
+      case 'weakest_ally':
+        return [this.extreme(pool, 'min')];
       default:
         return pool.map((c) => c.uid);
     }
   }
 
-  /** Carte la plus forte / faible ; égalité → la première posée. */
-  extreme(pool: CardInstance[], mode: 'max' | 'min'): string[] {
-    if (pool.length === 0) return [];
+  extreme(pool: CardInstance[], mode: 'max' | 'min'): string {
     const powers = this.powers();
     let best = pool[0] as CardInstance;
     for (const c of pool) {
@@ -167,157 +179,77 @@ export class Resolver {
       const pb = powers[best.uid] ?? 0;
       if (mode === 'max' ? pc > pb : pc < pb) best = c;
     }
-    return [best.uid];
+    return best.uid;
   }
 
   // -------------------------------------------------------------------------
-  // Opérations
+  // Opérations de jeu
   // -------------------------------------------------------------------------
 
-  addPower(uid: string, delta: number, source: string | null): void {
+  addPower(uid: string, delta: number, duration: Duration, source: string | null): void {
     if (delta === 0) return;
-    this.card(uid).powerMod += delta;
-    this.emit({ type: 'power_changed', uid, delta, power: this.displayPower(uid), source });
+    const c = this.card(uid);
+    if (duration === 'permanent') c.permMod += delta;
+    else if (duration === 'turn') c.turnMod += delta;
+    else c.battleMod += delta;
+    this.emit({ type: 'power_changed', uid, delta, duration, power: this.power(uid), source });
   }
 
-  setPower(uid: string, value: number, source: string | null): void {
+  rest(uid: string, source: string | null): void {
     const c = this.card(uid);
-    c.powerBase = value;
-    c.powerMod = 0;
-    this.emit({ type: 'power_set', uid, value, power: this.displayPower(uid), source });
+    if (c.rested) return;
+    c.rested = true;
+    this.emit({ type: 'card_rested', uid, source });
   }
 
-  destroy(uid: string, source: string | null): void {
+  refresh(uid: string, source: string | null): void {
     const c = this.card(uid);
-    if (!isOnBoard(c)) return;
-    this.removeFromBoard(c);
-    c.zone = 'destroyed';
-    this.s.players[c.owner].destroyed.push(uid);
-    this.emit({ type: 'card_destroyed', uid, source });
+    if (!c.rested) return;
+    c.rested = false;
+    this.emit({ type: 'card_refreshed', uid, source });
   }
 
-  move(uid: string, to: MoveDestination, source: string | null): void {
+  bounce(uid: string, source: string | null): void {
     const c = this.card(uid);
-    if (!isOnBoard(c)) return;
-    const from = c.terrain as number;
-    const open = this.openTerrains(c.controller, from);
-    let dest: number | undefined;
-    if (to === 'random_other') dest = open.length ? this.rng.pick(open) : undefined;
-    else {
-      const wanted = to === 'left' ? from - 1 : from + 1;
-      dest = open.includes(wanted) ? wanted : undefined;
-    }
-    if (dest === undefined) return;
-    this.removeFromBoard(c);
-    this.placeOnBoard(c, dest, c.controller);
-    this.emit({ type: 'card_moved', uid, from, to: dest, source });
+    if (c.zone !== 'field') return;
+    this.moveTo(c, 'hand', c.owner);
+    this.emit({ type: 'card_bounced', uid, source });
   }
 
   steal(uid: string, to: PlayerIndex, source: string | null): void {
     const c = this.card(uid);
-    if (!isOnBoard(c) || c.controller === to) return;
-    const terrain = c.terrain as number;
-    if (!this.hasRoom(terrain, to)) return;
+    if (c.zone !== 'field' || c.controller === to) return;
+    if (this.s.players[to].characters.length >= this.ctx.rules.maxCharacters) return;
     const from = c.controller;
-    this.removeFromBoard(c);
-    this.placeOnBoard(c, terrain, to);
-    this.emit({ type: 'card_stolen', uid, from, to, terrain, source });
+    this.moveTo(c, 'field', to);
+    c.playedTurn = this.s.turn;
+    this.emit({ type: 'card_stolen', uid, from, to, source });
   }
 
-  /** Copie (jeton) d'une carte, révélée immédiatement, sans effet « à la révélation ». */
-  copy(
-    uid: string,
-    player: PlayerIndex,
-    to: 'here' | 'random_other' | 'hand',
-    here: number | null,
-    powerDelta: number,
-    source: string | null,
-  ): CardInstance | null {
-    const original = this.card(uid);
-    let dest: number | null = null;
-    if (to === 'hand') {
-      if (this.s.players[player].hand.length >= this.ctx.rules.maxHandSize) return null;
-    } else if (to === 'here') {
-      if (here === null || !this.hasRoom(here, player)) return null;
-      dest = here;
-    } else {
-      const open = this.openTerrains(player, here);
-      if (open.length === 0) return null;
-      dest = this.rng.pick(open);
-    }
-
-    const c = this.createInstance(original.defId, player, to === 'hand' ? 'hand' : 'board', true);
-    c.powerBase = original.powerBase;
-    c.powerMod = original.powerMod + powerDelta;
-    if (dest === null) {
-      this.s.players[player].hand.push(c.uid);
-    } else {
-      this.placeOnBoard(c, dest, player);
-      c.revealed = true;
-      c.playedTurn = this.s.turn;
-    }
-    this.emit({
-      type: 'card_created',
-      uid: c.uid,
-      defId: c.defId,
-      player,
-      zone: dest === null ? 'hand' : 'board',
-      terrain: dest,
-      power: this.displayPower(c.uid),
-      source,
-    });
-    return c;
-  }
-
-  transform(uid: string, into: readonly string[], source: string | null): void {
-    if (into.length === 0) return;
+  cancelEffects(uid: string, source: string | null): void {
     const c = this.card(uid);
-    const target = into.length === 1 ? (into[0] as string) : this.rng.pick(into);
-    const from = c.defId;
-    c.defId = target;
-    c.powerBase = getCardDef(this.ctx, target).power;
-    c.powerMod = 0;
-    c.effectsCancelled = false;
-    c.continuousCancelled = false;
-    this.emit({ type: 'card_transformed', uid, from, to: target, power: this.displayPower(uid), source });
+    if (c.effectsCancelled) return;
+    c.effectsCancelled = true;
+    this.emit({ type: 'effects_cancelled', uid, source });
   }
 
   discard(player: PlayerIndex, pick: 'random' | 'highest_cost' | 'lowest_cost', source: string | null): void {
-    const p = this.s.players[player];
-    if (p.hand.length === 0) return;
+    const hand = this.s.players[player].hand;
+    if (hand.length === 0) return;
     let uid: string;
-    if (pick === 'random') uid = this.rng.pick(p.hand);
+    if (pick === 'random') uid = this.rng.pick(hand);
     else {
-      const cost = (id: string) => getCardDef(this.ctx, this.card(id).defId).cost;
-      uid = p.hand[0] as string;
-      for (const id of p.hand) {
-        if (pick === 'highest_cost' ? cost(id) > cost(uid) : cost(id) < cost(uid)) uid = id;
-      }
+      const cost = (id: string) => this.defOf(this.card(id)).cost;
+      uid = hand[0] as string;
+      for (const id of hand) if (pick === 'highest_cost' ? cost(id) > cost(uid) : cost(id) < cost(uid)) uid = id;
     }
-    p.hand.splice(p.hand.indexOf(uid), 1);
-    p.discarded.push(uid);
-    this.card(uid).zone = 'discarded';
-    this.emit({ type: 'card_discarded', uid, player, source });
+    this.moveTo(this.card(uid), 'trash');
+    this.emit({ type: 'card_discarded', player, uid, source });
   }
 
   addToHand(player: PlayerIndex, defId: string, source: string | null): void {
-    if (this.s.players[player].hand.length >= this.ctx.rules.maxHandSize) return;
     const c = this.createInstance(defId, player, 'hand', true);
     this.s.players[player].hand.push(c.uid);
-    this.emit({ type: 'card_created', uid: c.uid, defId, player, zone: 'hand', terrain: null, power: c.powerBase, source });
-  }
-
-  hide(uid: string, source: string | null): void {
-    const c = this.card(uid);
-    if (c.hidden) return;
-    c.hidden = true;
-    this.emit({ type: 'card_hidden', uid, source });
-  }
-
-  cancelEffects(uid: string, scope: 'all' | 'continuous', source: string | null): void {
-    const c = this.card(uid);
-    if (scope === 'all') c.effectsCancelled = true;
-    else c.continuousCancelled = true;
-    this.emit({ type: 'effects_cancelled', uid, scope, source });
+    this.emit({ type: 'card_created', player, uid: c.uid, defId, source });
   }
 }

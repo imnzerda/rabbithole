@@ -2,16 +2,16 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { PROTOTYPE_DECKS, prototypeContext } from '@rabbithole/content';
-  import { loc, t } from '$lib/i18n';
+  import type { GameAction, PlayerView } from '@rabbithole/engine';
+  import { onMount } from 'svelte';
   import { GameRenderer, type RenderOptions } from '$lib/game/renderer';
-  import type { MatchClient } from '$lib/match/client';
+  import { t } from '$lib/i18n';
+  import type { MatchClient, MatchStep } from '$lib/match/client';
   import { LocalMatch } from '$lib/match/local-match';
   import CardDetail from '$lib/ui/CardDetail.svelte';
+  import DecisionPanel from '$lib/ui/DecisionPanel.svelte';
   import EndScreen from '$lib/ui/EndScreen.svelte';
-  import InfoSheet from '$lib/ui/InfoSheet.svelte';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
-  import type { MatchEvent, Play, PlayerView } from '@rabbithole/engine';
-  import { onMount } from 'svelte';
 
   const ctx = prototypeContext();
   const deckId = page.url.searchParams.get('deck');
@@ -23,52 +23,77 @@
   let client: MatchClient | null = null;
 
   let view = $state.raw<PlayerView | null>(null);
-  let staged = $state.raw<Play[]>([]);
   let busy = $state(true);
-  let timeLeft = $state(ctx.rules.turnTimerSeconds);
+  let selected = $state<string | null>(null);
+  let timeLeft = $state(0);
   let detail = $state<{ defId: string; power: number | null } | null>(null);
-  let terrainDetail = $state<number | null>(null);
   let showRules = $state(false);
 
-  const me = $derived(view?.you ?? 0);
-  const opp = $derived(me === 0 ? 1 : 0);
-  const manaUsed = $derived(
-    view ? staged.reduce((sum, p) => sum + (view!.hand.find((c) => c.uid === p.uid)?.costByTerrain?.[p.terrain] ?? 0), 0) : 0,
-  );
-  const planning = $derived(view?.phase === 'planning');
-  const canHype = $derived(!!view && planning && !busy && !view.hypeDeclared[me] && view.stake < ctx.rules.hype.maxStake);
+  const legal = $derived(view?.legal ?? null);
+  const myMain = $derived(!busy && legal?.kind === 'main');
+  const myReaction = $derived(!busy && !!legal && legal.kind !== 'main');
+  const selectedHand = $derived(view?.me.hand.find((c) => c.uid === selected) ?? null);
+  const canPlaySelected = $derived(!!selectedHand && !!legal?.playable.includes(selectedHand.uid));
+  const canAttachSelected = $derived(!!selected && !!legal?.attachTargets.includes(selected));
+  const canActivateSelected = $derived(!!selected && !!legal?.activatable.includes(selected));
 
-  /** Vérifications d'interface (le moteur revalide à la soumission). */
-  function canDrop(uid: string, terrain: number): boolean {
-    const v = view;
-    if (!v || v.phase !== 'planning' || busy) return false;
-    const tv = v.terrains[terrain];
-    const card = v.hand.find((c) => c.uid === uid);
-    if (!tv || !card) return false;
-    if (!tv.revealed && !ctx.rules.allowPlayOnUnrevealedTerrain) return false;
-    const others = staged.filter((p) => p.uid !== uid);
-    const count = tv.cards[v.you].length + others.filter((p) => p.terrain === terrain).length;
-    if (count >= ctx.rules.maxCardsPerTerrain) return false;
-    const used = others.reduce((sum, p) => sum + (v.hand.find((c) => c.uid === p.uid)?.costByTerrain?.[p.terrain] ?? 0), 0);
-    return used + (card.costByTerrain?.[terrain] ?? card.cost ?? 0) <= v.mana;
-  }
-
-  function options(): RenderOptions {
-    return { staged, interactive: !busy && view?.phase === 'planning', canDrop };
+  function options(v: PlayerView, interactive: boolean): RenderOptions {
+    return { legal: v.legal, selected, interactive: interactive && v.legal?.kind === 'main' };
   }
 
   function draw(): void {
-    if (view && renderer) renderer.render(view, options());
+    if (view && renderer) renderer.render(view, options(view, !busy));
   }
 
-  async function play(events: MatchEvent[], next: PlayerView): Promise<void> {
+  function resetTimer(): void {
+    timeLeft = legal?.kind === 'main' ? ctx.rules.turnTimerSeconds : ctx.rules.reactionTimerSeconds;
+  }
+
+  async function playSteps(steps: MatchStep[]): Promise<void> {
     busy = true;
-    staged = [];
-    await renderer?.animate(events, next, { staged: [], interactive: false, canDrop: () => false });
-    view = next;
+    selected = null;
+    for (const step of steps) {
+      await renderer?.animate(step.events, step.view, options(step.view, false));
+      view = step.view;
+    }
     busy = false;
-    timeLeft = ctx.rules.turnTimerSeconds;
+    resetTimer();
     draw();
+  }
+
+  async function perform(action: GameAction): Promise<void> {
+    if (!client || busy) return;
+    busy = true;
+    draw();
+    try {
+      await playSteps(await client.act(action));
+    } catch (error) {
+      // Action refusée par le moteur : on resynchronise l'affichage.
+      console.warn(error);
+      busy = false;
+      draw();
+    }
+  }
+
+  /** Action par défaut à l'expiration du minuteur. */
+  function timeout(): void {
+    switch (legal?.kind) {
+      case 'main':
+        void perform({ type: 'end_turn' });
+        break;
+      case 'block':
+        void perform({ type: 'block', blocker: null });
+        break;
+      case 'counter':
+        void perform({ type: 'counter', uids: [] });
+        break;
+      case 'trigger':
+        void perform({ type: 'trigger', activate: false });
+        break;
+      case 'mulligan':
+        void perform({ type: 'mulligan', redraw: false });
+        break;
+    }
   }
 
   function newMatch(): void {
@@ -76,52 +101,34 @@
     const pick = new Uint32Array(1);
     crypto.getRandomValues(pick);
     const aiDeck = others[pick[0]! % others.length] ?? myDeck;
-    client = new LocalMatch(ctx, myDeck.cards, aiDeck.cards);
-    staged = [];
+    client = new LocalMatch(ctx, myDeck, aiDeck);
     view = client.view;
-    busy = false;
-    timeLeft = ctx.rules.turnTimerSeconds;
-    draw();
-    void renderer?.banner(t('turn_banner', { n: 1 }));
+    selected = null;
+    void playSteps(client.initialSteps);
   }
 
-  async function endTurn(): Promise<void> {
-    if (!client || busy || !planning) return;
-    busy = true;
-    draw();
-    const update = await client.submitTurn(staged);
-    await play(update.events, update.view);
+  function hype(): void {
+    if (legal?.canHype && confirm(t('hype_confirm'))) void perform({ type: 'hype' });
   }
 
-  async function hype(): Promise<void> {
-    if (!client || !canHype || !confirm(t('hype_confirm'))) return;
-    const update = await client.hype();
-    await play(update.events, update.view);
-  }
-
-  async function fold(): Promise<void> {
-    if (!client || busy || !planning || !view || !confirm(t('fold_confirm', { n: view.stake }))) return;
-    const update = await client.fold();
-    await play(update.events, update.view);
+  function fold(): void {
+    if (view && !busy && confirm(t('fold_confirm', { n: view.stake }))) void perform({ type: 'fold' });
   }
 
   onMount(() => {
     const r = new GameRenderer(ctx, {
-      onDrop(uid, terrain) {
-        if (!canDrop(uid, terrain)) return false;
-        staged = [...staged.filter((p) => p.uid !== uid), { uid, terrain }];
-        draw();
-        return true;
+      onPlay(uid) {
+        void perform({ type: 'play', uid });
       },
-      onUnstage(uid) {
-        staged = staged.filter((p) => p.uid !== uid);
+      onAttack(attacker, target) {
+        void perform({ type: 'attack', attacker, target });
+      },
+      onSelect(uid) {
+        selected = uid;
         draw();
       },
-      onInspectCard(defId, power) {
+      onInspect(defId, power) {
         detail = { defId, power };
-      },
-      onInspectTerrain(index) {
-        if (view?.terrains[index]?.defId) terrainDetail = index;
       },
     });
     renderer = r;
@@ -131,20 +138,18 @@
     });
 
     const timer = setInterval(() => {
-      if (!timerEnabled || busy || !planning || detail || showRules || terrainDetail !== null) return;
+      if (!timerEnabled || busy || !legal || detail || showRules || view?.phase === 'ended') return;
       timeLeft -= 1;
-      if (timeLeft <= 0) void endTurn();
+      if (timeLeft <= 0) timeout();
     }, 1000);
 
     if (import.meta.env.DEV) {
       // Points d'accès pour les tests E2E (le plateau est un canvas).
       (window as unknown as Record<string, unknown>).__rabbithole = {
         view: () => view,
-        stage: (handIndex: number, terrain: number) => {
-          const uid = view?.hand[handIndex]?.uid;
-          return uid ? r['callbacks'].onDrop(uid, terrain) : false;
-        },
-        handCard: (handIndex: number) => r.handCardScreenPosition(handIndex),
+        busy: () => busy,
+        act: (action: GameAction) => perform(action),
+        handCard: (index: number) => r.handCardScreenPosition(index),
       };
     }
 
@@ -161,27 +166,51 @@
   <header class="hud top">
     <button class="icon" aria-label={t('menu')} onclick={() => goto('/')}>←</button>
     <div class="info">
-      <span class="turn" data-testid="turn">{t('turn')} {view?.turn ?? 1}/{ctx.rules.turns}</span>
-      <span class="order">{view ? (view.revealFirst === me ? t('you_reveal_first') : t('they_reveal_first')) : ''}</span>
+      <span class="turn" data-testid="turn">
+        {t('turn')} {view?.turn ?? 0} · {view ? (view.active === view.you ? t('your_turn') : t('their_turn')) : ''}
+      </span>
+      <span class="sub">{view ? t('opp_info', { hand: view.opponent.handCount, deck: view.opponent.deckCount }) : ''}</span>
     </div>
     <div class="stake" class:hot={(view?.stake ?? 1) > 1} title={t('stake')}>×{view?.stake ?? 1}</div>
-    <span class="opp-hand">{t('opp_hand', { n: view?.opponentHandCount ?? 0 })}</span>
     <button class="icon" aria-label={t('rules')} onclick={() => (showRules = true)}>?</button>
   </header>
 
-  <div class="board" bind:this={host}></div>
+  <div class="board">
+    <div class="canvas" bind:this={host}></div>
+    {#if view && myReaction}
+      <DecisionPanel {ctx} {view} onact={(a) => void perform(a)} />
+    {/if}
+  </div>
 
   <footer class="hud bottom">
-    <div class="mana" data-testid="mana" aria-label={t('mana')}>
-      <span class="mana-value">{(view?.mana ?? 0) - manaUsed}</span>
-      <span class="mana-max">/ {view?.mana ?? 0}</span>
+    {#if myMain && (canPlaySelected || canAttachSelected || canActivateSelected)}
+      <div class="context">
+        {#if canPlaySelected && selectedHand}
+          <button class="btn btn-primary" data-testid="play-selected" onclick={() => perform({ type: 'play', uid: selectedHand.uid })}>
+            {t('play_card', { n: selectedHand.cost })}
+          </button>
+        {/if}
+        {#if canAttachSelected && selected}
+          {@const target = selected}
+          <button class="btn buzz" onclick={() => perform({ type: 'attach', target })}>{t('attach_buzz')}</button>
+        {/if}
+        {#if canActivateSelected && selected}
+          {@const uid = selected}
+          <button class="btn" onclick={() => perform({ type: 'activate', uid })}>{t('activate')}</button>
+        {/if}
+      </div>
+    {:else if myMain && view?.turn !== undefined && view.turn <= 4}
+      <p class="hint">{t('hint_main')}</p>
+    {/if}
+    <div class="row">
+      <span class="deck">{view ? t('my_deck', { n: view.me.deckCount }) : ''}</span>
+      <button class="btn hype" disabled={!myMain || !legal?.canHype} onclick={hype}>{t('hype')}</button>
+      <button class="btn fold" disabled={busy || !view || view.phase === 'ended'} onclick={fold}>{t('fold')}</button>
+      <button class="btn btn-primary end" disabled={!myMain} data-testid="end-turn" onclick={() => perform({ type: 'end_turn' })}>
+        {myMain || myReaction ? t('end_turn') : t('waiting')}
+        {#if timerEnabled && (myMain || myReaction)}<span class="timer" class:urgent={timeLeft <= 10}>{timeLeft}</span>{/if}
+      </button>
     </div>
-    <button class="btn hype" disabled={!canHype} onclick={hype}>{t('hype')}</button>
-    <button class="btn fold" disabled={busy || !planning} onclick={fold}>{t('fold')}</button>
-    <button class="btn btn-primary end" disabled={busy || !planning} data-testid="end-turn" onclick={endTurn}>
-      {busy ? t('waiting') : t('end_turn')}
-      {#if timerEnabled && !busy && planning}<span class="timer" class:urgent={timeLeft <= 10}>{timeLeft}</span>{/if}
-    </button>
   </footer>
 </div>
 
@@ -189,28 +218,12 @@
   <CardDetail {ctx} defId={detail.defId} power={detail.power} onclose={() => (detail = null)} />
 {/if}
 
-{#if terrainDetail !== null && view}
-  {@const def = ctx.terrains[view.terrains[terrainDetail]?.defId ?? '']}
-  {#if def}
-    <InfoSheet title={loc(def.name)} onclose={() => (terrainDetail = null)}>
-      <p class="terrain-desc">{loc(def.description)}</p>
-    </InfoSheet>
-  {/if}
-{/if}
-
 {#if showRules}
   <RulesSheet rules={ctx.rules} onclose={() => (showRules = false)} />
 {/if}
 
 {#if view?.result && !busy}
-  <EndScreen
-    {ctx}
-    result={view.result}
-    you={me}
-    terrainIds={view.terrains.map((tv) => tv.defId)}
-    onreplay={newMatch}
-    onmenu={() => goto('/')}
-  />
+  <EndScreen result={view.result} you={view.you} onreplay={newMatch} onmenu={() => goto('/')} />
 {/if}
 
 <style>
@@ -226,16 +239,16 @@
     min-height: 0;
     position: relative;
     overflow: hidden;
+  }
+  .canvas {
+    position: absolute;
+    inset: 0;
     touch-action: none;
   }
-  .board :global(canvas) {
+  .canvas :global(canvas) {
     position: absolute;
     inset: 0;
     display: block;
-  }
-  .hud .btn {
-    padding: 10px 12px;
-    white-space: nowrap;
   }
   .hud {
     display: flex;
@@ -249,8 +262,23 @@
     border-bottom: 1px solid var(--line);
   }
   .bottom {
+    flex-direction: column;
+    align-items: stretch;
     padding-bottom: max(10px, env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
+  }
+  .row,
+  .context {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .context .btn {
+    flex: 1;
+  }
+  .hud .btn {
+    padding: 10px 12px;
+    white-space: nowrap;
   }
   .icon {
     width: 36px;
@@ -259,6 +287,7 @@
     background: var(--panel);
     border: 1px solid var(--line);
     font-weight: 700;
+    flex: none;
   }
   .info {
     display: grid;
@@ -268,13 +297,19 @@
   .turn {
     font-weight: 700;
   }
-  .order,
-  .opp-hand {
+  .sub,
+  .deck,
+  .hint {
     font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .hint {
+    margin: 0;
+    white-space: normal;
+    text-align: center;
   }
   .stake {
     font-weight: 700;
@@ -287,21 +322,9 @@
     color: var(--accent);
     border-color: var(--accent);
   }
-  .mana {
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
-    background: var(--mana);
-    color: #06131f;
-    border-radius: 12px;
-    padding: 6px 12px;
-    font-weight: 700;
-  }
-  .mana-value {
-    font-size: 22px;
-  }
-  .mana-max {
-    font-size: 13px;
+  .buzz {
+    color: var(--mana);
+    border-color: var(--mana);
   }
   .hype {
     color: var(--accent);
@@ -322,9 +345,5 @@
   }
   .timer.urgent {
     background: var(--lose);
-  }
-  .terrain-desc {
-    margin: 0;
-    line-height: 1.4;
   }
 </style>

@@ -2,14 +2,14 @@
 
 TCG (jeu de cartes à collectionner) jouable dans le navigateur, sur desktop et mobile, pour un public adulte (21+). Les cartes représentent des personnes, événements, lieux et phénomènes réels issus de Wikipédia / Wikidata. La culture internet est l'ADN du jeu.
 
-- Parties de 3 minutes en tours simultanés. Deck de 12 cartes, 3 terrains, 6 tours ; il faut gagner 2 terrains sur 3.
+- Duels **tour par tour inspirés du TCG One Piece** : un Leader (carte célèbre, 4-5 Vies) + 20 cartes, énergie « Buzz », attaques, Bloqueurs, Contres, Déclencheurs. On gagne en mettant KO le Leader adverse.
 - Monétisation sans hasard à l'achat : boosters à contenu prévisualisé, pass, cosmétiques. Pas de pay-to-win.
 - Accroche : *Fall into everything.*
 
 **Cahier des charges complet : [rabbit-hole-spec.md](rabbit-hole-spec.md).**
 **Avancement et prochaines étapes : [PROGRESS.md](PROGRESS.md).**
 
-> Les règles de jeu ont été **simplifiées** le 2026-10-01 : un mot-clé = une phrase avec un chiffre, aucune règle cachée. Le cahier des charges est à jour. Les détails de résolution sont dans [packages/engine/README.md](packages/engine/README.md).
+> Le duel a été **refondu le 2026-10-02 sur le modèle du TCG One Piece** (tour par tour, Leader, Vies), en gardant le principe « un mot-clé = une phrase avec un chiffre ». Les puissances sont divisées par 1000 et les marques One Piece (« DON!! »…) ne sont pas reprises. Le cahier des charges (section 3) est à jour ; les détails de résolution sont dans [packages/engine/README.md](packages/engine/README.md).
 
 ## Stack
 
@@ -68,22 +68,21 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 ## Repères dans le code
 
 - [packages/engine/](packages/engine/) : moteur de règles, avec un README qui décrit l'API, les règles simplifiées et les choix de résolution.
-  - `match.ts` : cycle de partie (création, tours, Hype, Lâcher, décompte).
-  - `keywords.ts` : mots-clés.
+  - `match.ts` : cycle de partie, actions (`applyAction`), combat, Vies, décisions (`pendingDecision`, `legalActions`).
+  - `keywords.ts` : mots-clés à effet immédiat (Rickroll, Cancel, Séduction, Shitpost, Clickbait).
   - `actions.ts` : DSL d'effets.
   - `query.ts` : ciblage, filtres et conditions.
-  - `power.ts` : calcul de la puissance et du décompte.
-  - `view.ts` : ce qu'un joueur voit, sans information cachée.
+  - `power.ts` : calcul de la puissance.
+  - `view.ts` : ce qu'un joueur voit (sans information cachée), avec ses actions légales.
   - `validate.ts` : validation des cartes et des decks.
-  - `glossary.ts` : texte des mots-clés, généré depuis la config.
-  - `ai.ts` : IA simple, qui ne lit que la vue publique du joueur.
-  - `describe.ts` : texte des cartes généré depuis le DSL.
-- `packages/engine/test/` : `fixtures.ts` contient les terrains d'exemple et un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`) pour écrire des scénarios.
-- [packages/content/](packages/content/) : cartes, terrains et decks en JSON (`data/prototype/`), chargés par `prototypeContext()`.
+  - `glossary.ts` : texte des mots-clés, des règles et des cartes, généré depuis la config et le DSL.
+  - `ai.ts` : IA simple, qui ne lit que les informations publiques et sa propre main.
+- `packages/engine/test/` : `fixtures.ts` contient un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`, classe `Duel`) pour écrire des scénarios, et `playOut` pour simuler des parties.
+- [packages/content/](packages/content/) : Leaders, cartes et decks en JSON (`data/prototype/`), chargés par `prototypeContext()`.
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
   - `lib/match/local-match.ts` : partie locale contre l'IA, pour le prototype uniquement.
   - `lib/game/renderer.ts` : plateau, glisser-déposer, animation des événements.
   - `lib/game/card-sprite.ts` : design typographique des cartes.
-  - `lib/ui/` : fiches (carte, règles, fin de partie).
+  - `lib/ui/` : fiches (carte, règles, fin de partie) et `DecisionPanel` (mulligan, blocage, contres, Déclencheur).
   - `e2e/` : tests Playwright et `shots.mjs` (captures de contrôle).

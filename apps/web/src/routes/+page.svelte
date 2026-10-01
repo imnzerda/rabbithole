@@ -42,6 +42,7 @@
           onclick={() => (selected = deck.id)}
         >
           <span class="deck-name">{loc(deck.name)}</span>
+          <span class="deck-leader">{t('leader')} : {loc(ctx.cards[deck.leader]?.name)} · ❤ {ctx.cards[deck.leader]?.life}</span>
           <span class="deck-desc">{loc(deck.description)}</span>
           <span class="chips">
             {#each categoriesOf(deck.cards) as c (c)}
@@ -153,6 +154,11 @@
   .deck-name {
     font-weight: 700;
     font-size: 18px;
+  }
+  .deck-leader {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 14px;
   }
   .deck-desc {
     color: var(--muted);

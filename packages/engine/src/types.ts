@@ -21,16 +21,27 @@ export type CategoryId = (typeof CATEGORIES)[number];
 export const RARITIES = ['basique', 'tendance', 'viral', 'iconique', 'goat'] as const;
 export type Rarity = (typeof RARITIES)[number];
 
+export const CARD_TYPES = ['leader', 'character', 'event'] as const;
+export type CardType = (typeof CARD_TYPES)[number];
+
+/**
+ * Mots-clés (inspirés du TCG One Piece, noms « culture internet ») :
+ * - elan (Rush), bloqueur (Blocker), viral (Double attaque), ratio (Bannissement)
+ * - clickbait (+2 en attaque), croissance (+1 à chaque fin de tour)
+ * - rickroll, cancel, seduction, shitpost : effets « Jouée » standard
+ * - tendance : bonus quotidien automatique (jamais imprimé sur une carte)
+ */
 export const KEYWORDS = [
+  'elan',
+  'bloqueur',
   'viral',
   'ratio',
-  'cancel',
   'clickbait',
-  'rickroll',
-  'shitpost',
-  'seduction',
-  'elan',
   'croissance',
+  'rickroll',
+  'cancel',
+  'seduction',
+  'shitpost',
   'tendance',
 ] as const;
 export type KeywordId = (typeof KEYWORDS)[number];
@@ -46,65 +57,66 @@ export const other = (p: PlayerIndex): PlayerIndex => (p === 0 ? 1 : 0);
 // ---------------------------------------------------------------------------
 
 /**
- * `on_reveal`, `continuous` et `end_of_game` sont les trois types du cahier des charges.
- * `start_of_turn` et `end_of_turn` sont des extensions (base de Croissance)
- * traitées comme des effets continus : `Cancel` les désactive.
+ * Moments de déclenchement :
+ * - on_play [Jouée], on_attack [Attaque], on_ko [KO], on_trigger [Déclencheur] (carte Vie révélée)
+ * - continuous [Continu], activate_main [Activation : principale] (1 fois par tour)
+ * - end_of_turn [Fin de ton tour]
+ * - main / counter : effet d'une carte Événement jouée en phase principale / pendant un contre
  */
-export const TRIGGERS = ['on_reveal', 'continuous', 'end_of_game', 'start_of_turn', 'end_of_turn'] as const;
+export const TRIGGERS = [
+  'on_play',
+  'on_attack',
+  'on_ko',
+  'on_trigger',
+  'continuous',
+  'activate_main',
+  'end_of_turn',
+  'main',
+  'counter',
+] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 
+/**
+ * Cibles résolues automatiquement (pas de choix manuel : le jeu reste simple).
+ * Égalité « plus fort / plus faible » → la carte posée en premier.
+ */
 export const TARGET_SELECTORS = [
   'self',
-  'allies_here',
-  'enemies_here',
-  'opposite_card',
-  'random_enemy_here',
-  'all_here',
-  'strongest_enemy_here',
-  'weakest_enemy_here',
-  'hand',
-  'deck',
+  'my_leader',
+  'enemy_leader',
+  'allies',
+  'enemies',
+  'all_mine',
+  'strongest_enemy',
+  'weakest_enemy',
+  'random_enemy',
+  'strongest_ally',
+  'weakest_ally',
+  'battle_target',
+  'attacker',
 ] as const;
 export type TargetSelector = (typeof TARGET_SELECTORS)[number];
 
 /** Sélecteurs utilisables par un effet continu (déterministes, sans dépendance à la puissance). */
-export const STATIC_BOARD_SELECTORS: readonly TargetSelector[] = [
-  'self',
-  'allies_here',
-  'enemies_here',
-  'all_here',
-  'opposite_card',
-];
+export const STATIC_SELECTORS: readonly TargetSelector[] = ['self', 'my_leader', 'enemy_leader', 'allies', 'enemies', 'all_mine'];
 
 /** `self` = le contrôleur de la source, `enemy` = son adversaire. */
 export type Side = 'self' | 'enemy';
 
-/** Filtre sur les cartes ciblées ou comptées. Tous les critères présents doivent correspondre. */
 export interface CardFilter {
-  /** La carte a au moins une de ces catégories. */
   categories?: CategoryId[];
-  countries?: string[];
-  /** La carte a au moins un de ces mots-clés (`tendance` inclut les cartes en tendance du jour). */
   keywords?: KeywordId[];
-  rarities?: Rarity[];
   cardIds?: string[];
   minCost?: number;
   maxCost?: number;
-  /** Posée pendant le tour en cours. */
-  playedThisTurn?: boolean;
+  /** Puissance de base (imprimée + modifications permanentes), pour éviter toute circularité. */
+  maxPower?: number;
+  rested?: boolean;
 }
 
-export const COUNT_ZONES = [
-  'allies_here',
-  'enemies_here',
-  'all_here',
-  'allies_everywhere',
-  'enemies_everywhere',
-  'hand',
-] as const;
+export const COUNT_ZONES = ['allies', 'enemies', 'hand', 'enemy_hand', 'life', 'enemy_life', 'trash'] as const;
 export type CountZone = (typeof COUNT_ZONES)[number];
 
-/** Montant dynamique : `base + multiplier × nombre de cartes de la zone`. La source n'est jamais comptée. */
 export interface CountAmount {
   type: 'count';
   zone: CountZone;
@@ -114,39 +126,36 @@ export interface CountAmount {
 }
 export type Amount = number | CountAmount;
 
+/** Durée d'un bonus de puissance. */
+export type Duration = 'turn' | 'battle' | 'permanent';
+
 export type Condition =
   | { type: 'count'; zone: CountZone; filter?: CardFilter; min?: number; max?: number }
-  | { type: 'terrain_has_category'; category: CategoryId; min: number; side?: 'allies' | 'enemies' | 'any' }
-  | { type: 'turn'; min?: number; max?: number }
-  | { type: 'played_on_turn'; min?: number; max?: number }
-  | { type: 'hand_size'; side?: Side; min?: number; max?: number }
-  | { type: 'terrain_is'; terrainIds: string[] }
+  | { type: 'my_turn' }
+  | { type: 'opponent_turn' }
+  | { type: 'buzz_attached'; min: number }
+  | { type: 'attacking_leader' }
   | { type: 'and'; conditions: Condition[] }
   | { type: 'or'; conditions: Condition[] }
   | { type: 'not'; condition: Condition };
 
-export type MoveDestination = 'random_other' | 'left' | 'right';
-
 interface Targeted {
   target: TargetSelector;
   filter?: CardFilter;
-  /** Pour `hand` / `deck` : main ou pioche de qui. Défaut : `self`. */
-  side?: Side;
 }
 
 export type Action =
-  | ({ type: 'add_power'; amount: Amount } & Targeted)
-  | ({ type: 'set_power'; amount: Amount } & Targeted)
-  | ({ type: 'destroy' } & Targeted)
-  | ({ type: 'move'; to: MoveDestination } & Targeted)
-  | ({ type: 'copy'; to?: 'here' | 'random_other' | 'hand'; powerDelta?: number } & Targeted)
-  | ({ type: 'transform'; into: string[] } & Targeted)
+  | ({ type: 'add_power'; amount: Amount; duration?: Duration } & Targeted)
+  | ({ type: 'ko' } & Targeted)
+  | ({ type: 'rest' } & Targeted)
+  | ({ type: 'refresh' } & Targeted)
+  | ({ type: 'bounce' } & Targeted)
   | ({ type: 'steal' } & Targeted)
-  | ({ type: 'hide' } & Targeted)
-  | ({ type: 'cancel_effects'; scope?: 'all' | 'continuous' } & Targeted)
+  | ({ type: 'cancel_effects' } & Targeted)
   | { type: 'draw'; amount: number; side?: Side }
   | { type: 'discard'; amount: number; side?: Side; pick?: 'random' | 'highest_cost' | 'lowest_cost' }
   | { type: 'add_card_to_hand'; cards: string[]; pick?: 'all' | 'random'; count?: number; side?: Side }
+  | { type: 'add_buzz'; amount: number }
   | { type: 'random_of'; options: Action[]; weights?: number[] };
 
 export type ActionType = Action['type'];
@@ -155,6 +164,8 @@ export interface Effect {
   trigger: Trigger;
   condition?: Condition;
   action: Action;
+  /** Coût en Buzz actif à payer pour une activation (`activate_main`). */
+  buzzCost?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,10 +175,18 @@ export interface Effect {
 export interface CardDef {
   id: string;
   wikidataId?: string;
+  type: CardType;
   name: LocalizedText;
+  /** 1 ou 2. Pour un Leader : les catégories autorisées dans son deck. */
   categories: CategoryId[];
+  /** Coût en Buzz (0 pour un Leader). */
   cost: number;
+  /** Puissance (Leader, Personnage). 0 pour un Événement. */
   power: number;
+  /** Valeur de Contre quand on défausse ce Personnage pendant une attaque adverse (0, 1 ou 2). */
+  counter?: number;
+  /** Vies (Leader uniquement). */
+  life?: number;
   rarity: Rarity;
   series: string;
   country?: string;
@@ -178,34 +197,11 @@ export interface CardDef {
   image?: { assetId: string | null; fallback: boolean };
 }
 
-export type TerrainModifier =
-  /** Les cartes correspondantes ont +amount (ou -amount) ici. */
-  | { type: 'power'; filter?: CardFilter; amount: number }
-  /** Les cartes correspondantes coûtent +amount ici (négatif = réduction). */
-  | { type: 'cost'; filter?: CardFilter; amount: number }
-  /** Chaque carte correspondante donne +amount à ses alliés ici. */
-  | { type: 'aura'; filter: CardFilter; amount: number }
-  /** Élan se déclenche quel que soit le tour. */
-  | { type: 'elan_always' }
-  /** Les effets aléatoires se déclenchent deux fois. */
-  | { type: 'random_twice' };
-
-export interface TerrainDef {
-  id: string;
-  name: LocalizedText;
-  description?: LocalizedText;
-  series?: string;
-  favoredCategory?: CategoryId;
-  /** Les cartes de ce pays gagnent `rules.countryTerrainBonus` ici. */
-  favoredCountry?: string;
-  modifiers: TerrainModifier[];
-}
-
 // ---------------------------------------------------------------------------
-// État de partie (entièrement sérialisable en JSON)
+// État de partie (JSON pur)
 // ---------------------------------------------------------------------------
 
-export type CardZone = 'deck' | 'hand' | 'board' | 'destroyed' | 'discarded';
+export type CardZone = 'deck' | 'hand' | 'life' | 'leader' | 'field' | 'trash';
 
 export interface CardInstance {
   uid: string;
@@ -213,62 +209,84 @@ export interface CardInstance {
   owner: PlayerIndex;
   controller: PlayerIndex;
   zone: CardZone;
-  terrain: number | null;
-  /** Puissance imprimée, ou fixée par `set_power` / `transform`. */
-  powerBase: number;
-  /** Modifications permanentes cumulées. */
-  powerMod: number;
-  revealed: boolean;
+  rested: boolean;
   playedTurn: number | null;
-  /** Carte créée en cours de partie (copie, génération) : ne déclenche pas « à la révélation ». */
-  token: boolean;
+  /** Buzz attachés (+1 puissance chacun pendant le tour de son contrôleur). */
+  buzz: number;
+  permMod: number;
+  turnMod: number;
+  battleMod: number;
   effectsCancelled: boolean;
-  continuousCancelled: boolean;
-  hidden: boolean;
-  /** Bonus Clickbait actif jusqu'à la fin de ce tour. */
-  clickbaitUntilTurn: number | null;
+  /** Dernier tour où son effet « Activation : principale » a servi. */
+  activatedTurn: number | null;
+  /** Créée en cours de partie (jeton). */
+  token: boolean;
 }
 
 export interface PlayerState {
   id: string;
+  leader: string;
   deck: string[];
   hand: string[];
-  destroyed: string[];
-  discarded: string[];
+  /** Cartes Vie, face cachée. Index 0 = dessus de la pile. */
+  life: string[];
+  /** Personnages en jeu, dans l'ordre de pose. */
+  characters: string[];
+  trash: string[];
+  /** Buzz restant dans la réserve (pas encore gagné). */
+  buzzDeck: number;
+  buzzActive: number;
+  buzzRested: number;
   hypeDeclared: boolean;
 }
 
-export interface TerrainState {
-  defId: string;
-  revealed: boolean;
-  /** uids par joueur, dans l'ordre de pose. */
-  slots: [string[], string[]];
+export type Phase = 'mulligan' | 'main' | 'block' | 'counter' | 'trigger' | 'ended';
+
+export interface Battle {
+  attacker: string;
+  attackerPlayer: PlayerIndex;
+  /** Cible actuelle (Leader adverse, Personnage épuisé, ou Bloqueur). */
+  target: string;
+  /** Cible d'origine, avant un éventuel blocage. */
+  declaredTarget: string;
+  blocked: boolean;
 }
 
-export type MatchEndReason = 'terrains' | 'total_power' | 'draw' | 'fold';
+export interface PendingDamage {
+  player: PlayerIndex;
+  remaining: number;
+  banish: boolean;
+  /** Carte Vie révélée qui attend la décision Déclencheur. */
+  trigger: string | null;
+}
+
+export type MatchEndReason = 'life' | 'deck_out' | 'turn_limit' | 'fold' | 'draw';
 
 export interface MatchResult {
   winner: PlayerIndex | null;
   reason: MatchEndReason;
   /** Points de rang en jeu (Hype). */
   stake: number;
-  terrainPowers: [number, number][];
-  controllers: (PlayerIndex | null)[];
-  totalPower: [number, number];
+  life: [number, number];
+  turns: number;
 }
 
 export interface MatchState {
-  version: 1;
+  version: 2;
   seed: string;
   rng: RngState;
+  /** Tour global : 1 = premier tour du premier joueur, 2 = premier tour du second… */
   turn: number;
-  phase: 'planning' | 'ended';
+  first: PlayerIndex;
+  active: PlayerIndex;
+  phase: Phase;
+  /** Joueurs qui doivent encore décider de leur main de départ, dans l'ordre. */
+  mulliganPending: PlayerIndex[];
   players: [PlayerState, PlayerState];
-  terrains: TerrainState[];
   cards: Record<string, CardInstance>;
   nextUid: number;
-  revealFirst: PlayerIndex;
-  revealFirstReason: 'leader' | 'coin_flip';
+  battle: Battle | null;
+  damage: PendingDamage | null;
   stake: number;
   trending: string[];
   result: MatchResult | null;
@@ -280,6 +298,7 @@ export interface MatchState {
 
 export interface PlayerSetup {
   id: string;
+  leader: string;
   deck: string[];
 }
 
@@ -287,57 +306,62 @@ export interface MatchSetup {
   /** Seed fournie par le serveur (RNG crypto), enregistrée pour l'audit. */
   seed: string;
   players: [PlayerSetup, PlayerSetup];
-  /** Terrains imposés ; sinon tirés au sort dans `terrainPool` (ou tous les terrains du contexte). */
-  terrainIds?: string[];
-  terrainPool?: string[];
-  /** Cartes en Tendance du jour (instantané au lancement de la partie). */
+  /** Premier joueur imposé ; sinon tiré au sort. */
+  first?: PlayerIndex;
   trendingCardIds?: string[];
-  /** Défaut : true. `false` uniquement pour les tests et le défi du jour à ordre fixe. */
+  /** Défaut : true. `false` pour les tests et les défis à ordre fixe. */
   shuffleDecks?: boolean;
+  /** Défaut : false. `true` pour sauter la phase de mulligan (tests, IA rapide). */
+  skipMulligan?: boolean;
 }
 
-export interface Play {
-  uid: string;
-  terrain: number;
-}
-
-export interface TurnSubmission {
-  plays: Play[];
-}
+/** Actions d'un joueur. Toute action est validée par le moteur (le serveur fait foi). */
+export type GameAction =
+  | { type: 'mulligan'; redraw: boolean }
+  | { type: 'play'; uid: string }
+  | { type: 'attach'; target: string; amount?: number }
+  | { type: 'attack'; attacker: string; target: string }
+  | { type: 'activate'; uid: string }
+  | { type: 'end_turn' }
+  | { type: 'block'; blocker: string | null }
+  | { type: 'counter'; uids: string[] }
+  | { type: 'trigger'; activate: boolean }
+  | { type: 'hype' }
+  | { type: 'fold' };
 
 export type MatchEvent =
-  | { type: 'turn_started'; turn: number; mana: number }
-  | { type: 'reveal_order'; first: PlayerIndex; reason: 'leader' | 'coin_flip' }
-  | { type: 'terrain_revealed'; terrain: number; defId: string }
+  | { type: 'mulligan'; player: PlayerIndex; redraw: boolean }
+  | { type: 'life_set'; player: PlayerIndex; count: number }
+  | { type: 'turn_started'; turn: number; player: PlayerIndex }
+  | { type: 'refreshed'; player: PlayerIndex }
+  | { type: 'buzz_gained'; player: PlayerIndex; amount: number; rested: boolean }
   | { type: 'card_drawn'; player: PlayerIndex; uid: string }
-  | { type: 'draw_failed'; player: PlayerIndex; reason: 'deck_empty' | 'hand_full' }
-  | { type: 'card_played'; player: PlayerIndex; uid: string; terrain: number }
-  /** `power` : puissance effective au moment de l'événement (pour l'animation). */
-  | { type: 'card_revealed'; player: PlayerIndex; uid: string; defId: string; terrain: number; power: number }
+  | { type: 'draw_failed'; player: PlayerIndex }
+  | { type: 'card_played'; player: PlayerIndex; uid: string; defId: string; cardType: CardType }
+  | { type: 'buzz_spent'; player: PlayerIndex; amount: number }
+  | { type: 'buzz_attached'; player: PlayerIndex; target: string; amount: number }
+  | { type: 'effect_activated'; uid: string; trigger: Trigger }
   | { type: 'keyword_triggered'; uid: string; keyword: KeywordId; targets: string[] }
-  | { type: 'power_changed'; uid: string; delta: number; power: number; source: string | null }
-  | { type: 'power_set'; uid: string; value: number; power: number; source: string | null }
-  | { type: 'card_destroyed'; uid: string; source: string | null }
-  | { type: 'card_moved'; uid: string; from: number; to: number; source: string | null }
-  | { type: 'card_stolen'; uid: string; from: PlayerIndex; to: PlayerIndex; terrain: number; source: string | null }
-  | {
-      type: 'card_created';
-      uid: string;
-      defId: string;
-      player: PlayerIndex;
-      zone: 'board' | 'hand';
-      terrain: number | null;
-      power: number;
-      source: string | null;
-    }
-  | { type: 'card_transformed'; uid: string; from: string; to: string; power: number; source: string | null }
-  | { type: 'card_discarded'; uid: string; player: PlayerIndex; source: string | null }
-  | { type: 'card_hidden'; uid: string; source: string | null }
-  | { type: 'effects_cancelled'; uid: string; scope: 'all' | 'continuous'; source: string | null }
+  | { type: 'power_changed'; uid: string; delta: number; duration: Duration; power: number; source: string | null }
+  | { type: 'attack_declared'; attacker: string; target: string; player: PlayerIndex }
+  | { type: 'blocked'; blocker: string; player: PlayerIndex }
+  | { type: 'counter_played'; player: PlayerIndex; uid: string; defId: string; value: number }
+  | { type: 'battle_resolved'; attacker: string; target: string; attackerPower: number; defenderPower: number; hit: boolean }
+  | { type: 'life_lost'; player: PlayerIndex; uid: string; to: 'hand' | 'trash'; remaining: number }
+  | { type: 'trigger_revealed'; player: PlayerIndex; uid: string; defId: string }
+  | { type: 'trigger_resolved'; player: PlayerIndex; uid: string; activated: boolean }
+  | { type: 'card_ko'; uid: string; source: string | null }
+  | { type: 'card_bounced'; uid: string; source: string | null }
+  | { type: 'card_stolen'; uid: string; from: PlayerIndex; to: PlayerIndex; source: string | null }
+  | { type: 'card_rested'; uid: string; source: string | null }
+  | { type: 'card_refreshed'; uid: string; source: string | null }
+  | { type: 'card_discarded'; player: PlayerIndex; uid: string; source: string | null }
+  | { type: 'card_created'; player: PlayerIndex; uid: string; defId: string; source: string | null }
+  | { type: 'effects_cancelled'; uid: string; source: string | null }
   | { type: 'random_choice'; source: string | null; index: number; of: number }
   | { type: 'hype_declared'; player: PlayerIndex }
-  | { type: 'stake_changed'; stake: number; reason: 'hype' | 'final_turn' }
-  | { type: 'turn_ended'; turn: number }
+  | { type: 'stake_changed'; stake: number }
+  | { type: 'turn_ended'; turn: number; player: PlayerIndex }
   | { type: 'match_ended'; result: MatchResult };
 
 export interface StepResult {

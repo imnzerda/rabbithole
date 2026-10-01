@@ -16,7 +16,7 @@ TCG (jeu de cartes à collectionner) jouable dans le navigateur, desktop et mobi
 - **International** dès le lancement, avec des séries par pays.
 - **Identité** : la culture internet est l'ADN du jeu (mécaniques, raretés, interface, ton).
 - **Ton** : ironique, décalé, adulte, mais **aucune image explicite**.
-- **Parties de 3 minutes**, tours simultanés.
+- **Duels tour par tour inspirés du TCG One Piece** (Leader, Vies, attaques, contres), parties de 6 à 10 minutes.
 - **Monétisation** : boosters à contenu prévisualisé (aucun hasard à l'achat), pass saisonnier, cosmétiques. Pas de pay-to-win.
 
 ---
@@ -45,97 +45,115 @@ TCG (jeu de cartes à collectionner) jouable dans le navigateur, desktop et mobi
 
 ## 3. Règles du jeu
 
+> **Refonte du 2026-10-02** : le duel s'inspire du **TCG One Piece** (Leader, Vies, énergie, attaques, contres), en tour par tour. Les puissances sont divisées par 1000 pour rester lisibles (5 au lieu de 5000). Les marques et termes propres au TCG One Piece (« DON!! », etc.) ne sont pas repris. Détails de résolution : `packages/engine/README.md`.
+
 ### 3.1 Format d'une partie
-- **Deck : 12 cartes**, 1 exemplaire maximum de chaque carte.
-- **3 terrains**, révélés progressivement : terrain 1 au tour 1, terrain 2 au tour 2, terrain 3 au tour 3. On ne peut poser que sur les terrains révélés.
-- **6 tours**. Mana disponible = numéro du tour (1 au tour 1, 6 au tour 6). Le mana non utilisé est perdu.
-- Main de départ : 3 cartes. Pioche de 1 carte au début de chaque tour. Main max : 7.
-- **Tours simultanés** : les deux joueurs posent leurs cartes face cachée (timer de 30 s par tour), puis tout est révélé.
-- **Ordre de révélation** : le joueur qui mène au score total révèle en premier ; égalité → tirage au sort annoncé au début du tour.
-- Max **4 cartes par joueur et par terrain**.
+- **1 Leader + deck de 20 cartes**, **2 exemplaires maximum** de chaque carte.
+- Le **Leader** est une carte célèbre : il fixe les **2 catégories** autorisées dans le deck, ses **Vies** (4 ou 5), sa puissance (5) et un pouvoir.
+- Mise en place : main de **5 cartes**, un **mulligan** possible (remélanger et repiocher une fois), puis autant de cartes **Vie** face cachée que la valeur de Vie du Leader.
+- **Tour par tour.** Le premier joueur est tiré au sort ; il ne pioche pas et ne gagne qu'1 Buzz à son premier tour.
+- Déroulement d'un tour :
+  1. **Redressement** : toutes tes cartes redeviennent actives, les Buzz attachés reviennent.
+  2. **Pioche** : 1 carte. Pioche vide au moment de piocher = défaite.
+  3. **Buzz** : +2 Buzz (réserve totale de 10).
+  4. **Phase principale**, dans l'ordre que tu veux :
+     - jouer des Personnages (5 en jeu au maximum) et des Événements en dépensant du Buzz ;
+     - attacher du Buzz à ton Leader ou à un Personnage (+1 puissance par Buzz, pendant ton tour) ;
+     - activer des capacités ;
+     - attaquer.
+  5. **Fin de tour.**
+- Minuteurs (serveur) : 60 s par tour, 20 s par réaction.
 
-### 3.2 Victoire
-- Un joueur **contrôle un terrain** s'il y a la puissance totale la plus élevée.
-- Il faut **contrôler 2 terrains sur 3**.
-- Si aucun joueur n'en contrôle 2 → victoire à la puissance totale sur les 3 terrains. Égalité parfaite → match nul.
+### 3.2 Combat
+- On attaque en **épuisant** (tournant) son Leader ou un Personnage actif.
+- **Cibles possibles** : le Leader adverse, ou un Personnage adverse **épuisé**.
+- Personne n'attaque pendant son tout premier tour. Un Personnage ne peut pas attaquer le tour où il est joué, sauf s'il a **Élan**.
+- Défense, dans l'ordre :
+  1. **Blocage** : épuiser un **Bloqueur** actif, qui devient la cible.
+  2. **Contre** : défausser des Personnages de sa main pour leur valeur de **Contre** (+1 ou +2 pendant ce combat), ou jouer des Événements [Contre] en payant leur coût avec le Buzz non dépensé.
+- **L'attaque réussit si la puissance de l'attaquant est au moins égale à celle du défenseur.**
+  - Contre un Personnage : il est **KO** (défausse).
+  - Contre le Leader : il perd 1 **Vie**. La carte Vie va dans la main de son propriétaire, ou, si elle a un **[Déclencheur]**, il peut activer cet effet à la place (la carte va alors à la défausse).
 
-### 3.3 Hype (enjeu de classement, sans argent)
+### 3.3 Victoire
+- Toucher le Leader adverse alors qu'il n'a **plus de Vie** = victoire.
+- Un joueur qui doit piocher avec une pioche vide perd.
+- Garde-fou : au-delà de 40 tours, le joueur qui a le plus de Vies gagne ; à égalité, match nul.
+
+### 3.4 Hype (enjeu de classement, sans argent)
 - En classé, une partie vaut 1 point de rang de base.
-- Chaque joueur peut une fois déclarer **Hype** : l'enjeu double **immédiatement** (1 → 2 → 4 maximum). Pas de doublement automatique caché.
-- L'adversaire peut **Lâcher** (abandonner) à tout moment et ne perdre que l'enjeu actuel.
+- Pendant son tour, chaque joueur peut une fois déclarer **Hype** : l'enjeu double **immédiatement** (1 → 2 → 4 maximum).
+- Chaque joueur peut **Lâcher** (abandonner) à tout moment et ne perdre que l'enjeu actuel.
 - Aucun lien avec une monnaie : uniquement des points de rang.
 
-### 3.4 Structure d'une carte
+### 3.5 Structure d'une carte
 ```json
 {
   "id": "fr_0042",
   "wikidataId": "Q517",
+  "type": "character",
   "name": { "fr": "Napoléon Ier", "en": "Napoleon" },
   "categories": ["guerre_pouvoir"],
   "cost": 5,
-  "power": 7,
+  "power": 6,
+  "counter": 1,
   "rarity": "viral",
   "series": "base",
   "country": "FR",
-  "keywords": ["croissance"],
-  "effects": [ /* voir 3.6 */ ],
+  "keywords": ["bloqueur"],
+  "effects": [ /* voir 3.7 */ ],
   "flavor": { "fr": "Petit, mais a quand même ratio toute l'Europe.", "en": "..." },
   "flags": { "adult": false, "politicallySensitive": false },
   "image": { "assetId": "img_8812", "fallback": false }
 }
 ```
+- Types : **Leader** (`life`, coût 0), **Personnage** (`power`, `counter`), **Événement** (effets [Principale] et/ou [Contre]).
 
-### 3.5 Types d'effets
-- **À la révélation** : se déclenche une fois quand la carte est révélée.
-- **Continu** : actif tant que la carte est en jeu.
-- **Fin de partie** : se déclenche après le tour 6, avant le décompte.
+### 3.6 Moments d'effet
+[Jouée], [Attaque], [KO], [Déclencheur] (carte Vie révélée), [Continu] (avec [Ton tour] / [Tour adverse] possibles), [Activation : principale] (1 fois par tour, coût en Buzz possible), [Fin de ton tour], et pour les Événements : [Principale] et [Contre].
 
-### 3.6 Langage d'effets (DSL JSON)
-Les effets sont des données, interprétées par le moteur. Pas de code spécifique par carte sauf exception documentée.
+### 3.7 Langage d'effets (DSL JSON)
+Les effets sont des données, interprétées par le moteur. Pas de code spécifique par carte sauf exception documentée. **Les cibles sont choisies automatiquement** (le plus fort, le plus faible, au hasard…), pour que le jeu reste simple.
 
 ```json
 {
-  "trigger": "on_reveal",
-  "condition": { "type": "terrain_has_category", "category": "musique", "min": 2 },
-  "action": { "type": "add_power", "target": "self", "amount": 3 }
+  "trigger": "on_play",
+  "condition": { "type": "count", "zone": "allies", "filter": { "categories": ["musique"] }, "min": 1 },
+  "action": { "type": "ko", "target": "strongest_enemy", "filter": { "maxCost": 4 } }
 }
 ```
-Actions de base : `add_power`, `set_power`, `destroy`, `move`, `copy`, `transform`, `steal` (changer de camp), `draw`, `discard`, `add_card_to_hand`, `hide`, `cancel_effects`, `random_of` (choix aléatoire seedé).
-Cibles : `self`, `allies_here`, `enemies_here`, `opposite_card`, `random_enemy_here`, `all_here`, `strongest_enemy_here`, `weakest_enemy_here`, `hand`, `deck`.
+- **Actions** : `add_power` (durée : tour, combat ou définitive), `ko`, `rest` (épuiser), `refresh` (redresser), `bounce` (renvoyer en main), `steal`, `cancel_effects`, `draw`, `discard`, `add_card_to_hand`, `add_buzz`, `random_of` (choix aléatoire seedé).
+- **Cibles** : `self`, `my_leader`, `enemy_leader`, `allies`, `enemies`, `all_mine`, `strongest_enemy`, `weakest_enemy`, `random_enemy`, `strongest_ally`, `weakest_ally`, `battle_target`, `attacker`.
 
-### 3.7 Mots-clés (culture internet)
-Principe : **un mot-clé = une phrase, avec un chiffre visible**. Aucune information trompeuse ni règle cachée. Les chiffres sont en config, et le texte affiché est généré depuis la config (`keywordText`).
+### 3.8 Mots-clés (culture internet)
+Principe : **un mot-clé = une phrase, avec un chiffre visible**. Le texte affiché est généré depuis la config (`keywordText`).
 
-| Mot-clé | Effet |
-|---|---|
-| **Viral** | À la révélation : crée une copie de cette carte (puissance –1) sur un autre terrain aléatoire. |
-| **Ratio** | À la révélation : la carte adverse la plus forte ici perd 3. |
-| **Cancel** | À la révélation : la carte adverse la plus forte ici qui a un effet perd ses effets. |
-| **Clickbait** | +4 puissance jusqu'à la fin du tour suivant (bonus réel, visible de tous). |
-| **Rickroll** | À la révélation : envoie la carte adverse la plus forte ici sur un autre terrain. |
-| **Shitpost** | À la révélation : gagne entre +0 et +8 au hasard. |
-| **Séduction** | À la révélation : vole la carte adverse la plus faible ici. |
-| **Élan** | +2 puissance si jouée aux tours 1 à 3. |
-| **Croissance** | +1 puissance à chaque fin de tour. |
-| **Tendance** | Bonus quotidien automatique de +1 (voir 8). |
-
-> Version simplifiée du 2026-10-01. Live a été fusionné dans Croissance. Détails de résolution : `packages/engine/README.md`.
+| Mot-clé | Équivalent One Piece | Effet |
+|---|---|---|
+| **Élan** | Initiative (Rush) | Peut attaquer dès le tour où elle est jouée. |
+| **Bloqueur** | Bloqueur | Quand l'adversaire attaque, tu peux l'épuiser pour qu'elle devienne la cible. |
+| **Viral** | Double attaque | Quand elle touche le Leader adverse, il perd 2 Vies. |
+| **Ratio** | Bannissement | Les Vies qu'elle retire vont à la défausse : ni Déclencheur, ni carte en main. |
+| **Clickbait** | — | +2 quand elle attaque. |
+| **Croissance** | — | +1 définitif à la fin de chacun de tes tours. |
+| **Rickroll** | — | [Jouée] Épuise le Personnage adverse actif le plus fort (coût 5 max). |
+| **Cancel** | — | [Jouée] Le Personnage adverse le plus fort perd ses effets. |
+| **Séduction** | — | [Jouée] Vole le Personnage adverse le plus faible (coût 2 max). |
+| **Shitpost** | — | [Jouée] Au hasard : pioche 1, +2 jusqu'à la fin du tour, ou +1 définitif. |
+| **Tendance** | — | Bonus quotidien automatique de +1 (voir 8). |
 
 Chaque nouvelle série mondiale ajoute **un nouveau mot-clé** (exemples prévus : *Chantage*, *Overdose*).
 
-### 3.8 Terrains
-- Un terrain = nom + effet + éventuelle catégorie ou pays favorisé.
-- Exemples : *Prohibition* (les cartes Crimes et scandales +2), *Stade* (Élan déclenché à tous les tours), *Las Vegas* (les effets aléatoires se déclenchent deux fois), *Tribunal* (les cartes Crimes et scandales –2), *Concert* (les cartes Musique donnent +1 à leurs alliés ici), *Serveur Discord* (les cartes Internet coûtent 1 de moins ici), *Le métro parisien* (cartes FR +2).
-- **30 terrains au lancement**, + 5 par série mondiale, + 3 par série pays.
-
 ### 3.9 Équilibrage : budget de puissance
-Puissance de référence d'une carte sans effet, par coût :
+Puissance de référence d'un Personnage sans effet, par coût (≈ coût + 1) :
 
-| Coût | 1 | 2 | 3 | 4 | 5 | 6 |
-|---|---|---|---|---|---|---|
-| Puissance | 2 | 4 | 5 | 7 | 9 | 11 |
+| Coût | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|---|
+| Puissance | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 
-Chaque effet a une valeur en points de puissance (table `effect_costs`), soustraite de la référence. Un outil d'admin calcule le budget et signale les cartes hors norme. Ajustements ensuite à partir des statistiques de victoire (section 15).
+Une valeur de Contre élevée (+2) ou un effet se paie en puissance ; une carte sans Contre gagne +1. Chaque effet a une valeur en points de puissance (table `effect_costs`). Un outil d'admin calcule le budget et signale les cartes hors norme. Ajustements ensuite à partir de simulations IA contre IA et des statistiques de victoire (section 15).
+
+> Les **terrains** du modèle précédent disparaissent. Ils pourront revenir comme cartes **Lieu** (effet continu, une par joueur) dans une série ultérieure.
 
 ---
 
@@ -145,15 +163,15 @@ Chaque effet a une valeur en points de puissance (table `effect_costs`), soustra
 | Catégorie (id) | Style de jeu | Cartes au lancement |
 |---|---|---|
 | Nuits et excès (`nuits_exces`) | Séduction, gros bonus puis malus | 24 |
-| Crimes et scandales (`crimes_scandales`) | Vol, destruction, effets de fin de partie | 24 |
-| Mystères et complots (`mysteres`) | Hasard, imprévus | 24 |
-| Guerre et pouvoir (`guerre_pouvoir`) | Puissance brute, renforce les alliés | 24 |
+| Crimes et scandales (`crimes_scandales`) | KO, défausse adverse | 24 |
+| Mystères et complots (`mysteres`) | Hasard, renvoi en main | 24 |
+| Guerre et pouvoir (`guerre_pouvoir`) | Puissance brute, renforts, Viral | 24 |
 | Sport (`sport`) | Élan | 24 |
-| Musique (`musique`) | Renforce les cartes du même terrain | 24 |
-| Séries et cinéma (`series_cinema`) | Copie, transformation | 24 |
-| Internet et jeux vidéo (`internet`) | Viral, Ratio, Clickbait, Shitpost | 24 |
-| Science et technologie (`science`) | Génère des cartes, combos | 24 |
-| Exploration et extrêmes (`exploration`) | Croissance | 24 |
+| Musique (`musique`) | Renforce les alliés | 24 |
+| Séries et cinéma (`series_cinema`) | Bloqueurs, contres, Rickroll | 24 |
+| Internet et jeux vidéo (`internet`) | Viral, Ratio, Clickbait, Cancel | 24 |
+| Science et technologie (`science`) | Pioche, génère des cartes | 24 |
+| Exploration et extrêmes (`exploration`) | Croissance, Buzz supplémentaire | 24 |
 | Légendes (multi-catégories) | Cartes puissantes à 2 catégories | 10 |
 | **Total** | | **250** |
 
@@ -173,7 +191,7 @@ Chaque rareté a un cadre distinct en **forme et en couleur** (accessibilité da
 
 ### 4.3 Courbe de coût du set de base
 Coût 1 : 20 % · Coût 2 : 25 % · Coût 3 : 20 % · Coût 4 : 15 % · Coût 5 : 12 % · Coût 6 : 8 %.
-Chaque catégorie doit permettre un deck jouable seule.
+Chaque Leader couvre 2 catégories ; chaque paire de catégories doit former un deck jouable.
 
 ### 4.4 Mini-série « Industrie X » (dans Nuits et excès)
 - 10 à 12 cartes au lancement : 6 à 8 actrices et acteurs (époques et pays variés) + institutions, films devenus phénomènes de société, magazines, cérémonies, lieux.
@@ -181,7 +199,7 @@ Chaque catégorie doit permettre un deck jouable seule.
 - Flag `adult: true` → soumis au filtrage par pays (section 9).
 
 ### 4.5 Séries
-- **Série mondiale** : 60 à 80 cartes toutes les **8 semaines**, thème d'époque ou de lieu touchant toutes les catégories (ex. Années 80, Rock'n'roll, Jeux olympiques, Hollywood, Grandes explorations, Rome antique). Ajoute 5 terrains + 1 mot-clé.
+- **Série mondiale** : 60 à 80 cartes toutes les **8 semaines**, thème d'époque ou de lieu touchant toutes les catégories (ex. Années 80, Rock'n'roll, Jeux olympiques, Hollywood, Grandes explorations, Rome antique). Ajoute des Leaders + 1 mot-clé.
 - **Série pays** : **40 cartes** toutes les **2 à 3 semaines**, entre les séries mondiales.
 
 Modèle d'une série pays :
@@ -195,7 +213,7 @@ Modèle d'une série pays :
 | Nuits et excès (dont Industrie X locale si légal) | 4 |
 | Science, exploration, divers | 3 |
 
-- + 3 terrains du pays ; les cartes d'un pays gagnent **+2 sur les terrains de leur pays**.
+- + 1 ou 2 Leaders du pays (bonus pour les cartes de leur pays, à définir).
 - Ordre prévu : États-Unis, Brésil, France, Mexique/Espagne, Allemagne, Royaume-Uni, Japon, Philippines, Italie, Pologne.
 - **Vote communautaire** (Discord / en jeu) pour 5 à 10 cartes de chaque série pays avant sa sortie.
 - **Lancement = événement « Coupe du monde d'internet »** d'une semaine : classement entre nations.
@@ -392,11 +410,11 @@ Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `
 
 - Éditeur de cartes (stats, effets en DSL avec validation, textes, catégories, flags).
 - Calculateur de budget de puissance + alertes.
-- Gestion des séries, terrains, mots-clés, raretés.
+- Gestion des séries, Leaders, mots-clés, raretés.
 - Gestion des images : remplacement, crédits, retrait en un clic.
 - **File des demandes de retrait** avec horodatage et statut.
 - Gestion de `country_rules` et des listes de cartes bloquées.
-- Tableaux de bord d'équilibrage : taux de victoire, taux de jeu par carte et par terrain.
+- Tableaux de bord d'équilibrage : taux de victoire, taux de jeu par carte et par Leader, simulations IA contre IA.
 - Gestion de la boutique, des prix régionaux, du pass, des événements.
 - Journal d'audit de toutes les actions admin.
 
@@ -427,7 +445,7 @@ Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `
 
 ## 15. Analytics
 
-Événements : `signup`, `session_start`, `match_start`, `match_end` (deck, terrains, résultat, durée, Hype), `card_played`, `preview_viewed`, `preview_refreshed`, `booster_purchased`, `trade_up`, `trade_completed`, `craft`, `pass_purchase`, `share_clip`, `guild_join`, `takedown_request`, `card_info_opened`, `recognition_survey_answer`.
+Événements : `signup`, `session_start`, `match_start`, `match_end` (Leader, deck, résultat, durée, Vies restantes, Hype), `card_played`, `preview_viewed`, `preview_refreshed`, `booster_purchased`, `trade_up`, `trade_completed`, `craft`, `pass_purchase`, `share_clip`, `guild_join`, `takedown_request`, `card_info_opened`, `recognition_survey_answer`.
 
 KPIs : rétention J1 / J7 / J30, parties par jour, durée moyenne de partie, conversion payante, ARPDAU, taux de victoire par carte (équilibrage), taux de consultation quotidienne des aperçus.
 
@@ -442,16 +460,15 @@ cards(id, wikidata_id, series_id, rarity, cost, power, categories TEXT[], keywor
 card_images(id, card_id, source_url, author, license, license_url, modified BOOLEAN,
             personality_warning BOOLEAN, r2_key, fallback BOOLEAN)
 series(id, type /*base|world|country*/, country, name JSONB, release_at, status)
-terrains(id, series_id, name JSONB, effect JSONB, favored_category, favored_country)
 keywords(id, definition JSONB, effect JSONB)
 country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
-decks(id, user_id, name, card_ids TEXT[], updated_at)
+decks(id, user_id, name, leader_id, card_ids TEXT[], updated_at)
 wallets(user_id, coins, gems, essence, guild_tokens)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
 trade_ups(id, user_id, input_card_ids TEXT[], target_category, output_card_id, seed, created_at)
 trades(id, from_user, to_user, offered_card, requested_card, status, created_at, completed_at)
-matches(id, mode, player_a, player_b, ghost BOOLEAN, terrains TEXT[], seed, actions JSONB,
+matches(id, mode, player_a, player_b, leader_a, leader_b, ghost BOOLEAN, seed, actions JSONB,
         result, hype_level, created_at)
 ranked(user_id, season_id, rank, points, country)
 trending(date, card_id, score)
@@ -501,12 +518,12 @@ POST /takedown
 ## 19. Plan de développement
 
 ### Phase 1 — Moteur de règles
-- `packages/engine` : état de partie, tours simultanés, ordre de révélation, terrains, DSL d'effets, mots-clés, décompte, Hype.
+- `packages/engine` : état de partie, tours, combat (attaque, blocage, contres), Vies et Déclencheurs, DSL d'effets, mots-clés, Hype.
 - Tests unitaires exhaustifs (chaque mot-clé, chaque action, cas d'égalité, déterminisme avec seed).
 
 ### Phase 2 — Prototype jouable local
 - Rendu PixiJS : plateau, main, pose, révélation animée, fin de partie.
-- 40 cartes de test + 10 terrains en JSON. Partie contre une IA simple.
+- 5 Leaders et 50 cartes de test en JSON. Partie contre une IA simple.
 
 ### Phase 3 — Serveur et comptes
 - Fastify, PostgreSQL, comptes 21+, collections, decks, matchmaking WebSocket, mode fantôme, replays.

@@ -1,52 +1,41 @@
-import { type MatchContext, type MatchEvent, type Play, type PlayerView, type VisibleCard } from '@rabbithole/engine';
+import type { LegalActions, MatchContext, MatchEvent, PlayerIndex, PlayerView, VisibleCard } from '@rabbithole/engine';
+import { KEYWORD_NAMES } from '@rabbithole/engine';
 import { Application, Container, Graphics, Text, type FederatedPointerEvent } from 'pixi.js';
-import { t } from '../i18n';
-import { CardSprite, type CardFace } from './card-sprite';
-import { TerrainSprite, TERRAIN_SIZE } from './terrain-sprite';
+import { locale, t } from '../i18n';
+import { CardSprite, type CardFace, type Highlight } from './card-sprite';
 import { COLORS, FONT } from './theme';
 import { ease, Tweener } from './tween';
 
 // ---------------------------------------------------------------------------
-// Disposition logique (portrait). Le tout est mis à l'échelle de l'écran.
+// Disposition logique (portrait), mise à l'échelle de l'écran.
 // ---------------------------------------------------------------------------
 
-export const LOGICAL = { w: 720, h: 975 };
-const COL_X = (i: number) => 10 + i * 237;
-const COL_W = 226;
-const OPP_ZONE = { y: 4, h: 290 };
-const TERRAIN_Y = 304;
-const MY_ZONE = { y: 466, h: 290 };
-const HAND_Y = 868;
-
-/** Côté visuel : 0 = moi (en bas), 1 = adversaire (en haut). */
-type VisualSide = 0 | 1;
-
-function slotBase(terrain: number, side: VisualSide, index: number): { x: number; y: number } {
-  const c = index % 2;
-  const r = Math.floor(index / 2);
-  const x = COL_X(terrain) + 58 + c * 110;
-  const y = side === 0 ? MY_ZONE.y + 74 + r * 142 : OPP_ZONE.y + OPP_ZONE.h - 74 - r * 142;
-  return { x, y };
-}
+export const LOGICAL = { w: 720, h: 1020 };
+const SLOT_X = (i: number) => 92 + i * 134;
+const LEADER_X = 360;
+const SIDE_X = { life: 150, buzz: 570 };
+const ROW = { oppLeader: 104, oppChars: 296, myChars: 494, myLeader: 686 };
+const HAND_Y = 900;
+const DIVIDER_Y = 395;
+const RESTED = { rotation: Math.PI / 2, scale: 0.75 };
 
 export interface RendererCallbacks {
-  /** Le joueur dépose une carte de sa main sur un terrain. Renvoie `false` si refusé. */
-  onDrop(uid: string, terrain: number): boolean;
-  onUnstage(uid: string): void;
-  onInspectCard(defId: string, power: number | null): void;
-  onInspectTerrain(terrain: number): void;
+  onPlay(uid: string): void;
+  onAttack(attacker: string, target: string): void;
+  onSelect(uid: string | null): void;
+  onInspect(defId: string, power: number | null): void;
 }
 
 export interface RenderOptions {
-  staged: Play[];
+  /** Actions légales du joueur (null si ce n'est pas à lui de décider). */
+  legal: LegalActions | null;
+  selected: string | null;
   interactive: boolean;
-  /** Pour surligner les terrains où la carte tirée peut être posée. */
-  canDrop: (uid: string, terrain: number) => boolean;
 }
 
 interface Press {
   sprite: CardSprite;
-  origin: 'hand' | 'staged' | 'board';
+  origin: 'hand' | 'mine' | 'enemy';
   startX: number;
   startY: number;
   dragging: boolean;
@@ -54,43 +43,86 @@ interface Press {
   timer: ReturnType<typeof setTimeout>;
 }
 
+/** Pile de Vies (dos de cartes empilés + nombre). */
+class LifePile extends Container {
+  private readonly g = new Graphics();
+  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fontWeight: '700', fill: COLORS.text }, resolution: 2 });
+  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 12, fill: COLORS.muted }, resolution: 2 });
+  count = -1;
+
+  constructor() {
+    super();
+    this.value.anchor.set(0.5);
+    this.caption.anchor.set(0.5);
+    this.addChild(this.g, this.value, this.caption);
+  }
+
+  update(count: number): void {
+    if (count === this.count) return;
+    this.count = count;
+    this.g.clear();
+    const shown = Math.min(count, 6);
+    for (let i = 0; i < shown; i++) {
+      this.g.roundRect(-34 + i * 3, -46 - i * 4, 68, 90, 8).fill(COLORS.cardBack).stroke({ width: 2, color: count <= 2 ? COLORS.lose : COLORS.accent, alpha: 0.8 });
+    }
+    if (count === 0) this.g.roundRect(-34, -46, 68, 90, 8).stroke({ width: 2, color: COLORS.lose, alpha: 0.6 });
+    this.value.text = `❤ ${count}`;
+    this.value.style.fill = count <= 2 ? COLORS.lose : COLORS.text;
+    this.value.position.set(shown * 1.5, -4 - shown * 2);
+    this.caption.text = t('life');
+    this.caption.position.set(0, 60);
+  }
+}
+
+/** Indicateur de Buzz : actif / épuisé. */
+class BuzzMeter extends Container {
+  private readonly value = new Text({ text: '', style: { fontFamily: FONT, fontSize: 24, fontWeight: '700', fill: COLORS.mana }, resolution: 2 });
+  private readonly caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 12, fill: COLORS.muted, align: 'center' }, resolution: 2 });
+
+  constructor() {
+    super();
+    this.value.anchor.set(0.5);
+    this.caption.anchor.set(0.5, 0);
+    this.caption.position.set(0, 20);
+    this.addChild(this.value, this.caption);
+  }
+
+  update(active: number, rested: number, reserve: number): void {
+    this.value.text = `⚡ ${active}`;
+    this.caption.text = `${t('buzz_rested', { n: rested })}\n${t('buzz_reserve', { n: reserve })}`;
+  }
+}
+
 export class GameRenderer {
   readonly app = new Application();
   private tween!: Tweener;
   private readonly root = new Container();
-  private readonly zonesLayer = new Container();
-  private readonly terrainsLayer = new Container();
+  /** Plateau (fond, cartes en jeu, effets) : descend un peu sur un écran haut. */
+  private readonly boardRoot = new Container();
+  private readonly backLayer = new Container();
   private readonly boardLayer = new Container();
   private readonly handLayer = new Container();
   private readonly dragLayer = new Container();
   private readonly fxLayer = new Container();
-
   private readonly sprites = new Map<string, CardSprite>();
-  private readonly tiles: TerrainSprite[] = [];
-  private readonly zones: Graphics[] = [];
-  /** Modèle d'emplacements pendant l'animation : [terrain][côté visuel] = uids. */
-  private slots: string[][][] = [];
+  private readonly lifePiles: [LifePile, LifePile] = [new LifePile(), new LifePile()];
+  private readonly buzz: [BuzzMeter, BuzzMeter] = [new BuzzMeter(), new BuzzMeter()];
+  /** Position de repos de chaque sprite (pour le retour après un glisser). */
+  private readonly homes = new Map<string, { x: number; y: number; rested: boolean }>();
   private handOrder: string[] = [];
-  private stagedUids = new Set<string>();
+  private myBoard = new Set<string>();
+  private enemyBoard = new Set<string>();
 
   private view: PlayerView | null = null;
-  private options: RenderOptions = { staged: [], interactive: false, canDrop: () => false };
-  private selected: string | null = null;
+  private options: RenderOptions = { legal: null, selected: null, interactive: false };
   private press: Press | null = null;
   private destroyed = false;
-  /** Sur un écran plus haut que la disposition logique : le plateau descend un peu, la main se colle en bas. */
-  private oy = 0;
-  private handY = HAND_Y;
+  private scale = 1;
 
   constructor(
     private readonly ctx: MatchContext,
     private readonly callbacks: RendererCallbacks,
   ) {}
-
-  private slotPos(terrain: number, side: VisualSide, index: number): { x: number; y: number } {
-    const p = slotBase(terrain, side, index);
-    return { x: p.x, y: p.y + this.oy };
-  }
 
   async init(host: HTMLElement): Promise<void> {
     await this.app.init({
@@ -105,44 +137,47 @@ export class GameRenderer {
     this.tween = new Tweener(this.app.ticker);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.tween.speed = 0.05;
 
-    this.root.addChild(this.zonesLayer, this.terrainsLayer, this.boardLayer, this.handLayer, this.dragLayer, this.fxLayer);
+    this.boardRoot.addChild(this.backLayer, this.boardLayer, this.fxLayer);
+    this.root.addChild(this.boardRoot, this.handLayer, this.dragLayer);
     this.app.stage.addChild(this.root);
     this.app.stage.eventMode = 'static';
     this.app.stage.hitArea = this.app.screen;
     this.app.stage.on('globalpointermove', (e) => this.onMove(e));
     this.app.stage.on('pointerup', (e) => this.onUp(e));
     this.app.stage.on('pointerupoutside', (e) => this.onUp(e));
+    this.app.stage.on('pointertap', (e) => {
+      if (e.target === this.app.stage && this.options.interactive) this.callbacks.onSelect(null);
+    });
 
-    for (let i = 0; i < 3; i++) {
-      for (const side of [0, 1] as VisualSide[]) {
-        const zone = new Graphics();
-        zone.eventMode = side === 0 ? 'static' : 'none';
-        if (side === 0) zone.on('pointertap', () => this.onZoneTap(i));
-        this.zones[i * 2 + side] = zone;
-        this.zonesLayer.addChild(zone);
-      }
-      const tile = new TerrainSprite(this.ctx, i, this.ctx.rules.terrainRevealTurns[i] ?? i + 1);
-      tile.on('pointertap', () => this.callbacks.onInspectTerrain(i));
-      this.tiles.push(tile);
-      this.terrainsLayer.addChild(tile);
-    }
-    this.drawZones(null);
+    this.drawBackground();
+    this.lifePiles[0].position.set(SIDE_X.life, ROW.myLeader);
+    this.lifePiles[1].position.set(SIDE_X.life, ROW.oppLeader);
+    this.buzz[0].position.set(SIDE_X.buzz, ROW.myLeader - 14);
+    this.buzz[1].position.set(SIDE_X.buzz, ROW.oppLeader - 14);
+    this.backLayer.addChild(...this.lifePiles, ...this.buzz);
+
     this.app.renderer.on('resize', () => this.fit());
     this.fit();
   }
 
+  private drawBackground(): void {
+    const g = new Graphics();
+    g.roundRect(14, ROW.oppChars - 96, LOGICAL.w - 28, 192, 20).fill(COLORS.zone).stroke({ width: 1, color: COLORS.zoneLine });
+    g.roundRect(14, ROW.myChars - 96, LOGICAL.w - 28, 192, 20).fill(COLORS.zone).stroke({ width: 1, color: COLORS.zoneLine });
+    g.moveTo(40, DIVIDER_Y).lineTo(LOGICAL.w - 40, DIVIDER_Y).stroke({ width: 2, color: COLORS.accent, alpha: 0.35 });
+    this.backLayer.addChild(g);
+  }
+
   private fit(): void {
     const { width, height } = this.app.screen;
-    const scale = Math.min(width / LOGICAL.w, height / LOGICAL.h);
-    const extra = Math.max(0, height / scale - LOGICAL.h);
-    this.oy = Math.round(extra * 0.45);
-    this.handY = HAND_Y + Math.round(extra * 0.9);
-    this.root.scale.set(scale);
-    this.root.position.set((width - LOGICAL.w * scale) / 2, 0);
+    this.scale = Math.min(width / LOGICAL.w, height / LOGICAL.h);
+    this.root.scale.set(this.scale);
+    // Sur un écran plus haut que la disposition : la main se colle en bas, le plateau descend un peu.
+    const extra = Math.max(0, height / this.scale - LOGICAL.h);
+    this.boardRoot.y = Math.round(extra * 0.4);
+    this.handLayer.y = Math.round(extra * 0.9);
+    this.root.position.set((width - LOGICAL.w * this.scale) / 2, 0);
     this.app.stage.hitArea = this.app.screen;
-    this.tiles.forEach((tile, i) => tile.position.set(COL_X(i) + COL_W / 2, TERRAIN_Y + TERRAIN_SIZE.h / 2 + this.oy));
-    this.drawZones(null);
-    this.refresh();
   }
 
   destroy(): void {
@@ -159,132 +194,136 @@ export class GameRenderer {
   // Synchronisation avec la vue
   // -------------------------------------------------------------------------
 
-  private drawZones(dragUid: string | null): void {
-    for (let i = 0; i < 3; i++) {
-      for (const side of [0, 1] as VisualSide[]) {
-        const zone = this.zones[i * 2 + side];
-        if (!zone) continue;
-        const area = side === 0 ? MY_ZONE : OPP_ZONE;
-        const droppable = side === 0 && dragUid !== null && this.options.canDrop(dragUid, i);
-        zone
-          .clear()
-          .roundRect(COL_X(i), area.y + this.oy, COL_W, area.h, 16)
-          .fill(droppable ? COLORS.zoneDropActive : COLORS.zone)
-          .stroke({ width: droppable ? 3 : 1, color: droppable ? COLORS.mana : COLORS.zoneLine });
-      }
-    }
-  }
-
-  private sprite(uid: string, mode: 'board' | 'hand'): CardSprite {
+  private sprite(uid: string, mode: 'board' | 'hand', spawn: { x: number; y: number }): CardSprite {
     let s = this.sprites.get(uid);
     if (!s) {
       s = new CardSprite(this.ctx, uid, mode);
+      s.position.set(spawn.x, spawn.y);
       s.on('pointerdown', (e) => this.onCardDown(s!, e));
       this.sprites.set(uid, s);
     }
     return s;
   }
 
-  private faceOf(card: VisibleCard): CardFace {
-    return { defId: card.defId, power: card.power, cost: card.cost, clickbait: card.clickbait, trending: card.trending };
+  private faceOf(c: VisibleCard, inHand: boolean): CardFace {
+    return {
+      defId: c.defId,
+      power: c.type === 'event' ? null : c.power,
+      cost: inHand ? c.cost : undefined,
+      counter: inHand ? c.counter : undefined,
+      buzz: c.buzz,
+      cancelled: c.cancelled,
+      trending: c.trending,
+    };
   }
 
-  /** Met l'affichage en conformité avec la vue (qui fait foi) et les poses en attente. */
+  private highlightOf(uid: string): Highlight {
+    const legal = this.options.legal;
+    if (!legal || !this.options.interactive) return null;
+    if (legal.playable.includes(uid)) return 'playable';
+    const selected = legal.attackers.find((a) => a.uid === this.options.selected);
+    if (selected?.targets.includes(uid)) return 'target';
+    if (legal.attackers.some((a) => a.uid === uid)) return 'ready';
+    return null;
+  }
+
+  /** Change de conteneur en gardant la position à l'écran. */
+  private reparent(s: CardSprite, layer: Container): void {
+    if (s.parent === layer) return;
+    if (s.parent) {
+      const p = layer.toLocal(s.getGlobalPosition());
+      s.position.set(p.x, p.y);
+    }
+    layer.addChild(s);
+  }
+
+  private place(s: CardSprite, x: number, y: number, rested: boolean, layer: Container): void {
+    this.homes.set(s.cardUid, { x, y, rested });
+    this.reparent(s, layer);
+    void this.tween.to(s.position, { x, y }, 280);
+    void this.tween.to(s, { rotation: rested ? RESTED.rotation : 0 }, 220);
+    const scale = rested ? RESTED.scale : 1;
+    void this.tween.to(s.scale, { x: scale, y: scale }, 220);
+    s.alpha = 1;
+  }
+
+  /** Met l'affichage en conformité avec la vue (qui fait foi). */
   render(view: PlayerView, options: RenderOptions): void {
     if (this.destroyed || !this.tween) return;
     this.view = view;
     this.options = options;
-    const me = view.you;
-    const opp = me === 0 ? 1 : 0;
-    this.stagedUids = new Set(options.staged.map((p) => p.uid));
-    if (this.selected && !view.hand.some((c) => c.uid === this.selected && !this.stagedUids.has(c.uid))) this.selected = null;
-
-    view.terrains.forEach((tv, i) => this.tiles[i]?.update(tv.defId, [tv.power[me], tv.power[opp]]));
-
     const keep = new Set<string>();
-    this.slots = view.terrains.map(() => [[], []]);
+    this.myBoard = new Set();
+    this.enemyBoard = new Set();
 
-    view.terrains.forEach((tv, ti) => {
-      for (const [visual, real] of [
-        [0, me],
-        [1, opp],
-      ] as const) {
-        tv.cards[real].forEach((card) => {
-          this.placeBoard(card.uid, this.faceOf(card), ti, visual, false);
-          keep.add(card.uid);
-        });
-      }
+    const sides: [typeof view.me, typeof view.opponent] = [view.me, view.opponent];
+    sides.forEach((side, i) => {
+      const mine = i === 0;
+      const leaderY = mine ? ROW.myLeader : ROW.oppLeader;
+      const charsY = mine ? ROW.myChars : ROW.oppChars;
+      const boardSet = mine ? this.myBoard : this.enemyBoard;
+
+      const leader = this.sprite(side.leader.uid, 'board', { x: LEADER_X, y: leaderY });
+      leader.setMode('board');
+      leader.setFace(this.faceOf(side.leader, false));
+      this.place(leader, LEADER_X, leaderY, side.leader.rested, this.boardLayer);
+      keep.add(side.leader.uid);
+      boardSet.add(side.leader.uid);
+
+      side.characters.forEach((c, slot) => {
+        const s = this.sprite(c.uid, 'board', { x: LEADER_X, y: mine ? LOGICAL.h + 100 : -120 });
+        s.setMode('board');
+        s.setFace(this.faceOf(c, false));
+        this.place(s, SLOT_X(slot), charsY, c.rested, this.boardLayer);
+        keep.add(c.uid);
+        boardSet.add(c.uid);
+      });
+
+      this.lifePiles[i]!.update(side.life);
+      this.buzz[i]!.update(side.buzzActive, side.buzzRested, side.buzzDeck);
     });
 
-    for (const play of options.staged) {
-      const card = view.hand.find((c) => c.uid === play.uid);
-      if (!card) continue;
-      this.placeBoard(card.uid, { defId: card.defId, power: card.power }, play.terrain, 0, true);
-      keep.add(card.uid);
-    }
-
-    this.handOrder = view.hand.filter((c) => !this.stagedUids.has(c.uid)).map((c) => c.uid);
-    for (const card of view.hand) {
-      if (this.stagedUids.has(card.uid)) continue;
-      const s = this.sprite(card.uid, 'hand');
-      if (!s.parent) s.position.set(LOGICAL.w + 80, this.handY);
+    this.handOrder = view.me.hand.map((c) => c.uid);
+    for (const c of view.me.hand) {
+      const s = this.sprite(c.uid, 'hand', { x: LOGICAL.w + 80, y: HAND_Y });
       s.setMode('hand');
-      s.setFace(this.faceOf(card));
-      s.setStaged(false);
-      keep.add(card.uid);
+      s.setFace(this.faceOf(c, true));
+      keep.add(c.uid);
     }
     this.layoutHand();
 
     for (const [uid, s] of this.sprites) {
+      s.setState(uid === options.selected, this.highlightOf(uid));
       if (keep.has(uid)) continue;
       this.sprites.delete(uid);
+      this.homes.delete(uid);
       void this.tween.to(s, { alpha: 0 }, 200).then(() => s.destroy({ children: true }));
     }
-    this.drawZones(null);
-  }
-
-  private placeBoard(uid: string, face: CardFace, terrain: number, side: VisualSide, staged: boolean): void {
-    const s = this.sprite(uid, 'board');
-    const index = this.slots[terrain]![side]!.length;
-    this.slots[terrain]![side]!.push(uid);
-    const pos = this.slotPos(terrain, side, index);
-    if (!s.parent) s.position.set(pos.x, side === 1 ? -100 : pos.y);
-    s.setMode('board');
-    s.setFace(face);
-    s.setStaged(staged);
-    s.setSelected(false);
-    s.alpha = 1;
-    this.boardLayer.addChild(s);
-    void this.tween.to(s.position, pos, 260);
-    void this.tween.to(s.scale, { x: 1, y: 1 }, 200);
   }
 
   private layoutHand(): void {
     const n = this.handOrder.length;
-    const spacing = n > 1 ? Math.min(136, (LOGICAL.w - 20 - 128) / (n - 1)) : 0;
+    const spacing = n > 1 ? Math.min(136, (LOGICAL.w - 24 - 128) / (n - 1)) : 0;
     const start = LOGICAL.w / 2 - (spacing * (n - 1)) / 2;
     this.handOrder.forEach((uid, i) => {
       const s = this.sprites.get(uid);
       if (!s) return;
-      const selected = uid === this.selected;
-      s.setSelected(selected);
-      this.handLayer.addChild(s);
-      void this.tween.to(s.position, { x: start + i * spacing, y: this.handY - (selected ? 22 : 0) }, 220);
-      void this.tween.to(s.scale, { x: 1, y: 1 }, 200);
+      const raised = uid === this.options.selected ? 24 : 0;
+      this.place(s, start + i * spacing, HAND_Y - raised, false, this.handLayer);
     });
   }
 
-  /** Position à l'écran (pixels CSS) d'une carte de la main : utilisé par les tests E2E. */
+  private refresh(): void {
+    if (this.view) this.render(this.view, this.options);
+  }
+
+  /** Position écran (pixels CSS) d'une carte de la main : utilisé par les tests E2E. */
   handCardScreenPosition(index: number): { x: number; y: number } | null {
     const s = this.sprites.get(this.handOrder[index] ?? '');
     if (!s) return null;
     const p = s.getGlobalPosition();
     const rect = this.app.canvas.getBoundingClientRect();
     return { x: rect.left + p.x, y: rect.top + p.y };
-  }
-
-  private refresh(): void {
-    if (this.view) this.render(this.view, this.options);
   }
 
   // -------------------------------------------------------------------------
@@ -295,17 +334,11 @@ export class GameRenderer {
     return this.root.toLocal(e.global);
   }
 
-  private zoneAt(x: number, y: number): number | null {
-    y -= this.oy;
-    if (y < MY_ZONE.y - 20 || y > MY_ZONE.y + MY_ZONE.h + 20) return null;
-    for (let i = 0; i < 3; i++) if (x >= COL_X(i) && x <= COL_X(i) + COL_W) return i;
-    return null;
-  }
-
   private onCardDown(sprite: CardSprite, e: FederatedPointerEvent): void {
     e.stopPropagation();
     if (this.press) clearTimeout(this.press.timer);
-    const origin = this.stagedUids.has(sprite.cardUid) ? 'staged' : this.handOrder.includes(sprite.cardUid) ? 'hand' : 'board';
+    const uid = sprite.cardUid;
+    const origin = this.handOrder.includes(uid) ? 'hand' : this.myBoard.has(uid) ? 'mine' : 'enemy';
     const p = this.local(e);
     const press: Press = {
       sprite,
@@ -315,33 +348,47 @@ export class GameRenderer {
       dragging: false,
       longPressed: false,
       timer: setTimeout(() => {
-        if (this.press !== press || press.dragging || sprite.face.defId === null) return;
+        if (this.press !== press || press.dragging || !sprite.face.defId) return;
         press.longPressed = true;
-        this.callbacks.onInspectCard(sprite.face.defId, sprite.face.power);
+        this.callbacks.onInspect(sprite.face.defId, sprite.face.power);
       }, 450),
     };
     this.press = press;
   }
 
+  private canDrag(press: Press): boolean {
+    const legal = this.options.legal;
+    if (!legal || !this.options.interactive) return false;
+    if (press.origin === 'hand') return legal.playable.includes(press.sprite.cardUid);
+    if (press.origin === 'mine') return legal.attackers.some((a) => a.uid === press.sprite.cardUid);
+    return false;
+  }
+
   private onMove(e: FederatedPointerEvent): void {
     const press = this.press;
-    if (!press || press.longPressed || press.origin !== 'hand' || !this.options.interactive) return;
+    if (!press || press.longPressed) return;
     const p = this.local(e);
     if (!press.dragging) {
-      if (Math.hypot(p.x - press.startX, p.y - press.startY) < 10) return;
+      if (Math.hypot(p.x - press.startX, p.y - press.startY) < 10 || !this.canDrag(press)) return;
       press.dragging = true;
       clearTimeout(press.timer);
-      this.selected = null;
-      press.sprite.setSelected(false);
-      this.dragLayer.addChild(press.sprite);
-      void this.tween.to(press.sprite.scale, { x: 1.06, y: 1.06 }, 120);
+      if (press.origin === 'mine') this.callbacks.onSelect(press.sprite.cardUid);
+      this.reparent(press.sprite, this.dragLayer);
+      void this.tween.to(press.sprite, { rotation: 0 }, 100);
+      void this.tween.to(press.sprite.scale, { x: 1.05, y: 1.05 }, 100);
     }
-    press.sprite.position.set(p.x, p.y - 30);
-    const zone = this.zoneAt(p.x, p.y);
-    this.drawZones(press.sprite.cardUid);
-    if (zone !== null && this.options.canDrop(press.sprite.cardUid, zone)) {
-      this.zones[zone * 2]?.roundRect(COL_X(zone), MY_ZONE.y + this.oy, COL_W, MY_ZONE.h, 16).stroke({ width: 4, color: COLORS.accent });
+    press.sprite.position.set(p.x, p.y - 20);
+  }
+
+  /** Cible adverse sous le pointeur (Leader ou Personnage), parmi les cibles légales de l'attaquant. */
+  private targetAt(attacker: string, x: number, y: number): string | null {
+    y -= this.boardRoot.y;
+    const targets = this.options.legal?.attackers.find((a) => a.uid === attacker)?.targets ?? [];
+    for (const uid of targets) {
+      const home = this.homes.get(uid);
+      if (home && Math.abs(home.x - x) < 70 && Math.abs(home.y - y) < 90) return uid;
     }
+    return null;
   }
 
   private onUp(e: FederatedPointerEvent): void {
@@ -350,59 +397,46 @@ export class GameRenderer {
     this.press = null;
     clearTimeout(press.timer);
     if (press.longPressed) return;
+    const uid = press.sprite.cardUid;
 
     if (press.dragging) {
       const p = this.local(e);
-      const zone = this.zoneAt(p.x, p.y);
-      this.drawZones(null);
-      if (zone === null || !this.callbacks.onDrop(press.sprite.cardUid, zone)) this.refresh();
+      if (press.origin === 'hand' && p.y < HAND_Y + this.handLayer.y - 110) {
+        this.callbacks.onPlay(uid);
+        return;
+      }
+      if (press.origin === 'mine') {
+        const target = this.targetAt(uid, p.x, p.y);
+        if (target) {
+          this.callbacks.onAttack(uid, target);
+          return;
+        }
+      }
+      this.refresh();
       return;
     }
 
-    const def = press.sprite.face.defId;
-    if (press.origin === 'hand') {
-      if (!this.options.interactive) {
-        if (def) this.callbacks.onInspectCard(def, press.sprite.face.power);
-        return;
-      }
-      this.selected = this.selected === press.sprite.cardUid ? null : press.sprite.cardUid;
-      this.layoutHand();
-    } else if (press.origin === 'staged') {
-      if (this.options.interactive) this.callbacks.onUnstage(press.sprite.cardUid);
-    } else if (def) {
-      this.callbacks.onInspectCard(def, press.sprite.face.power);
+    // Tap.
+    const legal = this.options.legal;
+    if (press.origin === 'enemy') {
+      const selected = this.options.selected;
+      const isTarget = legal?.attackers.find((a) => a.uid === selected)?.targets.includes(uid);
+      if (selected && isTarget && this.options.interactive) this.callbacks.onAttack(selected, uid);
+      else if (press.sprite.face.defId) this.callbacks.onInspect(press.sprite.face.defId, press.sprite.face.power);
+      return;
     }
-  }
-
-  private onZoneTap(terrain: number): void {
-    if (!this.selected || !this.options.interactive) return;
-    const uid = this.selected;
-    this.selected = null;
-    if (!this.callbacks.onDrop(uid, terrain)) this.refresh();
+    if (!this.options.interactive) {
+      if (press.sprite.face.defId) this.callbacks.onInspect(press.sprite.face.defId, press.sprite.face.power);
+      return;
+    }
+    this.callbacks.onSelect(this.options.selected === uid ? null : uid);
   }
 
   // -------------------------------------------------------------------------
-  // Animation des événements du moteur
+  // Animations
   // -------------------------------------------------------------------------
 
-  private find(uid: string): { terrain: number; side: VisualSide; index: number } | null {
-    for (let t = 0; t < this.slots.length; t++) {
-      for (const side of [0, 1] as VisualSide[]) {
-        const index = this.slots[t]![side]!.indexOf(uid);
-        if (index >= 0) return { terrain: t, side, index };
-      }
-    }
-    return null;
-  }
-
-  private relayout(terrain: number, side: VisualSide): void {
-    this.slots[terrain]![side]!.forEach((uid, i) => {
-      const s = this.sprites.get(uid);
-      if (s) void this.tween.to(s.position, this.slotPos(terrain, side, i), 260, ease.inOutCubic);
-    });
-  }
-
-  private float(x: number, y: number, label: string, color: number, size = 26): void {
+  private float(x: number, y: number, label: string, color: number, size = 24): void {
     const txt = new Text({
       text: label,
       style: { fontFamily: FONT, fontSize: size, fontWeight: '700', fill: color, stroke: { color: 0x000000, width: 4 } },
@@ -411,141 +445,134 @@ export class GameRenderer {
     txt.anchor.set(0.5);
     txt.position.set(x, y);
     this.fxLayer.addChild(txt);
-    void this.tween.to(txt.position, { y: y - 46 }, 800);
-    void this.tween.to(txt, { alpha: 0 }, 800, ease.linear).then(() => txt.destroy());
+    void this.tween.to(txt.position, { y: y - 46 }, 900);
+    void this.tween.to(txt, { alpha: 0 }, 900, ease.linear).then(() => txt.destroy());
   }
 
   /** Grand bandeau au centre (tour, Hype). */
   async banner(label: string, color: number = COLORS.text): Promise<void> {
-    if (!this.tween) return;
+    if (!this.tween || this.destroyed) return;
     const box = new Container();
-    const txt = new Text({ text: label, style: { fontFamily: FONT, fontSize: 40, fontWeight: '700', fill: color }, resolution: 2 });
+    const txt = new Text({ text: label, style: { fontFamily: FONT, fontSize: 38, fontWeight: '700', fill: color }, resolution: 2 });
     txt.anchor.set(0.5);
-    const bg = new Graphics().roundRect(-txt.width / 2 - 28, -36, txt.width + 56, 72, 36).fill({ color: 0x000000, alpha: 0.75 });
+    const bg = new Graphics().roundRect(-txt.width / 2 - 28, -34, txt.width + 56, 68, 34).fill({ color: 0x000000, alpha: 0.78 });
     box.addChild(bg, txt);
-    box.position.set(LOGICAL.w / 2, TERRAIN_Y + TERRAIN_SIZE.h / 2 + this.oy);
+    box.position.set(LOGICAL.w / 2, DIVIDER_Y);
     box.scale.set(0.6);
     box.alpha = 0;
     this.fxLayer.addChild(box);
-    await Promise.all([this.tween.to(box.scale, { x: 1, y: 1 }, 260, ease.outBack), this.tween.to(box, { alpha: 1 }, 200)]);
-    await this.tween.wait(650);
-    await this.tween.to(box, { alpha: 0 }, 250);
+    await Promise.all([this.tween.to(box.scale, { x: 1, y: 1 }, 240, ease.outBack), this.tween.to(box, { alpha: 1 }, 180)]);
+    await this.tween.wait(550);
+    await this.tween.to(box, { alpha: 0 }, 220);
     box.destroy({ children: true });
   }
 
-  private async flip(s: CardSprite, face: CardFace): Promise<void> {
-    await this.tween.to(s.scale, { x: 0 }, 110, ease.linear);
-    s.setFace(face);
-    s.setStaged(false);
-    await this.tween.to(s.scale, { x: 1.12, y: 1.12 }, 130, ease.outCubic);
-    await this.tween.to(s.scale, { x: 1, y: 1 }, 120);
+  /** Montre une carte en grand au centre (Événement joué, Déclencheur, Contre). */
+  private async showcase(defId: string, caption: string): Promise<void> {
+    const s = new CardSprite(this.ctx, `showcase-${defId}`, 'hand');
+    s.eventMode = 'none';
+    s.setFace({ defId, power: null });
+    s.position.set(LOGICAL.w / 2, DIVIDER_Y);
+    s.scale.set(0.5);
+    s.alpha = 0;
+    const label = new Text({ text: caption, style: { fontFamily: FONT, fontSize: 20, fontWeight: '700', fill: COLORS.accent, stroke: { color: 0x000000, width: 4 } }, resolution: 2 });
+    label.anchor.set(0.5);
+    label.position.set(LOGICAL.w / 2, DIVIDER_Y + 120);
+    this.fxLayer.addChild(s, label);
+    await Promise.all([this.tween.to(s.scale, { x: 1.25, y: 1.25 }, 260, ease.outBack), this.tween.to(s, { alpha: 1 }, 200)]);
+    await this.tween.wait(650);
+    await Promise.all([this.tween.to(s, { alpha: 0 }, 220), this.tween.to(label, { alpha: 0 }, 220)]);
+    s.destroy({ children: true });
+    label.destroy();
   }
 
-  /** Joue les événements d'une résolution, puis se cale sur la vue finale. */
-  async animate(events: MatchEvent[], finalView: PlayerView, finalOptions: RenderOptions): Promise<void> {
-    if (!this.view || this.destroyed) return;
-    const me = this.view.you;
-    const side = (player: number): VisualSide => (player === me ? 0 : 1);
-    const k = this.ctx.rules.keywords;
+  private async shake(s: CardSprite): Promise<void> {
+    const x = s.x;
+    for (const dx of [-10, 10, -6, 6, 0]) await this.tween.to(s.position, { x: x + dx }, 45, ease.linear);
+  }
+
+  /** Joue les événements d'une étape, puis se cale sur la vue. */
+  async animate(events: MatchEvent[], view: PlayerView, options: RenderOptions): Promise<void> {
+    if (!this.tween || this.destroyed) return;
+    const me: PlayerIndex = view.you;
+    const lifeAnchor = (p: PlayerIndex) => this.lifePiles[p === me ? 0 : 1]!.position;
 
     for (const e of events) {
       if (this.destroyed) return;
       switch (e.type) {
         case 'turn_started':
-          if (e.turn > 1) await this.banner(e.turn === this.ctx.rules.turns ? t('final_turn_banner') : t('turn_banner', { n: e.turn }));
+          if (e.turn > 1 || e.player !== me) await this.banner(e.player === me ? t('your_turn') : t('their_turn'), e.player === me ? COLORS.win : COLORS.text);
           break;
-        case 'terrain_revealed': {
-          const tile = this.tiles[e.terrain];
-          if (!tile) break;
-          await this.tween.to(tile.scale, { x: 0 }, 140, ease.linear);
-          tile.update(e.defId, [0, 0]);
-          await this.tween.to(tile.scale, { x: 1 }, 160);
+        case 'card_played':
+          if (e.cardType === 'event') await this.showcase(e.defId, t('event').toUpperCase());
           break;
-        }
-        case 'card_played': {
-          if (side(e.player) === 0) break; // déjà affichée (pose en attente)
-          const s = this.sprite(e.uid, 'board');
-          s.setMode('board');
-          s.setFace({ defId: null, power: null });
-          const index = this.slots[e.terrain]![1]!.length;
-          this.slots[e.terrain]![1]!.push(e.uid);
-          const pos = this.slotPos(e.terrain, 1, index);
-          s.position.set(pos.x, -120);
-          this.boardLayer.addChild(s);
-          await this.tween.to(s.position, pos, 220);
+        case 'attack_declared': {
+          const a = this.sprites.get(e.attacker);
+          const target = this.homes.get(e.target);
+          if (!a || !target) break;
+          const from = { x: a.x, y: a.y };
+          await this.tween.to(a.position, { x: from.x + (target.x - from.x) * 0.45, y: from.y + (target.y - from.y) * 0.45 }, 220, ease.inOutCubic);
+          this.float(target.x, target.y - 70, '⚔', COLORS.lose, 34);
+          await this.tween.to(a.position, from, 200);
           break;
         }
-        case 'card_revealed': {
+        case 'blocked': {
+          const s = this.sprites.get(e.blocker);
+          if (s) this.float(s.x, s.y - 70, t('blocked'), COLORS.mana);
+          await this.tween.wait(350);
+          break;
+        }
+        case 'counter_played':
+          if (e.value > 0) {
+            const target = this.view?.battle ? this.homes.get(this.view.battle.target) : undefined;
+            this.float(target?.x ?? LOGICAL.w / 2, (target?.y ?? DIVIDER_Y) - 40, `${t('counter')} +${e.value}`, COLORS.win);
+            await this.tween.wait(350);
+          } else {
+            await this.showcase(e.defId, t('counter').toUpperCase());
+          }
+          break;
+        case 'battle_resolved': {
+          const s = this.sprites.get(e.target);
+          const home = this.homes.get(e.target);
+          this.float(home?.x ?? LOGICAL.w / 2, (home?.y ?? DIVIDER_Y) + 10, `${e.attackerPower} vs ${e.defenderPower}`, e.hit ? COLORS.lose : COLORS.win, 26);
+          if (e.hit && s) await this.shake(s);
+          else await this.tween.wait(350);
+          break;
+        }
+        case 'life_lost': {
+          const at = lifeAnchor(e.player);
+          this.float(at.x, at.y - 40, `−1 ❤`, COLORS.lose, 28);
+          this.lifePiles[e.player === me ? 0 : 1]!.update(e.remaining);
+          await this.tween.wait(300);
+          break;
+        }
+        case 'trigger_revealed':
+          await this.showcase(e.defId, t('trigger').toUpperCase());
+          break;
+        case 'card_ko': {
           const s = this.sprites.get(e.uid);
           if (!s) break;
-          await this.flip(s, { defId: e.defId, power: e.power, clickbait: false });
-          await this.tween.wait(140);
+          this.float(s.x, s.y, 'KO', COLORS.lose, 34);
+          await Promise.all([this.tween.to(s.scale, { x: 0.3, y: 0.3 }, 280), this.tween.to(s, { alpha: 0 }, 280)]);
+          break;
+        }
+        case 'card_bounced': {
+          const s = this.sprites.get(e.uid);
+          if (s) await this.tween.to(s, { alpha: 0 }, 250);
           break;
         }
         case 'keyword_triggered': {
           const s = this.sprites.get(e.uid);
-          if (!s?.parent) break;
-          const label = e.keyword.toUpperCase();
-          this.float(s.x, s.y - 50, label, COLORS.accent, 20);
-          if (e.keyword === 'clickbait') s.setFace({ ...s.face, clickbait: true, power: (s.face.power ?? 0) + k.clickbait.bonus });
-          await this.tween.wait(260);
+          if (s?.parent) this.float(s.x, s.y - 60, KEYWORD_NAMES[e.keyword][locale].toUpperCase(), COLORS.accent, 20);
+          await this.tween.wait(250);
           break;
         }
-        case 'power_changed':
-        case 'power_set': {
+        case 'power_changed': {
           const s = this.sprites.get(e.uid);
-          if (!s?.parent || !this.find(e.uid)) break;
-          const before = s.face.power ?? 0;
+          if (!s?.parent || this.handOrder.includes(e.uid)) break;
           s.setPower(e.power);
-          const delta = e.type === 'power_changed' ? e.delta : e.power - before;
-          if (delta !== 0) this.float(s.x, s.y - 10, delta > 0 ? `+${delta}` : `${delta}`, delta > 0 ? COLORS.win : COLORS.lose);
-          await this.tween.wait(200);
-          break;
-        }
-        case 'card_destroyed': {
-          const at = this.find(e.uid);
-          const s = this.sprites.get(e.uid);
-          if (!at || !s) break;
-          this.float(s.x, s.y, '✖', COLORS.lose, 40);
-          await Promise.all([this.tween.to(s.scale, { x: 0.3, y: 0.3 }, 260), this.tween.to(s, { alpha: 0 }, 260)]);
-          this.slots[at.terrain]![at.side]!.splice(at.index, 1);
-          this.sprites.delete(e.uid);
-          s.destroy({ children: true });
-          this.relayout(at.terrain, at.side);
-          break;
-        }
-        case 'card_moved':
-        case 'card_stolen': {
-          const at = this.find(e.uid);
-          if (!at) break;
-          this.slots[at.terrain]![at.side]!.splice(at.index, 1);
-          const toTerrain = e.type === 'card_moved' ? e.to : e.terrain;
-          const toSide = e.type === 'card_moved' ? at.side : side(e.to);
-          this.slots[toTerrain]![toSide]!.push(e.uid);
-          this.relayout(at.terrain, at.side);
-          this.relayout(toTerrain, toSide);
-          await this.tween.wait(300);
-          break;
-        }
-        case 'card_created': {
-          if (e.zone !== 'board' || e.terrain === null) break;
-          const vs = side(e.player);
-          const s = this.sprite(e.uid, 'board');
-          s.setMode('board');
-          s.setFace({ defId: e.defId, power: e.power });
-          const src = e.source ? this.sprites.get(e.source) : undefined;
-          const index = this.slots[e.terrain]![vs]!.length;
-          this.slots[e.terrain]![vs]!.push(e.uid);
-          s.position.set(src?.x ?? this.slotPos(e.terrain, vs, index).x, src?.y ?? this.slotPos(e.terrain, vs, index).y);
-          s.scale.set(0.4);
-          this.boardLayer.addChild(s);
-          await Promise.all([this.tween.to(s.position, this.slotPos(e.terrain, vs, index), 320), this.tween.to(s.scale, { x: 1, y: 1 }, 320, ease.outBack)]);
-          break;
-        }
-        case 'card_transformed': {
-          const s = this.sprites.get(e.uid);
-          if (!s?.parent || !this.find(e.uid)) break;
-          await this.flip(s, { defId: e.to, power: e.power });
+          this.float(s.x, s.y - 20, e.delta > 0 ? `+${e.delta}` : `${e.delta}`, e.delta > 0 ? COLORS.win : COLORS.lose);
+          await this.tween.wait(180);
           break;
         }
         case 'stake_changed':
@@ -555,6 +582,6 @@ export class GameRenderer {
           break;
       }
     }
-    if (!this.destroyed) this.render(finalView, finalOptions);
+    if (!this.destroyed) this.render(view, options);
   }
 }

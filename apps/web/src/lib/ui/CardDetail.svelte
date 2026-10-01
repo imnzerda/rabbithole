@@ -35,16 +35,21 @@
       onkeydown={(e) => e.key === 'Escape' && onclose()}
     >
       <div class="top">
-        <span class="cost" title={t('cost')}>{def.cost}</span>
+        {#if def.type !== 'leader'}<span class="cost" title={t('cost')}>{def.cost}</span>{/if}
         <div class="titles">
           <h2>{loc(def.name)}</h2>
           <p class="meta">
             {def.categories.map((c) => `${CATEGORY_STYLE[c].glyph} ${CATEGORY_NAMES[c][locale]}`).join(' · ')}
           </p>
         </div>
-        <span class="power" title={t('power')}>{power ?? def.power}</span>
+        {#if def.type !== 'event'}<span class="power" title={t('power')}>{power ?? def.power}</span>{/if}
       </div>
-      <p class="rarity">{t('rarity')} : {t(`rarity_${def.rarity}`)}</p>
+      <p class="rarity">
+        {def.type === 'leader' ? t('leader') : def.type === 'event' ? t('event') : ''}
+        {def.type !== 'character' ? ' · ' : ''}{t('rarity')} : {t(`rarity_${def.rarity}`)}
+        {#if def.type === 'leader'} · ❤ {def.life} {t('life')}{/if}
+        {#if (def.counter ?? 0) > 0} · {t('counter_value')} +{def.counter}{/if}
+      </p>
 
       {#if lines.length}
         <ul>

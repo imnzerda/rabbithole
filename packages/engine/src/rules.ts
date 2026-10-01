@@ -1,84 +1,82 @@
 import type { Action } from './types.js';
 
 /**
- * Valeurs d'équilibrage et de format. Le serveur peut les charger depuis la base
- * et les passer au contexte ; `DEFAULT_RULES` reflète le cahier des charges.
+ * Valeurs de format et d'équilibrage (modèle « duel » inspiré du TCG One Piece,
+ * puissances divisées par 1000 pour la lisibilité). Le serveur peut les surcharger
+ * depuis la base ; `DEFAULT_RULES` est la référence.
  */
 export interface RulesConfig {
   deckSize: number;
   maxCopiesPerCard: number;
-  turns: number;
-  terrainCount: number;
-  /** Terrains contrôlés nécessaires pour gagner. */
-  terrainsToWin: number;
-  /** Tour de révélation de chaque terrain (index = position du terrain). */
-  terrainRevealTurns: number[];
-  /** Autorise la pose sur un terrain pas encore révélé. Désactivé par défaut : on ne joue que sur ce qu'on voit. */
-  allowPlayOnUnrevealedTerrain: boolean;
   startingHand: number;
-  drawPerTurn: number;
-  maxHandSize: number;
-  maxCardsPerTerrain: number;
-  /** Mana disponible par tour (index 0 = tour 1). */
-  manaByTurn: number[];
-  minCost: number;
+  maxCharacters: number;
+  /** Buzz : réserve totale, gain par tour, gain du tout premier tour du premier joueur. */
+  buzzTotal: number;
+  buzzPerTurn: number;
+  buzzFirstTurn: number;
+  /** Puissance donnée par chaque Buzz attaché, pendant le tour de son contrôleur. */
+  buzzPower: number;
+  /** Le premier joueur ne pioche pas à son premier tour. */
+  firstPlayerSkipsDraw: boolean;
+  /** Personne n'attaque pendant son tout premier tour. */
+  noAttackOnFirstTurn: boolean;
+  /** Au-delà, la partie s'arrête : plus de Vies l'emporte, sinon égalité. */
+  maxTurns: number;
+  /** Minuteurs (gérés par le serveur / l'UI, pas par le moteur). */
   turnTimerSeconds: number;
-  countryTerrainBonus: number;
+  reactionTimerSeconds: number;
   hype: {
     baseStake: number;
     multiplier: number;
     maxStake: number;
-    autoDoubleFinalTurn: boolean;
   };
   keywords: {
-    viral: { powerPenalty: number };
-    ratio: { amount: number };
-    /** Bonus réel et temporaire : actif le tour de la pose et le tour suivant. */
-    clickbait: { bonus: number; durationTurns: number };
-    elan: { bonus: number; maxTurn: number };
+    viral: { damage: number };
+    clickbait: { bonus: number };
     croissance: { perTurn: number };
     tendance: { bonus: number };
+    /** Séduction : coût maximum du personnage volé. */
+    seduction: { maxCost: number };
+    /** Rickroll : coût maximum du personnage épuisé. */
+    rickroll: { maxCost: number };
     shitpost: { table: { weight: number; action: Action }[] };
   };
-  /** Profondeur max d'imbrication des `random_of`. */
   maxEffectDepth: number;
 }
 
 export const DEFAULT_RULES: RulesConfig = {
-  deckSize: 12,
-  maxCopiesPerCard: 1,
-  turns: 6,
-  terrainCount: 3,
-  terrainsToWin: 2,
-  terrainRevealTurns: [1, 2, 3],
-  allowPlayOnUnrevealedTerrain: false,
-  startingHand: 3,
-  drawPerTurn: 1,
-  maxHandSize: 7,
-  maxCardsPerTerrain: 4,
-  manaByTurn: [1, 2, 3, 4, 5, 6],
-  minCost: 0,
-  turnTimerSeconds: 30,
-  countryTerrainBonus: 2,
+  deckSize: 20,
+  maxCopiesPerCard: 2,
+  startingHand: 5,
+  maxCharacters: 5,
+  buzzTotal: 10,
+  buzzPerTurn: 2,
+  buzzFirstTurn: 1,
+  buzzPower: 1,
+  firstPlayerSkipsDraw: true,
+  noAttackOnFirstTurn: true,
+  maxTurns: 40,
+  turnTimerSeconds: 60,
+  reactionTimerSeconds: 20,
   hype: {
     baseStake: 1,
     multiplier: 2,
     maxStake: 4,
-    autoDoubleFinalTurn: false,
   },
   keywords: {
-    viral: { powerPenalty: 1 },
-    ratio: { amount: 3 },
-    clickbait: { bonus: 4, durationTurns: 1 },
-    elan: { bonus: 2, maxTurn: 3 },
+    viral: { damage: 2 },
+    clickbait: { bonus: 2 },
     croissance: { perTurn: 1 },
     tendance: { bonus: 1 },
+    seduction: { maxCost: 2 },
+    rickroll: { maxCost: 5 },
     shitpost: {
-      // Uniquement des bonus sur la carte elle-même : « gagne entre +0 et +8 au hasard ».
-      table: [0, 1, 2, 3, 4, 8].map((amount) => ({
-        weight: 1,
-        action: { type: 'add_power', target: 'self', amount } as Action,
-      })),
+      // « Au hasard : pioche 1, +2 jusqu'à la fin du tour, ou +1 définitif. »
+      table: [
+        { weight: 1, action: { type: 'draw', amount: 1 } },
+        { weight: 1, action: { type: 'add_power', target: 'self', amount: 2, duration: 'turn' } },
+        { weight: 1, action: { type: 'add_power', target: 'self', amount: 1, duration: 'permanent' } },
+      ],
     },
   },
   maxEffectDepth: 4,

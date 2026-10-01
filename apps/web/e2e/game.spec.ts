@@ -1,11 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import type { GameAction, PlayerView } from '@rabbithole/engine';
 
 declare global {
   interface Window {
     __rabbithole: {
-      view: () => { turn: number; mana: number; hand: { uid: string; defId: string }[]; phase: string } | null;
-      stage: (handIndex: number, terrain: number) => boolean;
-      handCard: (handIndex: number) => { x: number; y: number } | null;
+      view: () => PlayerView | null;
+      busy: () => boolean;
+      act: (action: GameAction) => Promise<void>;
+      handCard: (index: number) => { x: number; y: number } | null;
     };
   }
 }
@@ -17,70 +19,116 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
-async function waitReady(page: Page): Promise<void> {
+/** Attend que ce soit au joueur de décider (ou la fin de partie), animations terminées. */
+async function waitDecision(page: Page): Promise<PlayerView> {
   await page.waitForFunction(
-    () =>
-      document.querySelector('[data-testid="end-screen"]') ||
-      (window.__rabbithole?.view() && !document.querySelector('[data-testid="end-turn"]')?.hasAttribute('disabled')),
+    () => {
+      const rh = window.__rabbithole;
+      const v = rh?.view();
+      return !!v && !rh.busy() && (!!v.legal || v.phase === 'ended');
+    },
     null,
-    { timeout: 30_000 },
+    { timeout: 60_000 },
   );
+  return (await page.evaluate(() => window.__rabbithole.view()))!;
 }
 
-test('menu : 4 decks, lancement d’une partie', async ({ page }) => {
+/** Décision simple et rapide : poser, attaquer le Leader, sinon finir le tour ; ne jamais défendre. */
+async function autoStep(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const rh = window.__rabbithole;
+    const legal = rh.view()?.legal;
+    if (!legal) return;
+    if (legal.kind === 'mulligan') return rh.act({ type: 'mulligan', redraw: false });
+    if (legal.kind === 'block') return rh.act({ type: 'block', blocker: null });
+    if (legal.kind === 'counter') return rh.act({ type: 'counter', uids: [] });
+    if (legal.kind === 'trigger') return rh.act({ type: 'trigger', activate: false });
+    const play = legal.playable[0];
+    if (play) return rh.act({ type: 'play', uid: play });
+    const a = legal.attackers[0];
+    if (a) return rh.act({ type: 'attack', attacker: a.uid, target: a.targets[0]! });
+    return rh.act({ type: 'end_turn' });
+  });
+}
+
+/** Avance jusqu'à la phase principale du joueur. */
+async function toMyMain(page: Page): Promise<PlayerView> {
+  for (let i = 0; i < 50; i++) {
+    const v = await waitDecision(page);
+    if (v.legal?.kind === 'main') return v;
+    await autoStep(page);
+  }
+  throw new Error('phase principale jamais atteinte');
+}
+
+test('menu : 5 decks avec leur Leader, lancement d’une partie', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'RABBIT HOLE' })).toBeVisible();
-  await expect(page.getByRole('radio')).toHaveCount(4);
+  await expect(page.getByRole('radio')).toHaveCount(5);
+  await expect(page.getByTestId('deck-coups_tordus')).toContainText('La Baronne du Crime');
   await page.getByTestId('deck-coups_tordus').click();
   await page.getByTestId('play').click();
   await expect(page).toHaveURL(/\/play\?deck=coups_tordus/);
-  await waitReady(page);
-  await expect(page.getByTestId('turn')).toHaveText('Tour 1/6');
+  await waitDecision(page);
   expect(errors).toEqual([]);
+});
+
+test('mulligan : panneau de main de départ, puis la partie commence', async ({ page }) => {
+  await page.goto('/play?deck=internet_party&timer=0');
+  const v = await waitDecision(page);
+  if (v.legal?.kind === 'mulligan') {
+    await expect(page.getByTestId('decision-mulligan')).toBeVisible();
+    await page.getByTestId('keep').click();
+  }
+  const after = await waitDecision(page);
+  expect(after.phase).not.toBe('mulligan');
+  expect(after.me.life).toBe(4);
 });
 
 test('partie complète jusqu’à l’écran de fin, puis Rejouer', async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto('/play?deck=internet_party&timer=0');
-  await waitReady(page);
-  for (let turn = 1; turn <= 6; turn++) {
-    await expect(page.getByTestId('turn')).toHaveText(`Tour ${turn}/6`);
-    // Pose tout ce qui est abordable, terrain par terrain.
-    await page.evaluate(() => {
-      const rh = window.__rabbithole;
-      const hand = rh.view()?.hand ?? [];
-      for (let i = hand.length - 1; i >= 0; i--) for (let t = 0; t < 3 && !rh.stage(i, t); t++);
-    });
-    await page.getByTestId('end-turn').click();
-    await waitReady(page);
+  await page.goto('/play?deck=ordre_et_pouvoir&timer=0');
+  for (let i = 0; i < 400; i++) {
+    const v = await waitDecision(page);
+    if (v.phase === 'ended') break;
+    await autoStep(page);
   }
   await expect(page.getByTestId('end-screen')).toBeVisible();
   await page.getByTestId('replay').click();
   await expect(page.getByTestId('end-screen')).toBeHidden();
-  await expect(page.getByTestId('turn')).toHaveText('Tour 1/6');
+  const fresh = await waitDecision(page);
+  expect(fresh.turn).toBeLessThanOrEqual(2);
   expect(errors).toEqual([]);
 });
 
-test('poser une carte consomme de l’énergie', async ({ page }) => {
-  await page.goto('/play?deck=ordre_et_pouvoir&timer=0');
-  await waitReady(page);
-  await page.getByTestId('end-turn').click(); // tour 2 : 2 d'énergie
-  await waitReady(page);
-  const staged = await page.evaluate(() => {
-    const rh = window.__rabbithole;
-    const hand = rh.view()?.hand ?? [];
-    for (let i = 0; i < hand.length; i++) if (rh.stage(i, 0)) return true;
-    return false;
-  });
-  test.skip(!staged, 'Aucune carte abordable dans cette main');
-  await expect(page.getByTestId('mana')).not.toContainText(/^2/);
+test('glisser une carte de la main vers le plateau la joue', async ({ page }) => {
+  await page.goto('/play?deck=tapis_rouge&timer=0');
+  let v = await toMyMain(page);
+  // Joue des tours jusqu'à avoir une carte jouable en main.
+  for (let i = 0; i < 6 && v.legal!.playable.length === 0; i++) {
+    await page.evaluate(() => window.__rabbithole.act({ type: 'end_turn' }));
+    v = await toMyMain(page);
+  }
+  const uid = v.legal!.playable[0];
+  test.skip(!uid, 'Aucune carte jouable');
+  const index = v.me.hand.findIndex((c) => c.uid === uid);
+  await page.waitForTimeout(600); // fin de l'arrivée animée de la main
+  const pos = await page.evaluate((i) => window.__rabbithole.handCard(i), index);
+  expect(pos).not.toBeNull();
+  await page.mouse.move(pos!.x, pos!.y);
+  await page.mouse.down();
+  await page.mouse.move(pos!.x, pos!.y - 80, { steps: 4 });
+  await page.mouse.move(pos!.x, pos!.y - 320, { steps: 8 });
+  await page.mouse.up();
+  const after = await waitDecision(page);
+  expect(after.me.hand.some((c) => c.uid === uid)).toBe(false);
 });
 
-test('appui long sur une carte : fiche détaillée ; aide des règles', async ({ page }) => {
+test('appui long : fiche détaillée ; aide des règles', async ({ page }) => {
   await page.goto('/play?deck=longue_route&timer=0');
-  await waitReady(page);
-  await page.waitForTimeout(800); // fin de l'arrivée animée de la main
+  await toMyMain(page);
+  await page.waitForTimeout(800);
   const pos = await page.evaluate(() => window.__rabbithole.handCard(0));
   expect(pos).not.toBeNull();
   await page.mouse.move(pos!.x, pos!.y);
@@ -94,6 +142,6 @@ test('appui long sur une carte : fiche détaillée ; aide des règles', async ({
   await expect(dialog).toBeHidden();
 
   await page.getByRole('button', { name: 'Règles' }).click();
-  await expect(page.getByRole('dialog')).toContainText('Les règles en 30 secondes');
-  await expect(page.getByRole('dialog')).toContainText('Gagne 2 des 3 terrains');
+  await expect(page.getByRole('dialog')).toContainText('Les règles en 1 minute');
+  await expect(page.getByRole('dialog')).toContainText('Mets KO le Leader adverse');
 });

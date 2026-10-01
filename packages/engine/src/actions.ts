@@ -1,53 +1,33 @@
-import { evalAmount, evalCondition, sidePlayer, sourceOf, terrainHasModifier, type Source } from './query.js';
+import { evalAmount, evalCondition, sidePlayer, sourceOf, type Source } from './query.js';
 import type { Resolver } from './resolver.js';
-import type { Action, CardInstance, Effect } from './types.js';
-
-/** Effet « aléatoire » au sens du terrain Las Vegas (déclenché deux fois). */
-export function isRandomAction(action: Action): boolean {
-  return action.type === 'random_of' || ('target' in action && action.target === 'random_enemy_here');
-}
+import type { Action, CardInstance, Effect, Trigger } from './types.js';
 
 export function executeAction(r: Resolver, src: Source, action: Action, depth = 0): void {
   const { ctx, s } = r;
+  const targets = () => ('target' in action ? r.selectTargets(src, action.target, action.filter) : []);
   switch (action.type) {
     case 'add_power': {
       const amount = evalAmount(ctx, s, src, action.amount);
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) r.addPower(uid, amount, src.uid);
+      for (const uid of targets()) r.addPower(uid, amount, action.duration ?? 'turn', src.uid);
       return;
     }
-    case 'set_power': {
-      const value = evalAmount(ctx, s, src, action.amount);
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) r.setPower(uid, value, src.uid);
+    case 'ko':
+      for (const uid of targets()) ko(r, uid, src.uid);
       return;
-    }
-    case 'destroy':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) r.destroy(uid, src.uid);
+    case 'rest':
+      for (const uid of targets()) r.rest(uid, src.uid);
       return;
-    case 'move':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) r.move(uid, action.to, src.uid);
+    case 'refresh':
+      for (const uid of targets()) r.refresh(uid, src.uid);
       return;
-    case 'copy':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) {
-        r.copy(uid, src.controller, action.to ?? 'here', src.terrain, action.powerDelta ?? 0, src.uid);
-      }
-      return;
-    case 'transform':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) {
-        r.transform(uid, action.into, src.uid);
-      }
+    case 'bounce':
+      for (const uid of targets()) r.bounce(uid, src.uid);
       return;
     case 'steal':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) {
-        r.steal(uid, src.controller, src.uid);
-      }
-      return;
-    case 'hide':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) r.hide(uid, src.uid);
+      for (const uid of targets()) r.steal(uid, src.controller, src.uid);
       return;
     case 'cancel_effects':
-      for (const uid of r.selectTargets(src, action.target, action.filter, action.side)) {
-        r.cancelEffects(uid, action.scope ?? 'all', src.uid);
-      }
+      for (const uid of targets()) r.cancelEffects(uid, src.uid);
       return;
     case 'draw': {
       const p = sidePlayer(src.controller, action.side);
@@ -68,6 +48,9 @@ export function executeAction(r: Resolver, src: Source, action: Action, depth = 
       }
       return;
     }
+    case 'add_buzz':
+      r.gainBuzz(src.controller, action.amount, true);
+      return;
     case 'random_of': {
       if (depth >= ctx.rules.maxEffectDepth || action.options.length === 0) return;
       const index = r.rng.weighted(action.weights ?? action.options.map(() => 1));
@@ -80,13 +63,37 @@ export function executeAction(r: Resolver, src: Source, action: Action, depth = 
   }
 }
 
-/** Exécute un effet de carte (condition, puis action ; deux fois si aléatoire sur Las Vegas). */
 export function runEffect(r: Resolver, card: CardInstance, effect: Effect): void {
   const src = sourceOf(card);
   if (effect.condition && !evalCondition(r.ctx, r.s, src, effect.condition)) return;
-  const times = isRandomAction(effect.action) && terrainHasModifier(r.ctx, r.s, src.terrain, 'random_twice') ? 2 : 1;
-  for (let i = 0; i < times; i++) {
-    if (card.effectsCancelled) return;
-    executeAction(r, sourceOf(card), effect.action);
+  r.emit({ type: 'effect_activated', uid: card.uid, trigger: effect.trigger });
+  executeAction(r, src, effect.action);
+}
+
+/** Déclenche les effets d'un moment donné (sauf si la carte a perdu ses effets). */
+export function runEffects(r: Resolver, card: CardInstance, trigger: Trigger): void {
+  if (card.effectsCancelled) return;
+  for (const effect of r.defOf(card).effects) {
+    if (effect.trigger !== trigger) continue;
+    if (r.s.phase === 'ended') return;
+    runEffect(r, card, effect);
+  }
+}
+
+/** Met un Personnage KO : il part dans la défausse de son propriétaire, puis ses effets [KO] s'appliquent. */
+export function ko(r: Resolver, uid: string, source: string | null): void {
+  const c = r.card(uid);
+  if (c.zone !== 'field') return;
+  const cancelled = c.effectsCancelled;
+  const controller = c.controller;
+  r.moveTo(c, 'trash');
+  r.emit({ type: 'card_ko', uid, source });
+  if (cancelled) return;
+  for (const effect of r.defOf(c).effects) {
+    if (effect.trigger !== 'on_ko') continue;
+    const src = { uid: c.uid, controller };
+    if (effect.condition && !evalCondition(r.ctx, r.s, src, effect.condition)) continue;
+    r.emit({ type: 'effect_activated', uid: c.uid, trigger: 'on_ko' });
+    executeAction(r, src, effect.action);
   }
 }

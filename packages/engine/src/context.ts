@@ -1,34 +1,21 @@
 import { EngineError } from './errors.js';
 import { DEFAULT_RULES, mergeRules, type RulesConfig, type RulesOverride } from './rules.js';
-import type { CardDef, TerrainDef } from './types.js';
+import type { CardDef } from './types.js';
 
-/** Données de référence d'une partie : catalogue de cartes, terrains, règles. */
+/** Données de référence d'une partie : catalogue de cartes et règles. */
 export interface MatchContext {
   readonly cards: Readonly<Record<string, CardDef>>;
-  readonly terrains: Readonly<Record<string, TerrainDef>>;
   readonly rules: RulesConfig;
 }
 
-export function createContext(input: {
-  cards: readonly CardDef[];
-  terrains: readonly TerrainDef[];
-  rules?: RulesOverride;
-}): MatchContext {
+export function createContext(input: { cards: readonly CardDef[]; rules?: RulesOverride }): MatchContext {
   const cards: Record<string, CardDef> = {};
   for (const c of input.cards) cards[c.id] = c;
-  const terrains: Record<string, TerrainDef> = {};
-  for (const t of input.terrains) terrains[t.id] = t;
-  return { cards, terrains, rules: input.rules ? mergeRules(input.rules) : DEFAULT_RULES };
+  return { cards, rules: input.rules ? mergeRules(input.rules) : DEFAULT_RULES };
 }
 
 export function getCardDef(ctx: MatchContext, id: string): CardDef {
   const def = ctx.cards[id];
   if (!def) throw new EngineError('unknown_card_def', `Carte inconnue : ${id}`);
-  return def;
-}
-
-export function getTerrainDef(ctx: MatchContext, id: string): TerrainDef {
-  const def = ctx.terrains[id];
-  if (!def) throw new EngineError('unknown_terrain_def', `Terrain inconnu : ${id}`);
   return def;
 }
