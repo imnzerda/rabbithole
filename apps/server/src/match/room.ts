@@ -61,6 +61,9 @@ export class MatchRoom {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private initialEvents: MatchEvent[];
   private closed = false;
+  /** Pièces créditées à chaque joueur, connues après l'enregistrement de la partie. */
+  private rewards: [number | null, number | null] = [null, null];
+  private announced = false;
 
   constructor(o: RoomOptions) {
     this.id = o.id;
@@ -105,7 +108,7 @@ export class MatchRoom {
     send({ t: 'match_start', matchId: this.id, you: p, opponent: { name: opponent.name, ghost: opponent.userId === null, leader: opponent.leader } });
     const events = this.initialEvents.length ? eventsFor(this.initialEvents, p) : [];
     send({ t: 'step', matchId: this.id, events, view: getPlayerView(this.ctx, this.state, p), deadline: this.deadline });
-    if (this.ended && this.state.result) send({ t: 'match_end', matchId: this.id, result: this.state.result });
+    if (this.announced && this.state.result) send({ t: 'match_end', matchId: this.id, result: this.state.result, reward: this.rewards[p] });
   }
 
   detach(userId: string, send: Send): void {
@@ -184,9 +187,15 @@ export class MatchRoom {
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
     this.deadline = null;
-    const result = this.state.result!;
-    for (const send of this.sends) send?.({ t: 'match_end', matchId: this.id, result });
     this.onEnd(this);
+  }
+
+  /** Fin de partie annoncée une fois la partie enregistrée et les récompenses créditées. */
+  announceEnd(rewards: [number | null, number | null]): void {
+    this.rewards = rewards;
+    this.announced = true;
+    const result = this.state.result!;
+    this.sends.forEach((send, p) => send?.({ t: 'match_end', matchId: this.id, result, reward: rewards[p] ?? null }));
   }
 
   /** Arrêt du serveur : on coupe les minuteurs. */

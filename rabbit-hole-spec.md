@@ -12,7 +12,7 @@
 
 TCG (jeu de cartes à collectionner) jouable dans le navigateur, desktop et mobile. Les cartes représentent des personnes, événements, lieux et phénomènes réels issus de Wikipédia / Wikidata : de la culture internet à l'histoire, du sport aux scandales, en passant par l'industrie X.
 
-- **Public** : adultes 21+, cœur de cible 21–40 ans.
+- **Public** : cœur de cible 21–40 ans. Aucune restriction d'âge à l'inscription ; le contenu sensible est masquable par un interrupteur et tout contenu peut être signalé (section 14).
 - **International** dès le lancement, avec des séries par pays.
 - **Identité** : la culture internet est l'ADN du jeu (mécaniques, raretés, interface, ton).
 - **Ton** : ironique, décalé, adulte, mais **aucune image explicite**.
@@ -295,9 +295,11 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
   - vendre des boosters à contenu caché.
 - Les **probabilités de génération** des aperçus sont affichées.
 - Les boosters **gagnés gratuitement** (récompenses) peuvent s'ouvrir avec contenu aléatoire, car aucune somme n'est engagée.
+- **Pas de kit de départ** : un nouveau compte reçoit **6 boosters gratuits** et choisit **un Leader de départ** (une seule fois). Le joueur construit ensuite son deck avec ses ouvertures, ses achats en pièces et le crafting. L'entraînement hors ligne garde ses decks préconstruits.
+- **Pièces** gagnées en partie en ligne : victoire 40, défaite 15, nul 20, plafond 400 par jour (config). Booster de base : 100 pièces.
 
 ### 6.3 Crafting
-- Doublons au-delà de 1 exemplaire (ou 2 pour échanger) → recyclables en essence.
+- Doublons au-delà de 2 exemplaires (le maximum par deck, `keepCopies` en config) → recyclables en essence. Le crafting complète jusqu'à ce même nombre.
 - Toute carte d'une série publiée peut être fabriquée avec de l'essence. Coûts par rareté : 20 / 50 / 150 / 500 / 1500 (config).
 - Recyclage : 5 / 12 / 40 / 120 / 400 (config).
 
@@ -313,7 +315,7 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
 - 5 échanges / jour ; cartes GOAT : 1 échange / semaine.
 - Aucune monnaie, aucun objet dans un échange. Les CGU interdisent la vente de cartes ou de comptes contre de l'argent.
 - Tableau d'échanges de guilde (« je cherche / je propose »).
-- Détection d'abus : comptes multiples (appareil, IP, empreinte), flux d'échanges à sens unique → blocage et revue.
+- Détection d'abus : comptes liés (même HWID, cookie d'appareil ou IP, section 14) interdits d'échange entre eux, flux d'échanges à sens unique → blocage et revue.
 
 ### 6.6 Monétisation
 - **Gemmes** : 6 paliers de prix, prix régionaux (table `price_tiers` par pays).
@@ -432,9 +434,12 @@ Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `
 
 ---
 
-## 14. Paiement, âge et conformité
+## 14. Paiement, comptes et conformité
 
-- **Âge** : date de naissance obligatoire à l'inscription, accès refusé avant 21 ans. CGU 21+.
+- **Âge** : aucune condition d'âge à l'inscription (ni date de naissance, ni déclaration).
+- **Contenu sensible** (à venir) : un interrupteur on/off par joueur masque les cartes marquées sensibles (`flags` de la carte), en plus du filtrage par pays (section 9).
+- **Signalement** (à venir) : tout joueur peut signaler une carte, un pseudo ou un comportement ; les signalements arrivent dans l'outil d'administration.
+- **Un compte par appareil** : HWID (empreinte matérielle calculée par le navigateur : carte graphique, cœurs, écran, tactile, fuseau horaire) et cookie d'appareil httpOnly. Un HWID déjà connu bloque l'inscription depuis la même IP ; ailleurs (deux téléphones du même modèle peuvent avoir le même HWID), l'inscription passe mais les comptes sont liés. `HWID_STRICT=true` bloque partout. E-mails jetables refusés. Appareils et IP ne sont stockés que sous forme d'empreinte salée. Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`) ; ces liens serviront à bloquer les échanges entre comptes liés (section 6.5).
 - **Paiement** : interface `PaymentProvider` (`createCheckout`, `handleWebhook`, `refund`). Les produits ne sont crédités **que** via webhook serveur vérifié et idempotent (`provider_transaction_id` unique). Gestion des remboursements et rétrofacturations.
 - ⚠️ Le choix du prestataire n'est pas arrêté : la présence de cartes liées à l'industrie X peut faire classer le site « adulte ». Prévoir l'implémentation sandbox d'un prestataire classique **et** la possibilité d'en brancher un spécialisé (CCBill, Segpay, Verotel) sans changer le reste du code.
 - **RGPD** : consentement cookies, export et suppression des données.
@@ -454,7 +459,9 @@ KPIs : rétention J1 / J7 / J30, parties par jour, durée moyenne de partie, con
 ## 16. Modèle de données (PostgreSQL, simplifié)
 
 ```sql
-users(id, created_at, birth_date, country, locale, email, auth_provider, status)
+users(id, created_at, country, locale, email UNIQUE, starter_leader, auth_provider, status)
+user_devices(device_hash, user_id, kind /*hwid|cookie*/, first_seen, last_seen) / user_ips(ip_hash, user_id, first_seen, last_seen)
+account_flags(user_id, other_user_id, reason /*shared_device|shared_ip*/, created_at)
 cards(id, wikidata_id, series_id, rarity, cost, power, categories TEXT[], keywords TEXT[],
       effects JSONB, names JSONB, flavor JSONB, flags JSONB, image_asset_id, status, version)
 card_images(id, card_id, source_url, author, license, license_url, modified BOOLEAN,
@@ -464,7 +471,9 @@ keywords(id, definition JSONB, effect JSONB)
 country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
 decks(id, user_id, name, leader_id, card_ids TEXT[], updated_at)
-wallets(user_id, coins, gems, essence, guild_tokens)
+wallets(user_id, coins, gems, essence, guild_tokens, free_boosters)
+coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
+booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
 trade_ups(id, user_id, input_card_ids TEXT[], target_category, output_card_id, seed, created_at)
 trades(id, from_user, to_user, offered_card, requested_card, status, created_at, completed_at)
@@ -526,7 +535,8 @@ POST /takedown
 - 5 Leaders et 50 cartes de test en JSON. Partie contre une IA simple.
 
 ### Phase 3 — Serveur et comptes
-- Fastify, PostgreSQL, comptes 21+, collections, decks, matchmaking WebSocket, mode fantôme, replays.
+- Fastify, PostgreSQL, comptes, collections, decks, matchmaking WebSocket, mode fantôme, replays.
+- Ajouté en fin de phase : anti-double compte, et une partie de l'économie avancée (pièces, aperçus, boosters gratuits, recyclage, crafting).
 
 ### Phase 4 — Pipeline de contenu et admin
 - `tools/pipeline` (Wikidata, Pageviews, Commons, filtres de licences, traitement d'images, carte typographique de secours).

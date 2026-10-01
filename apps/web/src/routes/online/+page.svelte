@@ -76,6 +76,15 @@
     {:else}
       {#if lobbyState.kind === 'error'}<p class="error" role="alert">{lobbyState.message}</p>{/if}
 
+      {#if decks.length === 0}
+        <section class="panel" data-testid="no-deck">
+          <p>{t('no_decks_lobby')}</p>
+          <div class="actions">
+            <a class="btn" href="/collection">{t('open_boosters')}</a>
+            <a class="btn btn-primary" href="/decks">{t('build_deck')}</a>
+          </div>
+        </section>
+      {/if}
       <h2>{t('my_decks')}</h2>
       <div class="decks" role="radiogroup" aria-label={t('my_decks')}>
         {#each decks as deck (deck.id)}

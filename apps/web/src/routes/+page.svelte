@@ -29,6 +29,8 @@
   <nav class="account" aria-label="Compte">
     {#if session.user}
       <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
+      <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
+      <a href="/decks">{t('decks')}</a>
       <a href="/replays">{t('history')}</a>
       <button class="link" onclick={() => logout()}>{t('logout')}</button>
     {:else if session.loaded}

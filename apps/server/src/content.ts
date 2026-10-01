@@ -16,24 +16,26 @@ export const CONTENT_VERSION = `prototype@${createHash('sha256')
   .slice(0, 12)}`;
 
 /**
- * Collection de départ (prototype) : chaque Leader et 2 exemplaires de chaque carte,
- * de quoi construire les 5 decks préconstruits, eux aussi offerts.
- * Les vraies récompenses et boosters arrivent avec l'économie (phase 5).
+ * Kit complet (tous les Leaders, chaque carte au maximum jouable, les 5 decks préconstruits).
+ * Réservé aux tests automatisés : les joueurs construisent leur collection en ouvrant des boosters.
  */
-export async function grantStarterKit(db: Db, userId: string): Promise<void> {
+export async function grantTestKit(db: Db, userId: string): Promise<void> {
   for (const c of LEADER_CARDS) {
-    await db.query('INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, 1)', [userId, c.id]);
+    await db.query(
+      `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, 1)
+       ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = GREATEST(collections.quantity, 1)`,
+      [userId, c.id],
+    );
   }
   for (const c of COLLECTIBLE_CARDS) {
-    await db.query('INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, $3)', [userId, c.id, ctx.rules.maxCopiesPerCard]);
+    await db.query(
+      `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = GREATEST(collections.quantity, $3)`,
+      [userId, c.id, ctx.rules.maxCopiesPerCard],
+    );
   }
   for (const d of PROTOTYPE_DECKS) {
-    await db.query('INSERT INTO decks (user_id, name, leader_id, card_ids) VALUES ($1, $2, $3, $4)', [
-      userId,
-      d.name.fr ?? d.id,
-      d.leader,
-      d.cards,
-    ]);
+    await db.query('INSERT INTO decks (user_id, name, leader_id, card_ids) VALUES ($1, $2, $3, $4)', [userId, d.name.fr ?? d.id, d.leader, d.cards]);
   }
 }
 

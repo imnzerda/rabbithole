@@ -2,7 +2,8 @@ import { applyAction, createMatch } from '@rabbithole/engine';
 import type { ReplayData } from '@rabbithole/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ctx } from '../src/content.js';
-import { auth, autoPlay, signup, startApp, TestClient } from './helpers.js';
+import { DEFAULT_ECONOMY } from '../src/config.js';
+import { auth, autoPlay, signup, signupWithKit, startApp, TestClient } from './helpers.js';
 
 type Started = Awaited<ReturnType<typeof startApp>>;
 let t: Started | null = null;
@@ -15,7 +16,7 @@ afterEach(async () => {
 });
 
 async function player(app: Started) {
-  const { token, id } = await signup(app.app);
+  const { token, id } = await signupWithKit(app.app);
   const decks = (await app.app.inject({ method: 'GET', url: '/api/decks', headers: auth(token) })).json().decks;
   const client = await TestClient.connect(app.url, token);
   clients.push(client);
@@ -63,6 +64,14 @@ describe('WebSocket /ws', () => {
     const endB = await b.client.wait('match_end');
     expect(endA.result).toEqual(endB.result);
 
+    // Pièces de fin de partie, créditées au portefeuille.
+    const table = DEFAULT_ECONOMY.rewards;
+    const expected = (you: 0 | 1) => (endA.result.winner === null ? table.draw : endA.result.winner === you ? table.win : table.loss);
+    expect(endA.reward).toBe(expected(sa.you));
+    expect(endB.reward).toBe(expected(sb.you));
+    const walletA = (await t.app.inject({ method: 'GET', url: '/api/wallet', headers: auth(a.token) })).json().wallet;
+    expect(walletA.coins).toBe(expected(sa.you));
+
     // Aucune vue envoyée à A ne contient la main ni les Vies de B.
     for (const m of a.client.messages) {
       if (m.t !== 'step') continue;
@@ -83,6 +92,27 @@ describe('WebSocket /ws', () => {
     expect((await t.app.inject({ method: 'GET', url: `/api/replays/${sa.matchId}`, headers: auth(other.token) })).statusCode).toBe(404);
   });
 
+  it('un joueur sans deck ne peut pas entrer dans la file', async () => {
+    t = await startApp();
+    const { token } = await signup(t.app);
+    const client = await TestClient.connect(t.url, token);
+    clients.push(client);
+    client.send({ t: 'queue', deckId: '00000000-0000-4000-8000-000000000000', mode: 'ghost' });
+    expect((await client.wait('error')).code).toBe('deck_not_found');
+  });
+
+  it('pièces de partie plafonnées par jour', async () => {
+    t = await startApp({ economy: { ...DEFAULT_ECONOMY, rewards: { win: 40, loss: 40, draw: 40, dailyCap: 50 } } });
+    const a = await player(t);
+    for (const expected of [40, 10, 0]) {
+      a.client.messages.length = 0;
+      a.client.send({ t: 'queue', deckId: a.deckId, mode: 'ghost' });
+      await a.client.wait('match_start');
+      a.client.act({ type: 'fold' });
+      expect((await a.client.wait('match_end')).reward).toBe(expected);
+    }
+  });
+
   it('action illégale ou hors tour : erreur, la partie continue', async () => {
     t = await startApp();
     const a = await player(t);
@@ -98,7 +128,7 @@ describe('WebSocket /ws', () => {
 
   it('fantôme après le délai d’attente : deck enregistré d’un autre joueur, joué par l’IA', async () => {
     t = await startApp({ ghostDelayMs: 50 });
-    await signup(t.app, 'proprio'); // un autre joueur avec des decks enregistrés
+    await signupWithKit(t.app, 'proprio'); // un autre joueur avec des decks enregistrés
     const a = await player(t);
     a.client.send({ t: 'queue', deckId: a.deckId, mode: 'ranked' });
     const start = await a.client.wait('match_start');

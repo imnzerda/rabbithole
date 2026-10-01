@@ -28,6 +28,7 @@ export interface MatchClient {
   readonly spectator: boolean;
   onStep(listener: (step: MatchStep) => void): () => void;
   onError(listener: (error: MatchError) => void): () => void;
+  onReward(listener: (coins: number | null) => void): () => void;
   /** Envoie une action ; le résultat arrive sous forme d'étapes. */
   act(action: GameAction): void;
   /** Commence à émettre les étapes (après l'abonnement de l'UI). */
@@ -39,6 +40,17 @@ export interface MatchClient {
 export abstract class BaseMatchClient {
   private stepListeners = new Set<(step: MatchStep) => void>();
   private errorListeners = new Set<(error: MatchError) => void>();
+  private rewardListeners = new Set<(coins: number | null) => void>();
+
+  /** Pièces gagnées en fin de partie (en ligne uniquement). */
+  onReward(listener: (coins: number | null) => void): () => void {
+    this.rewardListeners.add(listener);
+    return () => this.rewardListeners.delete(listener);
+  }
+
+  protected emitReward(coins: number | null): void {
+    for (const l of this.rewardListeners) l(coins);
+  }
 
   onStep(listener: (step: MatchStep) => void): () => void {
     this.stepListeners.add(listener);

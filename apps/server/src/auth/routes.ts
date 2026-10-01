@@ -1,9 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { grantStarterKit } from '../content.js';
 import type { AppDeps } from '../deps.js';
 import {
-  ageOn,
   checkCredentials,
   createSession,
   createUser,
@@ -14,6 +12,7 @@ import {
   userForToken,
   type User,
 } from './accounts.js';
+import { checkSignup, ensureDevice, isDisposable, recordSignals, requestSignals } from './antiabuse.js';
 
 export const SESSION_COOKIE = 'rh_session';
 
@@ -24,16 +23,14 @@ declare module 'fastify' {
   }
 }
 
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().startsWith(s), 'date invalide');
+/** Empreinte matérielle calculée par le navigateur (`apps/web/src/lib/hwid.ts`), hachée dès réception. */
+const hwid = z.string().min(8).max(2000).optional();
 
 const signupSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(8).max(200),
   displayName: z.string().trim().min(2).max(24),
-  birthDate: isoDate,
+  hwid,
   country: z
     .string()
     .trim()
@@ -45,6 +42,7 @@ const signupSchema = z.object({
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(1).max(200),
+  hwid,
 });
 
 /** Jeton de session : cookie httpOnly (navigateur) ou en-tête Authorization (outils, tests). */
@@ -64,7 +62,9 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
 
   app.decorateRequest('user', null);
   app.decorateRequest('sessionToken', null);
-  app.addHook('onRequest', async (request) => {
+  app.decorateRequest('deviceId', null);
+  app.addHook('onRequest', async (request, reply) => {
+    ensureDevice(request, reply, config);
     const token = readToken(request);
     if (!token) return;
     request.user = await userForToken(db, token);
@@ -86,16 +86,25 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     const parsed = signupSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'invalid_input', issues: parsed.error.issues.map((i) => i.path.join('.')) });
     const input = parsed.data;
-    // Accès refusé avant l'âge minimum (CGU 21+).
-    if (ageOn(input.birthDate, new Date()) < config.minAge) {
-      return reply.code(403).send({ error: 'too_young', minAge: config.minAge });
-    }
+    if (isDisposable(input.email, config)) return reply.code(400).send({ error: 'disposable_email' });
     if (await findUserByEmail(db, input.email)) return reply.code(409).send({ error: 'email_taken' });
+
+    // Anti-double compte : un appareil (HWID ou cookie d'appareil) = un compte.
+    const signals = requestSignals(request, config, input.hwid);
+    const blocked = await checkSignup(db, config, signals);
+    if (blocked) return reply.code(409).send({ error: blocked });
 
     const passwordHash = await hashPassword(input.password);
     const user = await db.transaction(async (tx) => {
-      const created = await createUser(tx, { ...input, passwordHash });
-      await grantStarterKit(tx, created.id);
+      const created = await createUser(tx, {
+        email: input.email,
+        passwordHash,
+        displayName: input.displayName,
+        country: input.country,
+        locale: input.locale,
+        welcomeBoosters: config.economy.welcomeBoosters,
+      });
+      await recordSignals(tx, created.id, signals);
       return created;
     });
     setSession(reply, await createSession(db, user.id, config.sessionDays));
@@ -107,6 +116,8 @@ export function registerAuth(app: FastifyInstance, deps: AppDeps): void {
     if (!parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     const user = await checkCredentials(db, parsed.data.email, parsed.data.password);
     if (!user) return reply.code(401).send({ error: 'invalid_credentials' });
+    // La connexion reste possible depuis un appareil partagé, mais les comptes liés sont signalés.
+    await recordSignals(db, user.id, requestSignals(request, config, parsed.data.hwid));
     setSession(reply, await createSession(db, user.id, config.sessionDays));
     return { user: publicUser(user) };
   });

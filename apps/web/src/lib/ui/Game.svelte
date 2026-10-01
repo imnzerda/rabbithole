@@ -35,6 +35,7 @@
   let detail = $state<{ defId: string; power: number | null } | null>(null);
   let showRules = $state(false);
   let toast = $state<string | null>(null);
+  let reward = $state<number | null>(null);
   /** Aperçu au survol (PC, écran large uniquement). */
   let hovered = $state<{ defId: string; power: number | null } | null>(null);
   let wide = $state(false);
@@ -129,6 +130,7 @@
           queue.push(step);
           void pump();
         }),
+        match.onReward((coins) => (reward = coins)),
         match.onError((e) => {
           // Action refusée (par le serveur ou le moteur) : on resynchronise l'affichage.
           waiting = false;
@@ -230,7 +232,7 @@
 {/if}
 
 {#if view?.result && !busy}
-  <EndScreen result={view.result} you={view.you} onreplay={onagain} onmenu={onexit} />
+  <EndScreen result={view.result} you={view.you} {reward} onreplay={onagain} onmenu={onexit} />
 {/if}
 
 <style>

@@ -7,6 +7,7 @@ import type { ServerConfig } from './config.js';
 import { createPgDb, createPgliteDb, type Db } from './db/db.js';
 import { migrate } from './db/migrate.js';
 import { registerDecks } from './decks/decks.js';
+import { registerEconomy } from './economy/routes.js';
 import { registerMatches } from './match/routes.js';
 import { MatchService } from './match/service.js';
 
@@ -21,7 +22,7 @@ export async function buildApp(config: ServerConfig): Promise<App> {
   const db = config.databaseUrl ? createPgDb(config.databaseUrl) : await createPgliteDb(config.pgliteDir);
   await migrate(db);
 
-  const app = Fastify({ logger: { level: config.logLevel }, trustProxy: true, bodyLimit: 64 * 1024 });
+  const app = Fastify({ logger: { level: config.logLevel }, trustProxy: config.trustProxy, bodyLimit: 64 * 1024 });
   await app.register(cookie);
   await app.register(rateLimit, { global: false });
   await app.register(websocket, { options: { maxPayload: 64 * 1024 } });
@@ -30,6 +31,7 @@ export async function buildApp(config: ServerConfig): Promise<App> {
   const matches = new MatchService(deps);
   registerAuth(app, deps);
   registerDecks(app, deps);
+  registerEconomy(app, deps);
   registerMatches(app, deps, matches);
   app.get('/api/health', async () => ({ ok: true }));
 

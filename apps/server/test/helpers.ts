@@ -5,14 +5,6 @@ import WebSocket from 'ws';
 import { buildApp, type App } from '../src/app.js';
 import { testConfig, type ServerConfig } from '../src/config.js';
 
-/** Date de naissance donnant exactement `years` ans aujourd'hui (moins `minusDays` jours). */
-export function birthDateForAge(years: number, minusDays = 0): string {
-  const d = new Date();
-  d.setUTCFullYear(d.getUTCFullYear() - years);
-  d.setUTCDate(d.getUTCDate() + minusDays);
-  return d.toISOString().slice(0, 10);
-}
-
 export async function startApp(overrides: Partial<ServerConfig> = {}): Promise<App & { url: string }> {
   const built = await buildApp(testConfig(overrides));
   await built.app.listen({ port: 0, host: '127.0.0.1' });
@@ -22,19 +14,34 @@ export async function startApp(overrides: Partial<ServerConfig> = {}): Promise<A
 
 let counter = 0;
 
-/** Crée un compte et renvoie son jeton de session. */
-export async function signup(app: App['app'], name = `joueur${++counter}`): Promise<{ token: string; id: string }> {
-  const res = await app.inject({
-    method: 'POST',
-    url: '/api/auth/signup',
-    payload: { email: `${name}@example.com`, password: 'motdepasse1', displayName: name, birthDate: '1995-03-14', country: 'FR', locale: 'fr' },
-  });
+export const signupPayload = (name: string, over: Record<string, unknown> = {}) => ({
+  email: `${name}@example.com`,
+  password: 'motdepasse1',
+  displayName: name,
+  hwid: `test-hwid:${name}`,
+  country: 'FR',
+  locale: 'fr',
+  ...over,
+});
+
+/** Crée un compte (depuis un nouvel appareil) et renvoie son jeton de session et son cookie d'appareil. */
+export async function signup(app: App['app'], name = `joueur${++counter}`): Promise<{ token: string; id: string; device: string }> {
+  const res = await app.inject({ method: 'POST', url: '/api/auth/signup', payload: signupPayload(name) });
   if (res.statusCode !== 201) throw new Error(`signup ${res.statusCode} ${res.body}`);
-  const cookie = res.cookies.find((c) => c.name === 'rh_session')!;
-  return { token: cookie.value, id: res.json().user.id };
+  const session = res.cookies.find((c) => c.name === 'rh_session')!;
+  const device = res.cookies.find((c) => c.name === 'rh_device')!;
+  return { token: session.value, id: res.json().user.id, device: device.value };
 }
 
 export const auth = (token: string) => ({ authorization: `Bearer ${token}` });
+
+/** Compte doté du kit de test complet (tous les Leaders, toutes les cartes, 5 decks). */
+export async function signupWithKit(app: App['app'], name?: string): Promise<{ token: string; id: string; device: string }> {
+  const account = await signup(app, name);
+  const res = await app.inject({ method: 'POST', url: '/api/test/grant-kit', headers: auth(account.token) });
+  if (res.statusCode !== 200) throw new Error(`grant-kit ${res.statusCode}`);
+  return account;
+}
 
 /** Client WebSocket de test : mémorise les messages et permet d'attendre un message précis. */
 export class TestClient {

@@ -1,6 +1,6 @@
 # RABBIT HOLE
 
-TCG (jeu de cartes à collectionner) jouable dans le navigateur, sur desktop et mobile, pour un public adulte (21+). Les cartes représentent des personnes, événements, lieux et phénomènes réels issus de Wikipédia / Wikidata. La culture internet est l'ADN du jeu.
+TCG (jeu de cartes à collectionner) jouable dans le navigateur, sur desktop et mobile, cœur de cible 21–40 ans (aucune restriction d'âge à l'inscription). Les cartes représentent des personnes, événements, lieux et phénomènes réels issus de Wikipédia / Wikidata. La culture internet est l'ADN du jeu.
 
 - Duels **tour par tour inspirés du TCG One Piece** : un Leader (carte célèbre, 4-5 Vies) + 20 cartes, énergie « Buzz », attaques, Bloqueurs, Contres, Déclencheurs. On gagne en mettant KO le Leader adverse.
 - Monétisation sans hasard à l'achat : boosters à contenu prévisualisé, pass, cosmétiques. Pas de pay-to-win.
@@ -59,7 +59,9 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - Les textes sont décalés mais **jamais dégradants ni diffamatoires**, et aucune image n'est explicite.
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
 - Le contenu `adult` est filtré par pays (`country_rules`).
-- Âge minimum : 21 ans.
+- **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À venir : un **système de signalement** et un **interrupteur « contenu sensible »** (on/off) par joueur.
+- **Un compte par appareil** (HWID + cookie d'appareil), e-mails jetables refusés, comptes partageant un appareil ou une IP signalés. Signaux stockés uniquement en empreinte salée.
+- **Pas de kit de départ** : les joueurs construisent leur deck en ouvrant des boosters.
 
 ### Méthode de travail
 - On avance **phase par phase** (section 19 du cahier des charges) et on **demande validation à la fin de chaque phase**.
@@ -82,9 +84,10 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - [packages/content/](packages/content/) : Leaders, cartes et decks en JSON (`data/prototype/`), chargés par `prototypeContext()`.
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
 - [apps/server/](apps/server/) : Fastify, PostgreSQL (PGlite en dev et en test), WebSocket.
-  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `MIN_AGE`, `GHOST_DELAY_MS`…).
+  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `HWID_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
   - `src/db/` : accès base (`pg` / PGlite) et migrations SQL.
-  - `src/auth/` : comptes (21+), Argon2, sessions.
+  - `src/auth/` : comptes, Argon2, sessions ; `antiabuse.ts` : anti-double compte (HWID, cookie d'appareil, comptes liés). Le HWID est calculé par `apps/web/src/lib/hwid.ts`.
+  - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, Leader de départ, pièces de fin de partie.
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).

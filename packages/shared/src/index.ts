@@ -28,7 +28,8 @@ export type ServerMessage =
   | { t: 'cancelled' }
   | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo }
   | { t: 'step'; matchId: string; events: MatchEvent[]; view: PlayerView; deadline: number | null }
-  | { t: 'match_end'; matchId: string; result: MatchResult }
+  /** `reward` : pièces gagnées (plafonnées par jour) ; null pour un spectateur ou une reprise. */
+  | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null }
   | { t: 'error'; code: string; message: string };
 
 export interface PublicUser {
@@ -37,7 +38,34 @@ export interface PublicUser {
   displayName: string;
   country: string;
   locale: string;
+  /** Leader de départ choisi (null tant que le joueur ne l'a pas choisi). */
+  starterLeader: string | null;
   createdAt: string;
+}
+
+export interface WalletDto {
+  coins: number;
+  gems: number;
+  essence: number;
+  freeBoosters: number;
+}
+
+export interface BoosterTypeDto {
+  type: string;
+  name: Record<string, string>;
+  price: number;
+  size: number;
+  refreshHours: number;
+  /** Probabilités affichées, en %, par rareté. */
+  odds: Record<string, number>;
+  /** Aperçu exact du prochain booster acheté. */
+  preview: { cardIds: string[]; refreshAt: string };
+}
+
+export interface BoostersResponse {
+  types: BoosterTypeDto[];
+  wallet: WalletDto;
+  economy: { recycle: Record<string, number>; craft: Record<string, number>; keepCopies: number };
 }
 
 export interface DeckDto {

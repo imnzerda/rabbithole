@@ -8,8 +8,10 @@
     /** « Rejouer » (absent : pas de bouton). */
     onreplay?: () => void;
     onmenu: () => void;
+    /** Pièces gagnées (parties en ligne). */
+    reward?: number | null;
   }
-  let { result, you, onreplay, onmenu }: Props = $props();
+  let { result, you, onreplay, onmenu, reward = null }: Props = $props();
 
   const opp = $derived(you === 0 ? 1 : 0);
   const outcome = $derived(result.winner === null ? 'draw' : result.winner === you ? 'victory' : 'defeat');
@@ -24,6 +26,7 @@
     <p class="kicker">{reason}</p>
     <h2>{t(outcome)}</h2>
     <p class="points">{points} <span>{t('rank_points')}</span></p>
+    {#if reward !== null}<p class="reward" data-testid="reward">{t('reward', { n: reward })}</p>{/if}
     <p class="stats">
       {t('lives_left', { me: result.life[you], them: result.life[opp] })} · {t('turns_played', { n: result.turns })}
     </p>
@@ -64,6 +67,12 @@
     font-size: 14px;
     color: var(--muted);
     font-weight: 500;
+  }
+  .reward {
+    margin: 8px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffc94a;
   }
   .stats {
     color: var(--muted);

@@ -27,7 +27,6 @@
   let email = $state('');
   let password = $state('');
   let displayName = $state('');
-  let birthDate = $state('');
   let country = $state(locale === 'fr' ? 'FR' : 'US');
   let error = $state<string | null>(null);
   let pending = $state(false);
@@ -36,8 +35,10 @@
   function message(err: unknown): string {
     if (!(err instanceof ApiError)) return t('err_generic');
     switch (err.code) {
-      case 'too_young':
-        return t('err_too_young', { n: Number(err.body.minAge ?? 21) });
+      case 'device_has_account':
+        return t('err_device_has_account');
+      case 'disposable_email':
+        return t('err_disposable_email');
       case 'email_taken':
         return t('err_email_taken');
       case 'invalid_input':
@@ -52,7 +53,7 @@
     pending = true;
     error = null;
     try {
-      session.user = (await api.signup({ email, password, displayName, birthDate, country, locale })).user;
+      session.user = (await api.signup({ email, password, displayName, country, locale })).user;
       session.loaded = true;
       await goto(next);
     } catch (err) {
@@ -65,14 +66,12 @@
 
 <AuthLayout title={t('signup')}>
   <form onsubmit={submit}>
-    <p class="notice">{t('age_notice')}</p>
     <label>{t('display_name')}<input autocomplete="nickname" required minlength="2" maxlength="24" bind:value={displayName} data-testid="name" /></label>
     <label>{t('email')}<input type="email" autocomplete="email" required bind:value={email} data-testid="email" /></label>
     <label>
       {t('password')} <small>({t('password_hint')})</small>
       <input type="password" autocomplete="new-password" required minlength="8" bind:value={password} data-testid="password" />
     </label>
-    <label>{t('birth_date')}<input type="date" required bind:value={birthDate} data-testid="birth" /></label>
     <label>
       {t('country')}
       <select bind:value={country} data-testid="country">
@@ -85,12 +84,3 @@
   </form>
 </AuthLayout>
 
-<style>
-  .notice {
-    margin: 0;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--accent) 14%, var(--panel));
-    font-size: 14px;
-  }
-</style>

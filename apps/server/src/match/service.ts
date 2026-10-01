@@ -4,6 +4,7 @@ import type { QueueMode } from '@rabbithole/shared';
 import type { User } from '../auth/accounts.js';
 import { CONTENT_VERSION, ctx, PROTOTYPE_DECKS } from '../content.js';
 import { checkDeck, getDeck } from '../decks/decks.js';
+import { awardMatchCoins } from '../economy/economy.js';
 import type { AppDeps } from '../deps.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
 
@@ -153,11 +154,23 @@ export class MatchService {
   }
 
   private async onEnd(room: MatchRoom): Promise<void> {
-    await this.deps.db.query(`UPDATE matches SET actions = $1, result = $2, ended_at = now() WHERE id = $3`, [
+    const result = room.state.result!;
+    // Pièces de fin de partie (plafonnées par jour), pour les joueurs humains uniquement.
+    const { rewards: table } = this.deps.config.economy;
+    const rewards: [number | null, number | null] = [null, null];
+    for (const p of [0, 1] as const) {
+      const userId = room.seats[p].userId;
+      if (!userId) continue;
+      const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
+      rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
+    }
+    await this.deps.db.query(`UPDATE matches SET actions = $1, result = $2, rewards = $3, ended_at = now() WHERE id = $4`, [
       JSON.stringify(room.actions),
-      JSON.stringify(room.state.result),
+      JSON.stringify(result),
+      JSON.stringify(rewards),
       room.id,
     ]);
+    room.announceEnd(rewards);
     this.rooms.delete(room.id);
     for (const s of room.seats) if (s.userId && this.roomOfUser.get(s.userId) === room.id) this.roomOfUser.delete(s.userId);
   }

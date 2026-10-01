@@ -12,10 +12,10 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // Serveur de jeu avec une base en mémoire (PGlite) et un fantôme rapide.
+      // Serveur de jeu de test : base en mémoire, fantôme rapide, données de test.
       command: 'pnpm --filter @rabbithole/server start',
       url: 'http://localhost:3000/api/health',
-      env: { PORT: '3000', PGLITE_DIR: '', GHOST_DELAY_MS: '1500', LOG_LEVEL: 'warn' },
+      env: { PORT: '3000', PGLITE_DIR: '', GHOST_DELAY_MS: '1500', LOG_LEVEL: 'warn', TEST_FIXTURES: '1' },
       reuseExistingServer: true,
       timeout: 60_000,
     },

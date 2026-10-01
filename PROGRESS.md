@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 3 — Serveur et comptes** : terminée, en attente de validation. Branche `phase-3-serveur`.
+**Phase 3 — Serveur et comptes** : terminée, avec comptes sans condition d'âge, anti-double compte par HWID et collection par boosters. En attente de validation. Branche `comptes-et-boosters`.
 
 | Phase | Statut |
 |---|---|
@@ -11,7 +11,7 @@
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Terminée, en attente de validation |
 | 4. Pipeline de contenu et admin | ⏳ Prochaine |
-| 5. Économie | — |
+| 5. Économie | 🟡 Bases avancées (pièces, aperçus, boosters gratuits, recyclage, crafting) |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
@@ -19,6 +19,48 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Plus de condition d'âge, anti-double compte par HWID
+
+- **Plus aucune condition d'âge** : la case « 21 ans ou plus » est retirée, ainsi que la colonne `age_confirmed_at` (migration `003`). À la place viendront un **système de signalement** et un **interrupteur « contenu sensible »**.
+- **Anti-double compte**, revu :
+  - **un compte par appareil via le HWID** : le navigateur calcule une empreinte matérielle (`apps/web/src/lib/hwid.ts` : carte graphique, cœurs, écran, tactile, fuseau horaire), envoyée à l'inscription et à la connexion. Elle survit à l'effacement des cookies et à la navigation privée. Le cookie d'appareil reste un second signal ;
+  - un HWID déjà connu **bloque l'inscription depuis la même IP**. Depuis une autre IP, l'inscription passe mais les comptes sont **liés** : deux téléphones du même modèle ont souvent le même HWID. `HWID_STRICT=true` bloque partout ;
+  - e-mails jetables refusés ;
+  - appareils (HWID et cookie) et IP stockés uniquement en **empreinte salée** ;
+  - comptes partageant un appareil ou une IP **signalés** (`account_flags`, `linkedAccounts()`) pour bloquer les échanges entre eux.
+- Retirés : l'e-mail canonique (alias Gmail) et le plafond de comptes par IP.
+- **Tests** : 30 serveur (dont 7 anti-abus : HWID, cookie, téléphones du même modèle, mode strict, plusieurs appareils sur un même réseau, empreintes), 18 E2E (dont un compte refusé dans un navigateur vierge sur le même appareil).
+
+
+### 2026-10-02 — Comptes sans date de naissance, anti-double compte, collection par boosters
+
+**Comptes**
+- Plus de date de naissance : une case **« J'ai 21 ans ou plus »** obligatoire, horodatée en base.
+- **Anti-double compte** (`apps/server/src/auth/antiabuse.ts`) :
+  - e-mail canonique (points Gmail et `+tag` ignorés) : `jean.dupont+x@gmail.com` = `jeandupont@gmail.com` ;
+  - cookie d'appareil httpOnly (2 ans) : **un seul compte par appareil** ;
+  - **3 comptes au plus par IP sur 30 jours** (config). L'en-tête `X-Forwarded-For` n'est lu que si `TRUST_PROXY` est activé ;
+  - domaines d'e-mail jetables refusés ;
+  - appareils et IP stockés uniquement en **empreinte salée** (`SIGNAL_SALT`, obligatoire en production) ;
+  - comptes partageant un appareil ou une IP signalés dans `account_flags`, avec `linkedAccounts()` prêt pour bloquer les échanges entre comptes liés.
+
+**Plus de cadeau à l'inscription : la collection se construit en ouvrant des boosters**
+- Nouveau compte : 0 carte, **6 boosters gratuits** (contenu aléatoire, autorisé car gratuit) et le choix **d'un Leader de départ** parmi les 5 (une seule fois). Les autres Leaders se trouvent dans les boosters.
+- **Pièces** gagnées en ligne : victoire 40, défaite 15, nul 20, 400 par jour au maximum. Affichées sur l'écran de fin.
+- **Booster de base avec aperçu** : 5 cartes exactes verrouillées en base, achat à 100 pièces (refusé si l'aperçu a changé), nouvel aperçu après achat ou toutes les 24 h. **Aucun renouvellement payant.** Probabilités affichées.
+- **Recyclage** des exemplaires au-delà de 2 en essence, **crafting** jusqu'à 2 exemplaires.
+- Toute variation de monnaie est tracée (`coin_ledger`), chaque ouverture aussi, avec sa seed (`booster_openings`).
+- Valeurs dans `DEFAULT_ECONOMY` (`apps/server/src/config.ts`).
+- L'entraînement hors ligne garde ses 5 decks préconstruits.
+
+**Site**
+- Page **Collection** : portefeuille, choix du Leader de départ, aperçu du booster et minuteur, ouverture animée, collection filtrable (cartes non possédées grisées), fiche avec recyclage et crafting.
+- Page **Decks** : éditeur (Leader possédé, cartes compatibles possédées, compteur 20/20, complétion automatique).
+- Le salon en ligne renvoie vers Collection et Decks tant que le joueur n'a pas de deck.
+
+**Tests** : 70 moteur, 6 contenu, **30 serveur** (dont anti-abus et économie) et **18 E2E** sur smartphone et PC.
+
 
 ### 2026-10-02 — Phase 3 : serveur et comptes
 
@@ -151,4 +193,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
-- La branche `phase-3-serveur` peut-elle être fusionnée dans `master` ?
+- La branche `comptes-et-boosters` (Phase 3 complète) peut-elle être fusionnée dans `master` ?
+- **Signalement** et **interrupteur « contenu sensible »** : à placer en phase 4 (avec l'outil d'admin et le marquage des cartes) ?
+- Anti-double compte : garder le mode souple (HWID + même IP) ou passer en strict (`HWID_STRICT=true`) ?
+- Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.

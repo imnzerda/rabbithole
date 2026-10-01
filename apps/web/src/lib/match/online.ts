@@ -28,6 +28,10 @@ export class OnlineMatch extends BaseMatchClient implements MatchClient {
     else this.buffered.push(step);
   }
 
+  receiveEnd(reward: number | null): void {
+    this.emitReward(reward);
+  }
+
   receiveError(code: string, message: string): void {
     this.emitError({ code, message });
   }
@@ -114,6 +118,7 @@ export class Lobby {
         if (this.match?.matchId === m.matchId) this.match.receive({ events: m.events, view: m.view, deadline: m.deadline });
         break;
       case 'match_end':
+        if (this.match?.matchId === m.matchId) this.match.receiveEnd(m.reward);
         break;
       case 'error':
         if (this.match && this.state.kind === 'playing') this.match.receiveError(m.code, m.message);
