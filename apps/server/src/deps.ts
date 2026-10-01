@@ -1,4 +1,5 @@
 import type { Guard } from './auth/guard.js';
+import type { Catalog } from './catalog/catalog.js';
 import type { ServerConfig } from './config.js';
 import type { Db } from './db/db.js';
 
@@ -8,4 +9,6 @@ export interface AppDeps {
   config: ServerConfig;
   /** Protections de l'inscription : captcha, SMS, réputation d'IP, e-mails jetables, débit. */
   guard: Guard;
+  /** Catalogue de cartes publié (fait foi pour les parties, les boosters et les decks). */
+  catalog: Catalog;
 }

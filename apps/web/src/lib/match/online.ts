@@ -68,6 +68,8 @@ export class Lobby {
 
   constructor(
     private readonly ctx: MatchContext,
+    /** Version du catalogue chargé : une partie sur une autre version recharge la page (catalogue publié entre-temps). */
+    private readonly contentVersion: string,
     private readonly onChange: (state: LobbyState) => void,
   ) {}
 
@@ -109,6 +111,11 @@ export class Lobby {
         this.set({ kind: 'idle' });
         break;
       case 'match_start':
+        if (m.contentVersion !== this.contentVersion) {
+          // La partie a repris à la reconnexion avec le bon catalogue.
+          location.reload();
+          return;
+        }
         if (this.match?.matchId !== m.matchId) {
           this.match = new OnlineMatch(this.ctx, m.matchId, m.you, m.opponent, (msg) => this.send(msg));
           this.set({ kind: 'playing', match: this.match });

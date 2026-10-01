@@ -36,6 +36,8 @@ export interface RoomOptions {
   mode: QueueMode;
   seed: string;
   ctx: MatchContext;
+  /** Version du catalogue de la partie. */
+  contentVersion: string;
   seats: [SeatInfo, SeatInfo];
   timers: RoomTimers;
   onEnd: (room: MatchRoom) => void;
@@ -54,6 +56,7 @@ export class MatchRoom {
   state: MatchState;
   deadline: number | null = null;
   private readonly ctx: MatchContext;
+  private readonly contentVersion: string;
   private readonly timers: RoomTimers;
   private readonly onEnd: (room: MatchRoom) => void;
   private readonly sends: [Send | null, Send | null] = [null, null];
@@ -71,6 +74,7 @@ export class MatchRoom {
     this.seed = o.seed;
     this.seats = o.seats;
     this.ctx = o.ctx;
+    this.contentVersion = o.contentVersion;
     this.timers = o.timers;
     this.onEnd = o.onEnd;
     this.ghostRng = Rng.fromSeed(`${o.seed}:ghost`);
@@ -105,7 +109,13 @@ export class MatchRoom {
     if (p === null) return;
     this.sends[p] = send;
     const opponent = this.seats[p === 0 ? 1 : 0];
-    send({ t: 'match_start', matchId: this.id, you: p, opponent: { name: opponent.name, ghost: opponent.userId === null, leader: opponent.leader } });
+    send({
+      t: 'match_start',
+      matchId: this.id,
+      you: p,
+      opponent: { name: opponent.name, ghost: opponent.userId === null, leader: opponent.leader },
+      contentVersion: this.contentVersion,
+    });
     const events = this.initialEvents.length ? eventsFor(this.initialEvents, p) : [];
     send({ t: 'step', matchId: this.id, events, view: getPlayerView(this.ctx, this.state, p), deadline: this.deadline });
     if (this.announced && this.state.result) send({ t: 'match_end', matchId: this.id, result: this.state.result, reward: this.rewards[p] });

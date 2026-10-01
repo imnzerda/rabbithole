@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 3 — Serveur et comptes** : validée et fusionnée dans `master` (dépôt GitHub `imnzerda/rabbithole`). Prochaine : **Phase 4**.
+**Phase 4 — Pipeline de contenu et admin** : en cours (étape 1/5 terminée : catalogue en base).
 
 | Phase | Statut |
 |---|---|
@@ -10,7 +10,7 @@
 | 2. Prototype jouable local | ✅ Validée (fusionnée dans `master`) |
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
-| 4. Pipeline de contenu et admin | ⏳ Prochaine |
+| 4. Pipeline de contenu et admin | 🟡 En cours |
 | 5. Économie | 🟡 Bases avancées (pièces, aperçus, boosters gratuits, recyclage, crafting) |
 | 6. Rétention | — |
 | 7. Social | — |
@@ -19,6 +19,18 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 4, étape 1 : catalogue de cartes en base
+
+Plan de la phase 4 : (1) catalogue en base, (2) `tools/pipeline` (Wikidata, notoriété, politique de contenu, images Commons), (3) `apps/admin`, (4) côté joueur : signalement, interrupteur « contenu sensible », crédits, demande de retrait, (5) premier lot de cartes réelles.
+
+- **Tables** (migration `006`) : `series`, `cards` (définition jouable du moteur en JSON, statut `draft` → `review` → `published` → `retired`), `card_images` (crédits complets), `catalog_versions`, et un **rôle** sur les comptes (`player` / `admin`).
+- **Catalogue** (`apps/server/src/catalog/catalog.ts`) : seules les cartes publiées d'une série publiée sont jouables, dans les boosters, les decks et les parties. Au premier démarrage, les cartes du prototype deviennent la série `prototype` (et les jetons, une série non collectionnable).
+- **Versions** : chaque état publié a une version (`cat@…`), enregistrée avec chaque partie et conservée : un replay se rejoue avec les cartes de sa partie, même après une publication. Une partie en cours garde son catalogue.
+- **API** : `GET /api/catalog` (version, règles, cartes, cartes à collectionner) et `GET /api/catalog/:version`.
+- **Site** : Collection, Decks, Salon en ligne et Replays lisent le catalogue du serveur au lieu du JSON embarqué. Si une partie démarre sur une autre version, la page se recharge. L'entraînement hors ligne garde le contenu embarqué du prototype.
+- **Tests** : 50 serveur (dont 4 sur le catalogue), 20 E2E.
+
 
 ### 2026-10-02 — HWID retiré, empreinte numérique seule
 

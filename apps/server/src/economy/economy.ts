@@ -1,8 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { RARITIES, Rng, type CardDef, type Rarity } from '@rabbithole/engine';
-import { LEADER_CARDS, COLLECTIBLE_CARDS } from '@rabbithole/content';
+import type { CatalogSnapshot } from '../catalog/catalog.js';
 import type { EconomyConfig } from '../config.js';
-import { ctx } from '../content.js';
 import type { Db } from '../db/db.js';
 
 export class EconomyError extends Error {
@@ -14,10 +13,10 @@ export class EconomyError extends Error {
   }
 }
 
-/** Types de boosters du prototype (section 6.2) : un seul pour l'instant, le booster de base. */
+/** Types de boosters (section 6.2) : un seul pour l'instant, le booster de base (toutes les cartes publiées). */
 export const BOOSTER_TYPES = {
-  base: { name: { fr: 'Booster de base', en: 'Base booster' }, pool: [...COLLECTIBLE_CARDS, ...LEADER_CARDS] },
-} as const satisfies Record<string, { name: Record<string, string>; pool: CardDef[] }>;
+  base: { name: { fr: 'Booster de base', en: 'Base booster' }, pool: (s: CatalogSnapshot) => [...s.collectibles, ...s.leaders] },
+} as const satisfies Record<string, { name: Record<string, string>; pool: (s: CatalogSnapshot) => CardDef[] }>;
 export type BoosterType = keyof typeof BOOSTER_TYPES;
 
 export const isBoosterType = (t: string): t is BoosterType => t in BOOSTER_TYPES;
@@ -29,17 +28,17 @@ function byRarity(pool: readonly CardDef[]): Map<Rarity, CardDef[]> {
 }
 
 /** Probabilités affichées (transparence, section 14) : chance de chaque rareté pour chaque carte. */
-export function boosterOdds(type: BoosterType, economy: EconomyConfig): Record<string, number> {
-  const groups = byRarity(BOOSTER_TYPES[type].pool);
+export function boosterOdds(type: BoosterType, economy: EconomyConfig, catalog: CatalogSnapshot): Record<string, number> {
+  const groups = byRarity(BOOSTER_TYPES[type].pool(catalog));
   const present = RARITIES.filter((r) => groups.has(r));
   const total = present.reduce((sum, r) => sum + economy.rarityWeights[r], 0);
   return Object.fromEntries(present.map((r) => [r, Math.round((economy.rarityWeights[r] / total) * 10000) / 100]));
 }
 
 /** Contenu d'un booster, déterminé par sa seed (tirée par le RNG cryptographique du serveur, et enregistrée). */
-export function generateBooster(type: BoosterType, seed: string, economy: EconomyConfig): string[] {
+export function generateBooster(type: BoosterType, seed: string, economy: EconomyConfig, catalog: CatalogSnapshot): string[] {
   const rng = Rng.fromSeed(seed);
-  const groups = byRarity(BOOSTER_TYPES[type].pool);
+  const groups = byRarity(BOOSTER_TYPES[type].pool(catalog));
   const rarities = RARITIES.filter((r) => groups.has(r));
   const weights = rarities.map((r) => economy.rarityWeights[r]);
   return Array.from({ length: economy.boosterSize }, () => rng.pick(groups.get(rarities[rng.weighted(weights)]!)!).id);
@@ -90,18 +89,18 @@ const iso = (d: string | Date) => (d instanceof Date ? d.toISOString() : new Dat
  * Aperçu du prochain booster : exactement les cartes que l'acheteur recevra, verrouillées en base.
  * Il ne se renouvelle qu'après un achat ou à l'expiration du délai. Aucun moyen payant de le renouveler.
  */
-export async function ensurePreview(db: Db, userId: string, type: BoosterType, economy: EconomyConfig): Promise<Preview> {
+export async function ensurePreview(db: Db, userId: string, type: BoosterType, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Preview> {
   const [row] = await db.query<{ card_ids: string[]; refresh_at: string | Date; expired: boolean }>(
     'SELECT card_ids, refresh_at, refresh_at <= now() AS expired FROM booster_previews WHERE user_id = $1 AND booster_type = $2',
     [userId, type],
   );
   if (row && !row.expired) return { cardIds: row.card_ids, refreshAt: iso(row.refresh_at) };
-  return regeneratePreview(db, userId, type, economy);
+  return regeneratePreview(db, userId, type, economy, catalog);
 }
 
-async function regeneratePreview(db: Db, userId: string, type: BoosterType, economy: EconomyConfig): Promise<Preview> {
+async function regeneratePreview(db: Db, userId: string, type: BoosterType, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Preview> {
   const seed = newSeed();
-  const cardIds = generateBooster(type, seed, economy);
+  const cardIds = generateBooster(type, seed, economy, catalog);
   const [row] = await db.query<{ refresh_at: string | Date }>(
     `INSERT INTO booster_previews (user_id, booster_type, card_ids, seed, refresh_at)
      VALUES ($1, $2, $3, $4, now() + make_interval(hours => $5))
@@ -123,9 +122,10 @@ export async function purchasePreview(
   type: BoosterType,
   expected: string[],
   economy: EconomyConfig,
+  catalog: CatalogSnapshot,
 ): Promise<{ cards: string[]; next: Preview }> {
   return db.transaction(async (tx) => {
-    const current = await ensurePreview(tx, userId, type, economy);
+    const current = await ensurePreview(tx, userId, type, economy, catalog);
     if (current.cardIds.length !== expected.length || current.cardIds.some((id, i) => id !== expected[i])) {
       throw new EconomyError('preview_changed', 409);
     }
@@ -142,18 +142,18 @@ export async function purchasePreview(
       seed?.seed ?? '',
     ]);
     // Après un achat, un nouvel aperçu est généré immédiatement.
-    const next = await regeneratePreview(tx, userId, type, economy);
+    const next = await regeneratePreview(tx, userId, type, economy, catalog);
     return { cards: current.cardIds, next };
   });
 }
 
 /** Booster gratuit (récompense) : contenu aléatoire autorisé, puisqu'aucune somme n'est engagée. */
-export async function openFreeBooster(db: Db, userId: string, type: BoosterType, economy: EconomyConfig): Promise<string[]> {
+export async function openFreeBooster(db: Db, userId: string, type: BoosterType, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<string[]> {
   return db.transaction(async (tx) => {
     const used = await tx.query('UPDATE wallets SET free_boosters = free_boosters - 1 WHERE user_id = $1 AND free_boosters > 0 RETURNING free_boosters', [userId]);
     if (used.length === 0) throw new EconomyError('no_free_booster', 402);
     const seed = newSeed();
-    const cards = generateBooster(type, seed, economy);
+    const cards = generateBooster(type, seed, economy, catalog);
     await addCards(tx, userId, cards);
     await ledger(tx, userId, 'free_boosters', -1, 'booster_open', type);
     await tx.query(`INSERT INTO booster_openings (user_id, booster_type, source, card_ids, seed) VALUES ($1, $2, 'free', $3, $4)`, [userId, type, cards, seed]);
@@ -161,15 +161,16 @@ export async function openFreeBooster(db: Db, userId: string, type: BoosterType,
   });
 }
 
-function collectible(cardId: string): CardDef {
-  const def = ctx.cards[cardId];
-  if (!def || def.series !== 'prototype') throw new EconomyError('unknown_card', 404);
+/** Carte publiée et à collectionner (Leader compris), sinon 404. */
+function collectible(cardId: string, catalog: CatalogSnapshot): CardDef {
+  const def = [...catalog.collectibles, ...catalog.leaders].find((c) => c.id === cardId);
+  if (!def) throw new EconomyError('unknown_card', 404);
   return def;
 }
 
 /** Recyclage des doublons en essence : on garde toujours les exemplaires jouables. */
-export async function recycle(db: Db, userId: string, cardId: string, count: number, economy: EconomyConfig): Promise<Wallet> {
-  const def = collectible(cardId);
+export async function recycle(db: Db, userId: string, cardId: string, count: number, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Wallet> {
+  const def = collectible(cardId, catalog);
   return db.transaction(async (tx) => {
     const keep = keepFor(def, economy);
     const done = await tx.query('UPDATE collections SET quantity = quantity - $3 WHERE user_id = $1 AND card_id = $2 AND quantity - $3 >= $4 RETURNING quantity', [
@@ -187,8 +188,8 @@ export async function recycle(db: Db, userId: string, cardId: string, count: num
 }
 
 /** Fabrication d'une carte avec l'essence, jusqu'au nombre d'exemplaires jouables. */
-export async function craft(db: Db, userId: string, cardId: string, economy: EconomyConfig): Promise<Wallet> {
-  const def = collectible(cardId);
+export async function craft(db: Db, userId: string, cardId: string, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Wallet> {
+  const def = collectible(cardId, catalog);
   return db.transaction(async (tx) => {
     const [owned] = await tx.query<{ quantity: number }>('SELECT quantity FROM collections WHERE user_id = $1 AND card_id = $2', [userId, cardId]);
     if ((owned?.quantity ?? 0) >= keepFor(def, economy)) throw new EconomyError('already_complete');
@@ -202,9 +203,8 @@ export async function craft(db: Db, userId: string, cardId: string, economy: Eco
 }
 
 /** Leader de départ : choisi une seule fois (sans Leader, aucun deck n'est possible). */
-export async function chooseStarterLeader(db: Db, userId: string, leaderId: string): Promise<void> {
-  const def = ctx.cards[leaderId];
-  if (!def || def.type !== 'leader' || def.series !== 'prototype') throw new EconomyError('not_a_leader');
+export async function chooseStarterLeader(db: Db, userId: string, leaderId: string, catalog: CatalogSnapshot): Promise<void> {
+  if (!catalog.leaders.some((l) => l.id === leaderId)) throw new EconomyError('not_a_leader');
   await db.transaction(async (tx) => {
     const set = await tx.query('UPDATE users SET starter_leader = $2 WHERE id = $1 AND starter_leader IS NULL RETURNING id', [userId, leaderId]);
     if (set.length === 0) throw new EconomyError('already_chosen', 409);

@@ -19,8 +19,9 @@ import {
 
 const cardId = z.string().min(1).max(80);
 
-export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): void {
+export function registerEconomy(app: FastifyInstance, { db, config, catalog }: AppDeps): void {
   const economy = config.economy;
+  const cat = () => catalog.current;
   const fail = (reply: FastifyReply, error: unknown) => {
     if (error instanceof EconomyError) return reply.code(error.status).send({ error: error.code });
     throw error;
@@ -42,8 +43,8 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
         price: economy.boosterPrice,
         size: economy.boosterSize,
         refreshHours: economy.previewRefreshHours,
-        odds: boosterOdds(type as keyof typeof BOOSTER_TYPES, economy),
-        preview: await ensurePreview(db, userId, type as keyof typeof BOOSTER_TYPES, economy),
+        odds: boosterOdds(type as keyof typeof BOOSTER_TYPES, economy, cat()),
+        preview: await ensurePreview(db, userId, type as keyof typeof BOOSTER_TYPES, economy, cat()),
       })),
     );
     return { types, wallet: await getWallet(db, userId), economy: { recycle: economy.recycle, craft: economy.craft, keepCopies: economy.keepCopies } };
@@ -54,7 +55,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
     const body = z.object({ cardIds: z.array(cardId).max(20) }).safeParse(request.body);
     if (!type || !body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy);
+      const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy, cat());
       return { cards, preview: next, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -65,7 +66,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
     const type = typeOf(request.params);
     if (!type) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      const cards = await openFreeBooster(db, request.user!.id, type, economy);
+      const cards = await openFreeBooster(db, request.user!.id, type, economy, cat());
       return { cards, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -76,7 +77,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
     const body = z.object({ cardId, count: z.number().int().min(1).max(50) }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      return { wallet: await recycle(db, request.user!.id, body.data.cardId, body.data.count, economy) };
+      return { wallet: await recycle(db, request.user!.id, body.data.cardId, body.data.count, economy, cat()) };
     } catch (error) {
       return fail(reply, error);
     }
@@ -86,7 +87,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
     const body = z.object({ cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      return { wallet: await craft(db, request.user!.id, body.data.cardId, economy) };
+      return { wallet: await craft(db, request.user!.id, body.data.cardId, economy, cat()) };
     } catch (error) {
       return fail(reply, error);
     }
@@ -96,7 +97,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
     const body = z.object({ leaderId: cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      await chooseStarterLeader(db, request.user!.id, body.data.leaderId);
+      await chooseStarterLeader(db, request.user!.id, body.data.leaderId, cat());
       return { ok: true };
     } catch (error) {
       return fail(reply, error);
@@ -106,7 +107,7 @@ export function registerEconomy(app: FastifyInstance, { db, config }: AppDeps): 
   // Données de test (tests automatisés uniquement, interdit en production par la config).
   if (config.testFixtures) {
     app.post('/api/test/grant-kit', { preHandler: requireUser }, async (request) => {
-      await grantTestKit(db, request.user!.id);
+      await grantTestKit(db, request.user!.id, cat());
       return { ok: true };
     });
   }

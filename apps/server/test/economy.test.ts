@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { App } from '../src/app.js';
 import { DEFAULT_ECONOMY } from '../src/config.js';
-import { ctx } from '../src/content.js';
 import { boosterOdds, generateBooster } from '../src/economy/economy.js';
 import { auth, signup, startApp } from './helpers.js';
 
@@ -21,14 +20,14 @@ const owned = async (token: string) =>
 
 describe('génération des boosters', () => {
   it('déterministe pour une seed, conforme aux probabilités affichées', () => {
-    expect(generateBooster('base', 'seed-1', DEFAULT_ECONOMY)).toEqual(generateBooster('base', 'seed-1', DEFAULT_ECONOMY));
-    const odds = boosterOdds('base', DEFAULT_ECONOMY);
+    expect(generateBooster('base', 'seed-1', DEFAULT_ECONOMY, t.catalog.current)).toEqual(generateBooster('base', 'seed-1', DEFAULT_ECONOMY, t.catalog.current));
+    const odds = boosterOdds('base', DEFAULT_ECONOMY, t.catalog.current);
     expect(Object.values(odds).reduce((a, b) => a + b, 0)).toBeCloseTo(100, 0);
     const counts: Record<string, number> = {};
     const n = 3000;
     for (let i = 0; i < n; i++) {
-      for (const id of generateBooster('base', `s${i}`, DEFAULT_ECONOMY)) {
-        const r = ctx.cards[id]!.rarity;
+      for (const id of generateBooster('base', `s${i}`, DEFAULT_ECONOMY, t.catalog.current)) {
+        const r = t.catalog.current.ctx.cards[id]!.rarity;
         counts[r] = (counts[r] ?? 0) + 1;
       }
     }
@@ -59,7 +58,7 @@ describe('boosters', () => {
     const shop = (await get('/api/boosters', token)).json();
     const preview = shop.types[0].preview.cardIds as string[];
     expect(preview).toHaveLength(5);
-    expect(shop.types[0].odds).toEqual(boosterOdds('base', DEFAULT_ECONOMY));
+    expect(shop.types[0].odds).toEqual(boosterOdds('base', DEFAULT_ECONOMY, t.catalog.current));
     expect((await get('/api/boosters', token)).json().types[0].preview.cardIds).toEqual(preview);
 
     const broke = await post('/api/boosters/base/purchase', token, { cardIds: preview });
@@ -77,7 +76,7 @@ describe('boosters', () => {
     const next = (await get('/api/boosters', token)).json().types[0].preview;
     expect(next.cardIds).toEqual(bought.json().preview.cardIds);
     const audit = await t.db.query<{ seed: string; card_ids: string[] }>("SELECT seed, card_ids FROM booster_openings WHERE user_id = $1 AND source = 'purchase'", [id]);
-    expect(generateBooster('base', audit[0]!.seed, DEFAULT_ECONOMY)).toEqual(audit[0]!.card_ids);
+    expect(generateBooster('base', audit[0]!.seed, DEFAULT_ECONOMY, t.catalog.current)).toEqual(audit[0]!.card_ids);
   });
 
   it('jamais de contenu non montré : achat refusé si l’aperçu a changé', async () => {

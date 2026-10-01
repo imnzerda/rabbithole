@@ -3,6 +3,7 @@ import rateLimit from '@fastify/rate-limit';
 import websocket from '@fastify/websocket';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { createGuard, type Guard } from './auth/guard.js';
+import { Catalog } from './catalog/catalog.js';
 import { registerAuth } from './auth/routes.js';
 import type { ServerConfig } from './config.js';
 import { createPgDb, createPgliteDb, type Db } from './db/db.js';
@@ -17,6 +18,7 @@ export interface App {
   db: Db;
   matches: MatchService;
   guard: Guard;
+  catalog: Catalog;
 }
 
 /** Construit le serveur (base, migrations, routes) sans l'ouvrir sur le réseau : utilisable tel quel dans les tests. */
@@ -31,7 +33,8 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
 
   const guard = { ...createGuard(config.guard, (m) => app.log.info(m)), ...services };
   guard.disposable.start((err) => app.log.warn({ err }, 'liste d’e-mails jetables injoignable'));
-  const deps = { db, config, guard };
+  const catalog = await Catalog.open(db);
+  const deps = { db, config, guard, catalog };
   const matches = new MatchService(deps);
   registerAuth(app, deps);
   registerDecks(app, deps);
@@ -44,5 +47,5 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
     await matches.close();
     await db.close();
   });
-  return { app, db, matches, guard };
+  return { app, db, matches, guard, catalog };
 }

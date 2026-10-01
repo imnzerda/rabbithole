@@ -1,16 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { prototypeContext } from '@rabbithole/content';
   import { CATEGORY_NAMES, type CardDef } from '@rabbithole/engine';
   import type { DeckDto } from '@rabbithole/shared';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { api, ApiError } from '$lib/api';
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
   import { loadSession, session } from '$lib/session.svelte';
   import MiniCard from '$lib/ui/MiniCard.svelte';
 
-  const ctx = prototypeContext();
+  let { data } = $props();
+  // Le catalogue est lu une fois : il ne change pas pendant la vie de la page.
+  const { ctx, collectible } = untrack(() => data.catalog);
   const { deckSize, maxCopiesPerCard } = ctx.rules;
 
   interface Draft {
@@ -33,7 +34,7 @@
   const eligible = $derived(
     leader
       ? Object.values(ctx.cards)
-          .filter((c) => c.type !== 'leader' && c.series === 'prototype' && (owned.get(c.id) ?? 0) > 0 && c.categories.some((x) => leader.categories.includes(x)))
+          .filter((c) => c.type !== 'leader' && collectible.has(c.id) && (owned.get(c.id) ?? 0) > 0 && c.categories.some((x) => leader.categories.includes(x)))
           .sort((a, b) => a.cost - b.cost || b.power - a.power)
       : [],
   );

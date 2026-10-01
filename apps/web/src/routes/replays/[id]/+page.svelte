@@ -1,15 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { prototypeContext } from '@rabbithole/content';
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
+  import { loadCatalog } from '$lib/catalog';
   import { t } from '$lib/i18n';
   import { ReplayMatch } from '$lib/match/replay';
   import { loadSession, session } from '$lib/session.svelte';
   import Game from '$lib/ui/Game.svelte';
 
-  const ctx = prototypeContext();
   let client = $state.raw<ReplayMatch | null>(null);
   let playing = $state(true);
   let progress = $state({ index: 0, total: 0 });
@@ -22,6 +21,8 @@
       if (!user) return goto(`/login?next=/replays/${page.params.id}`);
       try {
         const { replay } = await api.replay(page.params.id ?? '');
+        // Les cartes telles qu'elles étaient au moment de la partie.
+        const { ctx } = await loadCatalog(replay.contentVersion);
         // Le moteur rejoue seed + decks + actions : le résultat est identique à la partie jouée.
         client = new ReplayMatch(ctx, replay, replay.you);
         timer = setInterval(() => {

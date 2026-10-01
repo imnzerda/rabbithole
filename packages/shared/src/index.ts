@@ -1,4 +1,4 @@
-import type { GameAction, MatchEvent, MatchResult, PlayerIndex, PlayerView } from '@rabbithole/engine';
+import type { CardDef, GameAction, MatchEvent, MatchResult, PlayerIndex, PlayerView, RulesConfig } from '@rabbithole/engine';
 
 /**
  * Types partagés entre le serveur et le client web : protocole WebSocket `/ws`
@@ -26,11 +26,20 @@ export type ServerMessage =
   | { t: 'hello'; user: { id: string; displayName: string } }
   | { t: 'queued'; mode: QueueMode; ghostInMs: number | null }
   | { t: 'cancelled' }
-  | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo }
+  /** `contentVersion` : version du catalogue de la partie (le client recharge s'il n'a pas la même). */
+  | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo; contentVersion: string }
   | { t: 'step'; matchId: string; events: MatchEvent[]; view: PlayerView; deadline: number | null }
   /** `reward` : pièces gagnées (plafonnées par jour) ; null pour un spectateur ou une reprise. */
   | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null }
   | { t: 'error'; code: string; message: string };
+
+/** Catalogue publié : définitions des cartes, règles, et cartes à collectionner (Leaders compris). */
+export interface CatalogDto {
+  version: string;
+  rules: RulesConfig;
+  cards: CardDef[];
+  collectible: string[];
+}
 
 /** Réglages publics du formulaire d'inscription. */
 export interface AuthConfigDto {

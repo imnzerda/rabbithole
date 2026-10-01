@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { prototypeContext } from '@rabbithole/content';
   import { CATEGORIES, CATEGORY_NAMES, type CardDef, type CategoryId } from '@rabbithole/engine';
   import type { BoostersResponse } from '@rabbithole/shared';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { api, ApiError } from '$lib/api';
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
@@ -11,11 +10,13 @@
   import CardInfo from '$lib/ui/CardInfo.svelte';
   import MiniCard from '$lib/ui/MiniCard.svelte';
 
-  const ctx = prototypeContext();
-  const inPrototype = (c: CardDef) => c.series === 'prototype';
-  const leaders = Object.values(ctx.cards).filter((c) => inPrototype(c) && c.type === 'leader');
+  let { data } = $props();
+  // Le catalogue est lu une fois : il ne change pas pendant la vie de la page.
+  const { ctx, collectible } = untrack(() => data.catalog);
+  const inCollection = (c: CardDef) => collectible.has(c.id);
+  const leaders = Object.values(ctx.cards).filter((c) => inCollection(c) && c.type === 'leader');
   const cards = Object.values(ctx.cards)
-    .filter((c) => inPrototype(c) && c.type !== 'leader')
+    .filter((c) => inCollection(c) && c.type !== 'leader')
     .sort((a, b) => CATEGORIES.indexOf(a.categories[0]!) - CATEGORIES.indexOf(b.categories[0]!) || a.cost - b.cost);
 
   let shop = $state.raw<BoostersResponse | null>(null);

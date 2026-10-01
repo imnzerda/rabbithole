@@ -1,7 +1,6 @@
 import { applyAction, createMatch } from '@rabbithole/engine';
 import type { ReplayData } from '@rabbithole/shared';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ctx } from '../src/content.js';
 import { DEFAULT_ECONOMY } from '../src/config.js';
 import { auth, autoPlay, signup, signupWithKit, startApp, TestClient } from './helpers.js';
 
@@ -26,6 +25,7 @@ async function player(app: Started) {
 
 /** Rejoue une partie enregistrée avec le moteur et renvoie l'état final. */
 function replay(r: ReplayData) {
+  const ctx = t!.catalog.current.ctx;
   let { state } = createMatch(ctx, {
     seed: r.seed,
     players: [

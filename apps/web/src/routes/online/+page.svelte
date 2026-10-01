@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { prototypeContext } from '@rabbithole/content';
   import { CATEGORY_NAMES } from '@rabbithole/engine';
   import type { DeckDto, QueueMode } from '@rabbithole/shared';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { api } from '$lib/api';
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
@@ -11,7 +10,9 @@
   import { loadSession, session } from '$lib/session.svelte';
   import Game from '$lib/ui/Game.svelte';
 
-  const ctx = prototypeContext();
+  let { data } = $props();
+  // Le catalogue est lu une fois : il ne change pas pendant la vie de la page.
+  const { ctx, version } = untrack(() => data.catalog);
   let lobby: Lobby | null = null;
   let lobbyState = $state.raw<LobbyState>({ kind: 'connecting' });
   let decks = $state.raw<DeckDto[]>([]);
@@ -29,7 +30,7 @@
       if (!user) return;
       decks = (await api.decks()).decks;
       deckId = decks[0]?.id ?? null;
-      lobby = new Lobby(ctx, (next) => (lobbyState = next));
+      lobby = new Lobby(ctx, version, (next) => (lobbyState = next));
       lobby.connect();
     })();
     return () => {

@@ -1,10 +1,10 @@
 import type { FastifyInstance } from 'fastify';
-import { validateDeck } from '@rabbithole/engine';
+import { validateDeck, type MatchContext } from '@rabbithole/engine';
 import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
-import { ctx } from '../content.js';
 import type { Db } from '../db/db.js';
 import type { AppDeps } from '../deps.js';
+import type { CatalogDto } from '@rabbithole/shared';
 
 export interface Deck {
   id: string;
@@ -45,7 +45,7 @@ export async function getDeck(db: Db, userId: string, id: string): Promise<Deck 
 }
 
 /** Règles du jeu (moteur) + possession : on ne joue que ce qu'on a dans sa collection. */
-export async function checkDeck(db: Db, userId: string, leaderId: string, cardIds: string[]): Promise<string[]> {
+export async function checkDeck(db: Db, ctx: MatchContext, userId: string, leaderId: string, cardIds: string[]): Promise<string[]> {
   const errors = validateDeck(ctx, leaderId, cardIds);
   const owned = await getCollection(db, userId);
   if (!owned.get(leaderId)) errors.push(`Leader non possédé : ${leaderId}`);
@@ -64,8 +64,18 @@ const deckSchema = z.object({
   cardIds: z.array(z.string().min(1).max(80)).max(60),
 });
 
-export function registerDecks(app: FastifyInstance, { db }: AppDeps): void {
-  app.get('/api/catalog', async () => ({ rules: ctx.rules, cards: Object.values(ctx.cards) }));
+export function registerDecks(app: FastifyInstance, { db, catalog }: AppDeps): void {
+  // Catalogue publié (version courante), et cartes d'une version passée (replays).
+  app.get('/api/catalog', async (): Promise<CatalogDto> => {
+    const { version, ctx, leaders, collectibles } = catalog.current;
+    return { version, rules: ctx.rules, cards: Object.values(ctx.cards), collectible: [...leaders, ...collectibles].map((c) => c.id) };
+  });
+  app.get('/api/catalog/:version', async (request, reply) => {
+    const version = (request.params as { version: string }).version.slice(0, 80);
+    const cards = await catalog.cardsOf(version);
+    if (!cards) return reply.code(404).send({ error: 'not_found' });
+    return { version, rules: catalog.current.ctx.rules, cards, collectible: [] } satisfies CatalogDto;
+  });
 
   app.get('/api/collection', { preHandler: requireUser }, async (request) => {
     const owned = await getCollection(db, request.user!.id);
@@ -78,7 +88,7 @@ export function registerDecks(app: FastifyInstance, { db }: AppDeps): void {
     const parsed = deckSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     const { name, leaderId, cardIds } = parsed.data;
-    const errors = await checkDeck(db, request.user!.id, leaderId, cardIds);
+    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds);
     if (errors.length) return reply.code(400).send({ error: 'invalid_deck', errors });
     const [row] = await db.query<DeckRow>('INSERT INTO decks (user_id, name, leader_id, card_ids) VALUES ($1, $2, $3, $4) RETURNING *', [
       request.user!.id,
@@ -95,7 +105,7 @@ export function registerDecks(app: FastifyInstance, { db }: AppDeps): void {
     if (!id.success || !parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     if (!(await getDeck(db, request.user!.id, id.data))) return reply.code(404).send({ error: 'not_found' });
     const { name, leaderId, cardIds } = parsed.data;
-    const errors = await checkDeck(db, request.user!.id, leaderId, cardIds);
+    const errors = await checkDeck(db, catalog.current.ctx, request.user!.id, leaderId, cardIds);
     if (errors.length) return reply.code(400).send({ error: 'invalid_deck', errors });
     const [row] = await db.query<DeckRow>(
       'UPDATE decks SET name = $1, leader_id = $2, card_ids = $3, updated_at = now() WHERE id = $4 AND user_id = $5 RETURNING *',

@@ -158,7 +158,8 @@ test('VPN détecté : vérification du numéro par SMS, puis compte créé', asy
   await page.getByTestId('submit').click();
 
   await expect(page.getByRole('heading', { name: 'Vérifie ton numéro' })).toBeVisible();
-  const digits = String(Math.floor(Math.random() * 1e8)).padStart(8, '0');
+  // Plage mobile attribuée (06 12…) : le serveur refuse les numéros hors plan de numérotation.
+  const digits = `12${String(Math.floor(Math.random() * 1e6)).padStart(6, '0')}`;
   await page.getByTestId('phone').fill(`06${digits}`);
   await page.getByTestId('send-code').click();
   await expect(page.getByRole('status')).toContainText('Code envoyé au +336');
