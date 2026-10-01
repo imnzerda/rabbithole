@@ -19,7 +19,14 @@ export function revealCard(r: Resolver, c: CardInstance): void {
   const { ctx, s } = r;
   const kw = ctx.rules.keywords;
   c.revealed = true;
-  r.emit({ type: 'card_revealed', player: c.controller, uid: c.uid, defId: c.defId, terrain: c.terrain as number });
+  r.emit({
+    type: 'card_revealed',
+    player: c.controller,
+    uid: c.uid,
+    defId: c.defId,
+    terrain: c.terrain as number,
+    power: r.displayPower(c.uid),
+  });
   if (c.effectsCancelled) return;
 
   const def = r.defOf(c);

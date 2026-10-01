@@ -11,6 +11,8 @@ export interface VisibleCard {
   power: number | null;
   /** Coût de base, uniquement pour les cartes en main. */
   cost?: number;
+  /** Coût réel sur chaque terrain (modificateurs de terrain inclus), uniquement pour les cartes en main. */
+  costByTerrain?: number[];
   owner: PlayerIndex;
   hidden: boolean;
   clickbait: boolean;
@@ -94,6 +96,7 @@ export function getPlayerView(ctx: MatchContext, s: MatchState, viewer: PlayerIn
         defId: c.defId,
         power: c.powerBase + c.powerMod,
         cost: getCardDef(ctx, c.defId).cost,
+        costByTerrain: s.terrains.map((_, i) => playCost(ctx, s, c, i)),
         owner: c.owner,
         hidden: false,
         clickbait: false,

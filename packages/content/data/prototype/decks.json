@@ -1,0 +1,38 @@
+[
+  {
+    "id": "internet_party",
+    "name": { "fr": "Internet Party", "en": "Internet Party" },
+    "description": { "fr": "Viral, Ratio et Clickbait. Ça buzze, ça clashe.", "en": "Viral, Ratio and Clickbait. It buzzes, it clashes." },
+    "cards": [
+      "proto_miniature", "proto_dj", "proto_complotiste", "proto_streamer", "proto_rappeur", "proto_gala",
+      "proto_troll", "proto_lien_piege", "proto_diva", "proto_moderateur", "proto_rock", "proto_icone_pop"
+    ]
+  },
+  {
+    "id": "ordre_et_pouvoir",
+    "name": { "fr": "Ordre et pouvoir", "en": "Order & Power" },
+    "description": { "fr": "Élan en début de partie, armée en fin de partie.", "en": "Early momentum, late-game army." },
+    "cards": [
+      "proto_sprinteur", "proto_figurant", "proto_buteur", "proto_ultra", "proto_chevalier", "proto_championne",
+      "proto_sosie", "proto_general", "proto_club", "proto_reine_guerriere", "proto_genie", "proto_empereur"
+    ]
+  },
+  {
+    "id": "coups_tordus",
+    "name": { "fr": "Coups tordus", "en": "Dirty Tricks" },
+    "description": { "fr": "Vol, destruction et hasard. Ton adversaire ne va pas aimer.", "en": "Theft, destruction and chaos. Your opponent won't like it." },
+    "cards": [
+      "proto_pickpocket", "proto_fetard", "proto_complotiste", "proto_scandale", "proto_zone51", "proto_reine_nuit",
+      "proto_lien_piege", "proto_cambrioleur", "proto_mechant", "proto_yeti", "proto_bermudes", "proto_parrain"
+    ]
+  },
+  {
+    "id": "longue_route",
+    "name": { "fr": "La longue route", "en": "The Long Road" },
+    "description": { "fr": "Croissance et science : lent au début, imparable à la fin.", "en": "Growth and science: slow start, unstoppable finish." },
+    "cards": [
+      "proto_navigateur", "proto_figurant", "proto_alpiniste", "proto_chercheuse", "proto_zone51", "proto_robot",
+      "proto_suite", "proto_diva", "proto_astronaute", "proto_general", "proto_genie", "proto_yeti"
+    ]
+  }
+]

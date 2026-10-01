@@ -4,3 +4,7 @@ coverage/
 .env
 .env.*
 *.log
+.svelte-kit/
+build/
+test-results/
+playwright-report/

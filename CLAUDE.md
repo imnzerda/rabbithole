@@ -22,9 +22,13 @@ Monorepo pnpm (`apps/web`, `apps/server`, `apps/admin`, `packages/engine`, `pack
 
 ```bash
 pnpm install
-pnpm test        # tous les tests
-pnpm typecheck   # tsc strict sur tous les packages
+pnpm dev         # prototype jouable : http://localhost:5173 (?timer=0 pour couper le minuteur)
+pnpm test        # tests unitaires (moteur, contenu)
+pnpm typecheck   # tsc / svelte-check strict sur tous les packages
+pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 ```
+
+`apps/web` utilise TypeScript 5.9 : `svelte-check` a besoin de l'API JS que TypeScript 7 n'expose plus. Le reste du monorepo est en TypeScript 7.
 
 ## Règles non négociables
 
@@ -72,4 +76,14 @@ pnpm typecheck   # tsc strict sur tous les packages
   - `view.ts` : ce qu'un joueur voit, sans information cachée.
   - `validate.ts` : validation des cartes et des decks.
   - `glossary.ts` : texte des mots-clés, généré depuis la config.
+  - `ai.ts` : IA simple, qui ne lit que la vue publique du joueur.
+  - `describe.ts` : texte des cartes généré depuis le DSL.
 - `packages/engine/test/` : `fixtures.ts` contient les terrains d'exemple et un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`) pour écrire des scénarios.
+- [packages/content/](packages/content/) : cartes, terrains et decks en JSON (`data/prototype/`), chargés par `prototypeContext()`.
+- [apps/web/](apps/web/) : SvelteKit + PixiJS.
+  - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
+  - `lib/match/local-match.ts` : partie locale contre l'IA, pour le prototype uniquement.
+  - `lib/game/renderer.ts` : plateau, glisser-déposer, animation des événements.
+  - `lib/game/card-sprite.ts` : design typographique des cartes.
+  - `lib/ui/` : fiches (carte, règles, fin de partie).
+  - `e2e/` : tests Playwright et `shots.mjs` (captures de contrôle).

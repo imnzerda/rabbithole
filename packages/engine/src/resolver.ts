@@ -53,6 +53,12 @@ export class Resolver {
     return computePowers(this.ctx, this.s);
   }
 
+  /** Puissance effective si la carte est révélée en jeu, sinon puissance de base + modifications. */
+  displayPower(uid: string): number {
+    const c = this.card(uid);
+    return this.powers()[uid] ?? c.powerBase + c.powerMod;
+  }
+
   // -------------------------------------------------------------------------
   // Création et zones
   // -------------------------------------------------------------------------
@@ -171,14 +177,14 @@ export class Resolver {
   addPower(uid: string, delta: number, source: string | null): void {
     if (delta === 0) return;
     this.card(uid).powerMod += delta;
-    this.emit({ type: 'power_changed', uid, delta, source });
+    this.emit({ type: 'power_changed', uid, delta, power: this.displayPower(uid), source });
   }
 
   setPower(uid: string, value: number, source: string | null): void {
     const c = this.card(uid);
     c.powerBase = value;
     c.powerMod = 0;
-    this.emit({ type: 'power_set', uid, value, source });
+    this.emit({ type: 'power_set', uid, value, power: this.displayPower(uid), source });
   }
 
   destroy(uid: string, source: string | null): void {
@@ -257,6 +263,7 @@ export class Resolver {
       player,
       zone: dest === null ? 'hand' : 'board',
       terrain: dest,
+      power: this.displayPower(c.uid),
       source,
     });
     return c;
@@ -272,7 +279,7 @@ export class Resolver {
     c.powerMod = 0;
     c.effectsCancelled = false;
     c.continuousCancelled = false;
-    this.emit({ type: 'card_transformed', uid, from, to: target, source });
+    this.emit({ type: 'card_transformed', uid, from, to: target, power: this.displayPower(uid), source });
   }
 
   discard(player: PlayerIndex, pick: 'random' | 'highest_cost' | 'lowest_cost', source: string | null): void {
@@ -297,7 +304,7 @@ export class Resolver {
     if (this.s.players[player].hand.length >= this.ctx.rules.maxHandSize) return;
     const c = this.createInstance(defId, player, 'hand', true);
     this.s.players[player].hand.push(c.uid);
-    this.emit({ type: 'card_created', uid: c.uid, defId, player, zone: 'hand', terrain: null, source });
+    this.emit({ type: 'card_created', uid: c.uid, defId, player, zone: 'hand', terrain: null, power: c.powerBase, source });
   }
 
   hide(uid: string, source: string | null): void {

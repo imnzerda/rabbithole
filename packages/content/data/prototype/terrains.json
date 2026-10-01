@@ -1,0 +1,70 @@
+[
+  {
+    "id": "prohibition",
+    "name": { "fr": "Prohibition", "en": "Prohibition" },
+    "description": { "fr": "Cartes Crimes et scandales : +2.", "en": "Crimes & Scandals cards: +2." },
+    "favoredCategory": "crimes_scandales",
+    "modifiers": [{ "type": "power", "filter": { "categories": ["crimes_scandales"] }, "amount": 2 }]
+  },
+  {
+    "id": "stade",
+    "name": { "fr": "Stade", "en": "Stadium" },
+    "description": { "fr": "Élan se déclenche à tous les tours.", "en": "Momentum triggers on every turn." },
+    "favoredCategory": "sport",
+    "modifiers": [{ "type": "elan_always" }]
+  },
+  {
+    "id": "las_vegas",
+    "name": { "fr": "Las Vegas", "en": "Las Vegas" },
+    "description": { "fr": "Les effets aléatoires se déclenchent deux fois.", "en": "Random effects trigger twice." },
+    "modifiers": [{ "type": "random_twice" }]
+  },
+  {
+    "id": "tribunal",
+    "name": { "fr": "Tribunal", "en": "Courtroom" },
+    "description": { "fr": "Cartes Crimes et scandales : −2.", "en": "Crimes & Scandals cards: −2." },
+    "modifiers": [{ "type": "power", "filter": { "categories": ["crimes_scandales"] }, "amount": -2 }]
+  },
+  {
+    "id": "concert",
+    "name": { "fr": "Concert", "en": "Concert" },
+    "description": { "fr": "Chaque carte Musique donne +1 à tes autres cartes ici.", "en": "Each Music card gives +1 to your other cards here." },
+    "favoredCategory": "musique",
+    "modifiers": [{ "type": "aura", "filter": { "categories": ["musique"] }, "amount": 1 }]
+  },
+  {
+    "id": "serveur_discord",
+    "name": { "fr": "Serveur Discord", "en": "Discord Server" },
+    "description": { "fr": "Cartes Internet : coûtent 1 de moins ici.", "en": "Internet cards cost 1 less here." },
+    "favoredCategory": "internet",
+    "modifiers": [{ "type": "cost", "filter": { "categories": ["internet"] }, "amount": -1 }]
+  },
+  {
+    "id": "hollywood",
+    "name": { "fr": "Hollywood", "en": "Hollywood" },
+    "description": { "fr": "Cartes Séries et cinéma : +2.", "en": "TV & Movies cards: +2." },
+    "favoredCategory": "series_cinema",
+    "modifiers": [{ "type": "power", "filter": { "categories": ["series_cinema"] }, "amount": 2 }]
+  },
+  {
+    "id": "champ_de_bataille",
+    "name": { "fr": "Champ de bataille", "en": "Battlefield" },
+    "description": { "fr": "Cartes Guerre et pouvoir : +2.", "en": "War & Power cards: +2." },
+    "favoredCategory": "guerre_pouvoir",
+    "modifiers": [{ "type": "power", "filter": { "categories": ["guerre_pouvoir"] }, "amount": 2 }]
+  },
+  {
+    "id": "laboratoire",
+    "name": { "fr": "Laboratoire secret", "en": "Secret Lab" },
+    "description": { "fr": "Cartes Science et Mystères : coûtent 1 de moins ici.", "en": "Science and Mystery cards cost 1 less here." },
+    "favoredCategory": "science",
+    "modifiers": [{ "type": "cost", "filter": { "categories": ["science", "mysteres"] }, "amount": -1 }]
+  },
+  {
+    "id": "camp_de_base",
+    "name": { "fr": "Camp de base", "en": "Base Camp" },
+    "description": { "fr": "Cartes Exploration et Nuits et excès : +1.", "en": "Exploration and Nights & Excess cards: +1." },
+    "favoredCategory": "exploration",
+    "modifiers": [{ "type": "power", "filter": { "categories": ["exploration", "nuits_exces"] }, "amount": 1 }]
+  }
+]

@@ -3,8 +3,11 @@
   "private": true,
   "packageManager": "pnpm@10.5.0",
   "scripts": {
+    "dev": "pnpm --filter @rabbithole/web dev",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test:e2e": "pnpm --filter @rabbithole/web test:e2e",
+    "build": "pnpm --filter @rabbithole/web build"
   },
   "devDependencies": {
     "typescript": "^7.0.2",

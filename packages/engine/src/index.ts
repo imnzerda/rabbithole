@@ -19,3 +19,6 @@ export { playCost, manaForTurn } from './query.js';
 export { getPlayerView, handCosts, type PlayerView, type TerrainView, type VisibleCard } from './view.js';
 export { validateDeck, validateCardDef, validateTerrainDef, validateEffect, validateCatalog } from './validate.js';
 export { keywordText, rulesSummary, type GlossaryLocale } from './glossary.js';
+export { CATEGORY_NAMES, KEYWORD_NAMES, actionText, effectText, cardText, type CardTextLine } from './describe.js';
+export { chooseAiPlays, aiWantsHype, aiWantsFold } from './ai.js';
+export { matchesFilter } from './query.js';

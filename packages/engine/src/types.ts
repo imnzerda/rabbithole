@@ -312,10 +312,11 @@ export type MatchEvent =
   | { type: 'card_drawn'; player: PlayerIndex; uid: string }
   | { type: 'draw_failed'; player: PlayerIndex; reason: 'deck_empty' | 'hand_full' }
   | { type: 'card_played'; player: PlayerIndex; uid: string; terrain: number }
-  | { type: 'card_revealed'; player: PlayerIndex; uid: string; defId: string; terrain: number }
+  /** `power` : puissance effective au moment de l'événement (pour l'animation). */
+  | { type: 'card_revealed'; player: PlayerIndex; uid: string; defId: string; terrain: number; power: number }
   | { type: 'keyword_triggered'; uid: string; keyword: KeywordId; targets: string[] }
-  | { type: 'power_changed'; uid: string; delta: number; source: string | null }
-  | { type: 'power_set'; uid: string; value: number; source: string | null }
+  | { type: 'power_changed'; uid: string; delta: number; power: number; source: string | null }
+  | { type: 'power_set'; uid: string; value: number; power: number; source: string | null }
   | { type: 'card_destroyed'; uid: string; source: string | null }
   | { type: 'card_moved'; uid: string; from: number; to: number; source: string | null }
   | { type: 'card_stolen'; uid: string; from: PlayerIndex; to: PlayerIndex; terrain: number; source: string | null }
@@ -326,9 +327,10 @@ export type MatchEvent =
       player: PlayerIndex;
       zone: 'board' | 'hand';
       terrain: number | null;
+      power: number;
       source: string | null;
     }
-  | { type: 'card_transformed'; uid: string; from: string; to: string; source: string | null }
+  | { type: 'card_transformed'; uid: string; from: string; to: string; power: number; source: string | null }
   | { type: 'card_discarded'; uid: string; player: PlayerIndex; source: string | null }
   | { type: 'card_hidden'; uid: string; source: string | null }
   | { type: 'effects_cancelled'; uid: string; scope: 'all' | 'continuous'; source: string | null }
