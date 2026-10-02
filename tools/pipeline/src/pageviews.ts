@@ -15,6 +15,8 @@ export const PAGEVIEW_DAYS = 60;
 
 interface PageviewsResponse {
   query?: { pages?: { title: string; pageviews?: Record<string, number | null> }[]; normalized?: { from: string; to: string }[] };
+  /** L'API ne renvoie les vues que d'une partie des articles : la suite s'obtient avec `continue`. */
+  continue?: Record<string, string>;
 }
 
 /** Somme des vues quotidiennes (jours sans donnée = 0). */
@@ -26,21 +28,30 @@ export function sumDaily(pageviews: Record<string, number | null> | undefined): 
 export async function languageViews(lang: string, titles: string[], pause = 300): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   for (const part of chunk([...new Set(titles)], 50)) {
-    const url = `https://${lang}.wikipedia.org/w/api.php?${new URLSearchParams({
-      action: 'query',
-      prop: 'pageviews',
-      pvipdays: String(PAGEVIEW_DAYS),
-      titles: part.join('|'),
-      format: 'json',
-      formatversion: '2',
-      maxlag: '5',
-    })}`;
-    const json = await getJson<PageviewsResponse>(url);
-    const normalized = new Map((json?.query?.normalized ?? []).map((n) => [n.from, n.to]));
-    const byTitle = new Map((json?.query?.pages ?? []).map((p) => [p.title, sumDaily(p.pageviews)]));
+    const normalized = new Map<string, string>();
+    const byTitle = new Map<string, number>();
+    let cont: Record<string, string> = {};
+    // Les vues arrivent par morceaux (ordre alphabétique) : on suit `continue` jusqu'au bout.
+    for (let page = 0; page < 50; page++) {
+      const url = `https://${lang}.wikipedia.org/w/api.php?${new URLSearchParams({
+        action: 'query',
+        prop: 'pageviews',
+        pvipdays: String(PAGEVIEW_DAYS),
+        titles: part.join('|'),
+        format: 'json',
+        formatversion: '2',
+        maxlag: '5',
+        ...cont,
+      })}`;
+      const json = await getJson<PageviewsResponse>(url);
+      for (const n of json?.query?.normalized ?? []) normalized.set(n.from, n.to);
+      for (const p of json?.query?.pages ?? []) if (p.pageviews) byTitle.set(p.title, sumDaily(p.pageviews));
+      // Une requête à la fois, avec une pause : on reste sous les limites de Wikimedia.
+      await new Promise((r) => setTimeout(r, pause));
+      if (!json?.continue) break;
+      cont = json.continue;
+    }
     for (const t of part) out.set(t, byTitle.get(normalized.get(t) ?? t) ?? 0);
-    // Une requête à la fois, avec une pause : on reste sous les limites de Wikimedia.
-    await new Promise((r) => setTimeout(r, pause));
   }
   return out;
 }

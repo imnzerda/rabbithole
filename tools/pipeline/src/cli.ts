@@ -7,7 +7,7 @@ import type { RunFile } from './types.js';
  * Pipeline de création de cartes (section 11).
  *
  *   pnpm pipeline extract  --series base_01 [--type base|world|country] [--country FR] [--categories musique,sport] [--limit 150]
- *   pnpm pipeline score    --series base_01     vues Wikipédia + score de notoriété
+ *   pnpm pipeline score    --series base_01 [--refresh]   vues Wikipédia + score de notoriété
  *   pnpm pipeline policy   --series base_01     politique de contenu (exclus / à revoir)
  *   pnpm pipeline images   --series base_01     images Commons, licences vérifiées
  *   pnpm pipeline export   --series base_01     liste courte en CSV
@@ -62,6 +62,8 @@ async function main(): Promise<void> {
     return run;
   };
   const runScore = async (run: RunFile) => {
+    // --refresh : recalcule les vues de tous les sujets.
+    if (opts.refresh) for (const c of run.candidates) delete c.views;
     log('Vues Wikipédia (60 derniers jours)…');
     await views(run, log);
     score(run);

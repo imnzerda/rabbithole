@@ -13,6 +13,7 @@ import {
   createSeries,
   getCard,
   importCandidates,
+  importDrafts,
   listCandidates,
   listCards,
   listSeries,
@@ -130,6 +131,19 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
       const def = await createBlankCard(db, body.data.series, body.data.type, body.data.name);
       await audit(db, me(request), 'card.create', def.id);
       return reply.code(201).send({ card: def });
+    } catch (err) {
+      return fail(reply, err);
+    }
+  });
+
+  /** Lot de brouillons préparé hors de l'outil (fichier JSON). */
+  app.post('/api/admin/cards/import', { ...admin, bodyLimit: 10 * 1024 * 1024 }, async (request, reply) => {
+    const body = z.object({ series: id, cards: z.array(z.record(z.string(), z.unknown())).max(500) }).safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const result = await importDrafts(db, body.data.series, body.data.cards as unknown as CardDef[]);
+      await audit(db, me(request), 'cards.import_drafts', body.data.series, { created: result.created.length, skipped: result.skipped.length });
+      return result;
     } catch (err) {
       return fail(reply, err);
     }

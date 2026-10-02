@@ -413,3 +413,76 @@ export async function setSeriesStatus(db: Db, id: string, status: 'draft' | 'rev
   const done = await db.query('UPDATE series SET status = $2 WHERE id = $1 RETURNING id', [id, status]);
   if (!done.length) throw new AdminError('not_found', 404);
 }
+
+// ---------------------------------------------------------------------------
+// Import de brouillons (lot de cartes préparé hors de l'outil, ex. tools/pipeline/drafts/)
+// ---------------------------------------------------------------------------
+
+export interface DraftImportResult {
+  created: string[];
+  skipped: { id: string; reason: string; details?: unknown }[];
+}
+
+/**
+ * Crée des brouillons à partir de définitions complètes. Chaque carte liée à un sujet Wikidata reprend
+ * la politique de contenu et l'image créditée de son candidat ; un sujet exclu est refusé ; une carte
+ * sans candidat est « à revoir ». Rien n'est publié : tout passe par la relecture.
+ */
+export async function importDrafts(db: Db, seriesId: string, defs: CardDef[]): Promise<DraftImportResult> {
+  const [series] = await db.query('SELECT 1 FROM series WHERE id = $1', [seriesId]);
+  if (!series) throw new AdminError('unknown_series', 404);
+  const result: DraftImportResult = { created: [], skipped: [] };
+  const ctx = await workingContext(db);
+  // Les cartes du lot peuvent se référencer entre elles (jetons, cartes ajoutées en main).
+  const batch = createContext({ cards: [...Object.values(ctx.cards), ...defs.map((d) => ({ ...d, series: seriesId }))] });
+
+  for (const raw of defs) {
+    const id = typeof raw?.id === 'string' ? raw.id : '';
+    if (!/^[a-z0-9_]{3,80}$/.test(id)) {
+      result.skipped.push({ id: id || '?', reason: 'invalid_id' });
+      continue;
+    }
+    const [exists] = await db.query('SELECT 1 FROM cards WHERE id = $1', [id]);
+    if (exists) {
+      result.skipped.push({ id, reason: 'exists' });
+      continue;
+    }
+    const candidateRow = raw.wikidataId
+      ? (await db.query<{ data: PipelineCandidate }>('SELECT data FROM candidates WHERE qid = $1', [raw.wikidataId]))[0]
+      : undefined;
+    const c = candidateRow?.data;
+    if (c?.policy?.status === 'excluded') {
+      result.skipped.push({ id, reason: 'policy_excluded', details: c.policy.reasons });
+      continue;
+    }
+    const accepted = !!c?.imageInfo?.accepted;
+    const def: CardDef = { ...raw, series: seriesId, image: { assetId: null, fallback: !accepted } };
+    const errors = checkDef(def, batch);
+    if (errors.length) {
+      result.skipped.push({ id, reason: 'invalid_card', details: errors });
+      continue;
+    }
+    const policyStatus = c?.policy?.status ?? 'needs_review';
+    const reasons = c ? (c.policy?.reasons ?? []) : ['manual'];
+    await db.transaction(async (tx) => {
+      await tx.query(`INSERT INTO cards (id, series_id, wikidata_id, status, def, policy_status, policy_reasons) VALUES ($1, $2, $3, 'draft', $4, $5, $6)`, [
+        id,
+        seriesId,
+        def.wikidataId ?? null,
+        JSON.stringify(def),
+        policyStatus,
+        reasons,
+      ]);
+      if (accepted && c?.imageInfo) {
+        const img = c.imageInfo;
+        await tx.query(
+          `INSERT INTO card_images (card_id, source_url, file_page, author, license, license_url, personality_warning) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [id, img.thumbUrl ?? img.url, img.filePage, img.author, img.license, img.licenseUrl, img.personalityRights],
+        );
+      }
+      if (c) await tx.query("UPDATE candidates SET status = 'carded', card_id = $2, updated_at = now() WHERE qid = $1", [c.qid, id]);
+    });
+    result.created.push(id);
+  }
+  return result;
+}

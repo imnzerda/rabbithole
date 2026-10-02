@@ -183,4 +183,37 @@ describe('outil d’administration', () => {
     const sim = (await call('POST', '/api/admin/simulate', { a: { prebuilt: decks[0].id }, b: { prebuilt: decks[1].id }, games: 6 })).json();
     expect(sim.winsA + sim.winsB + sim.draws).toBe(6);
   });
+
+  it('import d’un lot de brouillons : lié au candidat (politique, image), sujets exclus et cartes invalides refusés', async () => {
+    const { call } = await setup();
+    await call('POST', '/api/admin/candidates/import', run);
+    await call('POST', '/api/admin/series', { id: 'base_01', type: 'base', name: { fr: 'Set de base', en: 'Base set' } });
+    const card = (over: Record<string, unknown>) => ({
+      type: 'character', categories: ['science'], cost: 2, power: 3, counter: 1, rarity: 'basique', series: 'x', keywords: [], effects: [],
+      name: { fr: 'Carte', en: 'Card' }, flavor: { fr: 'Texte.' }, ...over,
+    });
+    const res = (
+      await call('POST', '/api/admin/cards/import', {
+        series: 'base_01',
+        cards: [
+          card({ id: 'base_01_marie', wikidataId: 'Q100' }),
+          card({ id: 'base_01_enfant', wikidataId: 'Q300', categories: ['musique'] }),
+          card({ id: 'base_01_meme', name: { fr: 'Le mème' }, categories: ['internet'] }),
+          card({ id: 'base_01_casse', cost: 99 }),
+        ],
+      })
+    ).json();
+    expect(res.created).toEqual(['base_01_marie', 'base_01_meme']);
+    expect(res.skipped.map((x: { id: string; reason: string }) => [x.id, x.reason])).toEqual([
+      ['base_01_enfant', 'policy_excluded'],
+      ['base_01_casse', 'invalid_card'],
+    ]);
+    const marie = (await call('GET', '/api/admin/cards/base_01_marie')).json();
+    expect(marie).toMatchObject({ status: 'draft', series: 'base_01', policy: { status: 'ok' }, def: { image: { fallback: false } } });
+    expect(marie.images[0].author).toBe('Jane Doe');
+    expect((await call('GET', '/api/admin/cards/base_01_meme')).json().policy).toMatchObject({ status: 'needs_review', reasons: ['manual'] });
+    // Réimporter ne crée pas de doublon.
+    const again = (await call('POST', '/api/admin/cards/import', { series: 'base_01', cards: [card({ id: 'base_01_marie' })] })).json();
+    expect(again.skipped[0].reason).toBe('exists');
+  });
 });
