@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 4 — Pipeline de contenu et admin** : en cours (étapes 1 à 4 sur 5 terminées : catalogue en base, pipeline, outil d'admin, côté joueur).
+**Phase 4 — Pipeline de contenu et admin** : terminée, en attente de validation (premier lot de 30 cartes réelles à relire et publier dans l'admin).
 
 | Phase | Statut |
 |---|---|
@@ -19,6 +19,16 @@
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
 
 ## Journal
+
+### 2026-10-02 — Phase 4, étape 5 : premier lot de cartes réelles
+
+- **Pipeline sur le set de base** : 3 672 candidats, 3 191 avec une image libre ; politique : 9 exclus (terrorisme, négation de la Shoah, mineurs aujourd'hui), 270 à revoir.
+- Vues Wikipédia **par lots de 50** sur 60 jours : l'API « par article » (12 mois) refusait les requêtes (HTTP 429). La continuation des lots est suivie (sinon biais alphabétique).
+- Politique renforcée : descriptions évoquant le terrorisme ou la négation de la Shoah → exclusion d'office (« terroris… », pas « terror » : en portugais, c'est le film d'horreur).
+- **Lot ** : 30 cartes (3 par catégorie, styles de la section 4.1), dont 1 GOAT (Freddie Mercury) et 4 iconiques (Churchill, Madonna, Wikipédia, Einstein). Toutes valides et dans le budget (test automatique), textes FR et EN, images libres créditées. Deux cartes à valider (Al Capone : condamné ; Jules César : mort violente).
+- **Import dans l'admin** : Candidats → importer , puis Cartes → « Importer des brouillons »  (la série est créée si besoin).
+- Reste à faire hors code : relire et publier le lot, publier la série  ; puis les Leaders réels et le reste des 250 cartes.
+
 
 ### 2026-10-02 — Règle des mineurs simplifiée
 
