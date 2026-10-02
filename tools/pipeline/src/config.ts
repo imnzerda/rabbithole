@@ -136,25 +136,17 @@ export const REJECTED_LICENSE_PARTS = /\b(nc|nd)\b|non-?commercial|no ?deriv|fai
 
 /** Politique de contenu (section 5) : règles automatiques, un humain tranche les cas douteux. */
 export const POLICY = {
-  /** Âge de la majorité. */
-  majority: 18,
   /**
-   * Carrière commencée avant la majorité (chanteurs, sportifs, acteurs…) : `exclude` applique la règle
-   * du cahier des charges à la lettre (section 5) ; `review` laisse un humain décider si la carte
-   * ne porte que sur la période adulte. Les personnes mineures aujourd'hui et les enfants acteurs
-   * restent exclus dans tous les cas.
+   * Âge de la majorité : seule une personne encore mineure aujourd'hui est exclue.
+   * Une carrière commencée avant 18 ans n'exclut plus personne (décision du 2026-10-02).
    */
-  minorCareerStart: 'exclude' as 'exclude' | 'review',
-  /** Occupations exclues d'office. */
-  excludedOccupations: { Q970153: 'enfant acteur' } as Record<string, string>,
+  majority: 18,
   /** Natures exclues d'office (terrorisme). */
   excludedInstances: { Q2223653: 'attaque terroriste', Q17127659: 'organisation terroriste' } as Record<string, string>,
   /** Condamnations qui excluent (terrorisme). */
   excludedConvictions: { Q7283: 'terrorisme' } as Record<string, string>,
   /** Occupations contenu adulte : drapeau `adult`, revue (exploitation dénoncée ?). */
   adultOccupations: ['Q488111'],
-  /** Occupations où les carrières commencent souvent enfant : début de carrière inconnu → revue. */
-  childCareerCategories: ['musique', 'series_cinema', 'sport', 'internet'] as CategoryId[],
   /** Morts violentes (homicide, suicide) : revue (victime ?). */
   violentDeath: ['Q149086', 'Q10737', 'Q3882219'],
   /** Causes de décès sensibles (overdose) : contenu sensible. */

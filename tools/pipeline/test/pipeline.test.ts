@@ -131,19 +131,12 @@ describe('politique de contenu', () => {
     expect(evaluatePolicy(candidate(), NOW)).toEqual({ status: 'ok', reasons: [], flags: {} });
   });
 
-  it('mineurs : enfant acteur, mineur aujourd’hui, carrière commencée mineur → exclus', () => {
-    expect(evaluatePolicy(candidate({ occupations: ['Q970153'] }), NOW).status).toBe('excluded');
-    expect(evaluatePolicy(candidate({ birth: '2010-05-01', start: null }), NOW).reasons).toContain('minor_now');
-    const early = evaluatePolicy(candidate({ birth: '1989-12-13', start: '2003-01-01', categories: ['musique'] }), NOW);
-    expect(early.status).toBe('excluded');
-    expect(early.reasons).toContain('minor_at_career_start');
-  });
-
-  it('début de carrière inconnu dans une catégorie à carrières précoces → revue', () => {
-    const r = evaluatePolicy(candidate({ categories: ['sport'], start: null }), NOW);
-    expect(r.status).toBe('needs_review');
-    expect(r.reasons).toEqual(['career_start_unknown']);
-    expect(evaluatePolicy(candidate({ categories: ['science'], start: null }), NOW).status).toBe('ok');
+  it('mineurs : seule une personne encore mineure aujourd’hui est exclue', () => {
+    expect(evaluatePolicy(candidate({ birth: '2010-05-01', start: null }), NOW)).toMatchObject({ status: 'excluded', reasons: ['minor_now'] });
+    // Carrière commencée à 14 ans, enfant acteur devenu adulte, début de carrière inconnu : rien à signaler.
+    expect(evaluatePolicy(candidate({ birth: '1989-12-13', start: '2003-01-01', categories: ['musique'] }), NOW).status).toBe('ok');
+    expect(evaluatePolicy(candidate({ birth: '1980-01-01', occupations: ['Q970153'] }), NOW).status).toBe('ok');
+    expect(evaluatePolicy(candidate({ categories: ['sport'], start: null }), NOW).status).toBe('ok');
   });
 
   it('terrorisme exclu ; victimes, condamnations, morts violentes à revoir', () => {

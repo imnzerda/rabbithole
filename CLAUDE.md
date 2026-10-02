@@ -51,7 +51,7 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 
 ### Contenu
 - Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Exclusions strictes :
-  - toute personne qui était mineure au moment des faits (en cas de doute, on exclut) ;
+  - toute personne encore mineure aujourd'hui (une carrière commencée avant 18 ans n'exclut pas) ;
   - les victimes ;
   - le terrorisme ;
   - les personnes privées ;

@@ -25,9 +25,6 @@
 
   const REASONS: Record<string, string> = {
     minor_now: 'mineur aujourd’hui',
-    minor_at_career_start: 'carrière commencée mineur',
-    career_start_unknown: 'début de carrière inconnu',
-    birth_unknown: 'naissance inconnue',
     listed_as_victim: 'cité comme victime',
     convicted: 'condamné',
     violent_death: 'mort violente',

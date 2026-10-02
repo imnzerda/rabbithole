@@ -15,16 +15,9 @@ export function evaluatePolicy(c: Candidate, now = new Date()): { status: Policy
   const flags: NonNullable<Candidate['flags']> = {};
   const isPerson = c.kind === 'person';
 
-  // Mineurs : enfants acteurs et mineurs aujourd'hui exclus ; carrière commencée mineur selon `POLICY.minorCareerStart`.
-  for (const o of c.occupations) if (POLICY.excludedOccupations[o]) excluded.push(`occupation:${o}`);
+  // Seule une personne encore mineure aujourd'hui est exclue (marge d'un an : l'anniversaire n'est pas toujours connu).
   const birthYear = yearOf(c.birth);
-  if (isPerson && birthYear !== null) {
-    if (now.getUTCFullYear() - birthYear < POLICY.majority + 1) excluded.push('minor_now');
-    const startYear = yearOf(c.start);
-    if (startYear !== null && startYear - birthYear < POLICY.majority) (POLICY.minorCareerStart === 'exclude' ? excluded : review).push('minor_at_career_start');
-    if (startYear === null && c.categories.some((cat) => POLICY.childCareerCategories.includes(cat))) review.push('career_start_unknown');
-  }
-  if (isPerson && birthYear === null) review.push('birth_unknown');
+  if (isPerson && birthYear !== null && now.getUTCFullYear() - birthYear < POLICY.majority + 1) excluded.push('minor_now');
 
   // Terrorisme.
   for (const i of c.instanceOf) if (POLICY.excludedInstances[i]) excluded.push(`terrorism:${i}`);

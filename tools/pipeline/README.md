@@ -36,13 +36,11 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 
 | Règle | Résultat |
 |---|---|
-| Enfant acteur, personne mineure aujourd'hui | `excluded` |
-| Carrière commencée avant 18 ans (début de carrière Wikidata) | `excluded` (réglable : `POLICY.minorCareerStart = 'review'`) |
+| Personne mineure aujourd'hui | `excluded` |
 | Attaque ou organisation terroriste, condamnation pour terrorisme | `excluded` |
 | Cité comme victime d'un événement, condamné, mort violente, overdose | `needs_review` (+ contenu sensible) |
 | Actrice ou acteur X | `needs_review` + drapeau `adult` (vérifier qu'aucune exploitation n'a été dénoncée) |
 | Mots sensibles dans la description (meurtre, victime, attentat…) | `needs_review` + contenu sensible |
-| Début de carrière inconnu en musique, cinéma, sport, internet | `needs_review` (vérifier l'âge au début de carrière) |
 | Personnalité politique | drapeau `politicallySensitive` (filtrage par pays) |
 
 `ok` signifie seulement que rien n'a été détecté : chaque carte passe quand même par la curation humaine.
@@ -50,6 +48,5 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 ## Limites connues
 
 - Les vues ne couvrent que 10 langues (`PAGEVIEW_LANGUAGES`) et commencent en juillet 2015.
-- Le début de carrière (P2031) manque souvent : d'où la revue `career_start_unknown`.
 - Les images ne sont pas encore recadrées, teintées ni envoyées sur R2 (section 10.3) : à faire quand le stockage sera configuré.
 - Le test de reconnaissance par sondage (section 4.6) se fera en jeu, après la phase 6.

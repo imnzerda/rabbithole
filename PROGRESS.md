@@ -20,6 +20,13 @@
 
 ## Journal
 
+### 2026-10-02 — Règle des mineurs simplifiée
+
+- Décision : une carrière commencée avant 18 ans n'exclut plus personne, et il n'y a plus de revue humaine à ce sujet (début de carrière inconnu, enfants acteurs devenus adultes).
+- Gardé : une personne **encore mineure aujourd'hui** est exclue d'office (contenu adulte, mécanique de Séduction, ton décalé).
+- Cahier des charges (section 5), CLAUDE.md et pipeline mis à jour.
+
+
 ### 2026-10-02 — Phase 4, étape 4 : côté joueur (signalement, contenu sensible, retraits, crédits, pays)
 
 - **Interrupteur « contenu sensible »** (page Réglages) : **masqué par défaut**. Une carte masquée (drapeau `sensitive` ou `adult`) s'affiche « Carte masquée », sans nom ni texte d'ambiance, partout (collection, decks, plateau, replays) ; elle se joue normalement.
@@ -267,7 +274,6 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
-- **Règle des mineurs** : appliquée à la lettre, « carrière commencée avant 18 ans » exclut Taylor Swift, Shakira, John Lennon, Mozart et la plupart des sportifs. Garder l'exclusion, ou passer en revue humaine (la carte ne porte que sur la période adulte) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).

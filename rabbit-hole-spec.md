@@ -254,7 +254,7 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
 À appliquer à **chaque carte** avant publication. Le pipeline marque les cas douteux, un humain valide.
 
 **Exclusions strictes**
-- Toute personne qui a été **mineure** pendant une partie de la carrière ou des faits concernés par la carte → exclue, sans exception. En cas de doute, exclure.
+- Toute personne **encore mineure aujourd'hui** → exclue. Une carrière commencée avant 18 ans n'exclut pas (décision du 2026-10-02).
 - **Victimes** de crimes, d'attentats, de catastrophes.
 - Attentats récents, figures terroristes, organisations terroristes.
 - Performeurs X ayant publiquement dénoncé avoir été contraints ou exploités.
