@@ -10,13 +10,15 @@
 | 2. Prototype jouable local | ✅ Validée (fusionnée dans `master`) |
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
-| 4. Pipeline de contenu et admin | 🟡 En cours |
+| 4. Pipeline de contenu et admin | ✅ Terminée, en attente de validation |
 | 5. Économie | 🟡 Bases avancées (pièces, aperçus, boosters gratuits, recyclage, crafting) |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
 
-**Lancer le jeu :** `pnpm install` puis `pnpm dev` (serveur de jeu sur le port 3000 et site sur le port 5173), et ouvrir http://localhost:5173. `pnpm dev:lan` fait de même, en accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
+**Lancer le jeu :** `pnpm install` puis `pnpm dev` : serveur de jeu (port 3000), site (http://localhost:5173) et outil d'admin (http://localhost:5174). `pnpm dev:lan` rend le site accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). Les réglages locaux (dont `ADMIN_EMAILS=neil.zerda@gmail.com`) sont dans `apps/server/.env`, non versionné. `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
+
+**Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
 
@@ -275,16 +277,27 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 
 ## Prochaines étapes
 
-### Phase 4 — Pipeline de contenu et admin
-1. `tools/pipeline` : extraction Wikidata (SPARQL), score de notoriété (sitelinks + Pageviews), pré-filtrage de la politique de contenu (section 5), images Commons avec filtre de licences, carte typographique de secours.
-2. `apps/admin` : éditeur de cartes et de Leaders (DSL validé par `validateCardDef`), budget de puissance, simulations IA contre IA pour l'équilibrage, file des demandes de retrait, `country_rules`, journal d'audit.
-3. Catalogue en base (tables `cards`, `card_images`, `series`) à la place du JSON du prototype.
-4. Production du set de base (personnes, événements et lieux réels) : 250 cartes et les Leaders.
+### Clore la phase 4 (à faire dans l'admin)
+1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis le lot `tools/pipeline/drafts/base_01.json` (Cartes → Importer des brouillons).
+2. Relire les 30 cartes, valider la politique de contenu d'Al Capone et de Jules César, passer en relecture, publier ; publier la série `base_01`.
+
+### Set de base (suite)
+- Les **Leaders réels** (une célébrité par paire de catégories, section 4.1) : ils remplaceront les 5 Leaders fictifs du prototype.
+- Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons.
+- **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
+- Décks préconstruits et fantômes avec les cartes réelles ; nouvel équilibrage par simulations.
+
+### Phase 5 — Économie (suite)
+Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting. Reste : trade-up, échanges (avec blocage des comptes liés), boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
 
 ### Questions ouvertes
+- Valider la phase 4.
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.
+- **Marques** (Wikipédia, YouTube, Minecraft…) : vérification juridique avant d'en faire des cartes publiées.
+- **Notoriété** : Crimes et Mystères n'ont qu'un sujet au-dessus du seuil (≥ 40 langues, score ≥ 90). Abaisser leurs seuils, ou curation sous le seuil pour ces deux catégories ?
+- Règles par pays (contenu adulte, politique) à valider juridiquement pays par pays.

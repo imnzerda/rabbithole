@@ -151,7 +151,9 @@ Puissance de référence d'un Personnage sans effet, par coût (≈ coût + 1) :
 |---|---|---|---|---|---|---|---|---|
 | Puissance | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 
-Une valeur de Contre élevée (+2) ou un effet se paie en puissance ; une carte sans Contre gagne +1. Chaque effet a une valeur en points de puissance (table `effect_costs`). Un outil d'admin calcule le budget et signale les cartes hors norme. Ajustements ensuite à partir de simulations IA contre IA et des statistiques de victoire (section 15).
+Une valeur de Contre élevée (+2) ou un effet se paie en puissance ; une carte sans Contre gagne +1. Chaque effet a une valeur en points de puissance. Un outil d'admin calcule le budget et signale les cartes hors norme. Ajustements ensuite à partir de simulations IA contre IA et des statistiques de victoire (section 15).
+
+**Implémenté** (moteur, `cardBudget`) : valeurs des mots-clés, des actions et des moments d'effet dans `DEFAULT_BUDGET` (config), tolérance ±1. Un Événement doit valoir environ 0,6 × la référence de son coût. Calibré sur le prototype équilibré par simulation (46 cartes sur 52 dans la norme). Simulations IA contre IA : `simulateMatchup`.
 
 > Les **terrains** du modèle précédent disparaissent. Ils pourront revenir comme cartes **Lieu** (effet continu, une par joueur) dans une série ultérieure.
 
@@ -223,10 +225,10 @@ Règle centrale : un joueur de 21–40 ans doit reconnaître **la grande majorit
 
 **Score de notoriété** (calculé par le pipeline, pondérations en config) :
 - **Portée internationale** (30 %) : nombre d'éditions linguistiques de Wikipédia ayant un article (sitelinks Wikidata).
-- **Popularité** (50 %) : vues cumulées sur 12 mois, toutes langues confondues (API Pageviews).
-- **Pertinence générationnelle** (20 %) : part des vues sur les 5 dernières années et période d'activité. Les sujets actifs depuis 1990 sont favorisés ; un sujet historique doit être de tout premier plan pour passer (ex. Napoléon, Cléopâtre).
+- **Popularité** (50 %) : vues des **60 derniers jours** dans 10 langues (en, fr, es, pt, de, it, ja, pl, ru, zh), extrapolées sur un an. L'API « par article » sur 12 mois n'accepte qu'un article par requête et refuse vite les requêtes (HTTP 429) : intenable pour des milliers de sujets. Le pipeline utilise l'API MediaWiki par lots de 50 articles.
+- **Pertinence générationnelle** (20 %) : période d'activité. Les sujets actifs depuis 1990 sont favorisés ; un sujet historique doit être de tout premier plan pour passer (ex. Napoléon, Cléopâtre). La tendance des vues sur 5 ans n'est pas mesurée (même limite d'API).
 
-Chaque critère est converti en percentile, puis combiné en un score de 0 à 100.
+Chaque critère est converti en percentile **dans la catégorie principale du sujet** (un footballeur et un explorateur ne se comparent pas), puis le total pondéré est lui-même rangé : un score de 90 signifie « parmi les 10 % les plus connus de sa catégorie ». Les candidats GOAT (« iconiques ») sont le top 1 % de tout le lot.
 
 **Seuils par type de série** (config) :
 | Série | Exigence |
@@ -253,10 +255,18 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
 
 À appliquer à **chaque carte** avant publication. Le pipeline marque les cas douteux, un humain valide.
 
+**Contrôles automatiques du pipeline** (`tools/pipeline/src/policy.ts`) :
+- exclus d'office : personne mineure aujourd'hui ; attaque ou organisation terroriste, condamnation pour terrorisme ; libellé ou description évoquant le terrorisme (« terroris… », « attentat ») ou la négation de la Shoah ;
+- à revoir : cité comme victime d'un événement, condamnation, mort violente, overdose, Industrie X, mots sensibles dans la description ;
+- drapeaux : `adult`, `sensitive` (masquable par le joueur), `politicallySensitive` (filtrage par pays).
+
+Dans l'outil d'admin, une carte « à revoir » ne se publie qu'avec une note de validation ; un sujet exclu ne peut jamais devenir une carte.
+
 **Exclusions strictes**
 - Toute personne **encore mineure aujourd'hui** → exclue. Une carrière commencée avant 18 ans n'exclut pas (décision du 2026-10-02).
 - **Victimes** de crimes, d'attentats, de catastrophes.
-- Attentats récents, figures terroristes, organisations terroristes.
+- Attentats, figures terroristes, organisations terroristes.
+- Négation de crimes contre l'humanité (ex. négation de la Shoah).
 - Performeurs X ayant publiquement dénoncé avoir été contraints ou exploités.
 - Personnes privées (sans notoriété publique documentée).
 
@@ -269,7 +279,7 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
 **Procédure de retrait**
 - Formulaire public « Demande de retrait » (page dédiée + lien sur chaque fiche de carte).
 - Traitement prioritaire : retrait ou anonymisation sous 72 h depuis l'outil d'admin (section 12).
-- Une carte retirée : désactivée en jeu, remplacée dans les collections par une carte de même rareté ou compensée en essence (section 6).
+- Une carte retirée : désactivée en jeu, remplacée dans les collections par une carte de même rareté ou compensée en essence (section 6). Le retrait (catalogue, boosters, decks) est implémenté ; la compensation reste à faire (phase 5).
 
 ---
 
@@ -395,16 +405,18 @@ Chaque critère est converti en percentile, puis combiné en un score de 0 à 10
 ## 11. Pipeline de création de cartes (`tools/pipeline`)
 
 1. **Extraction Wikidata (SPARQL)** par pays et catégorie : personnes, événements, lieux, œuvres. Champs : QID, libellés multilingues, pays, dates, occupation, nombre de sitelinks.
-2. **Score de notoriété** (section 4.6) : sitelinks, vues sur 12 mois toutes langues (API Pageviews), part des vues sur 5 ans. Rejet automatique sous les seuils de la série visée.
-3. **Pré-filtrage automatique** selon la politique de contenu (section 5) : date de naissance vs dates des faits, occupations à risque, mots-clés sensibles → marquage `needs_review`.
+2. **Score de notoriété** (section 4.6) : sitelinks, vues des 60 derniers jours dans 10 langues, activité depuis 1990. Les sujets sous le seuil de la série sont signalés (« sous le seuil »).
+3. **Pré-filtrage automatique** selon la politique de contenu (section 5) : âge actuel, terrorisme, victimes, condamnations, morts violentes, occupations à risque, mots-clés sensibles → `excluded` ou `needs_review`.
 4. **Export d'une liste courte** (CSV + vue admin), triée par popularité et catégorie.
 5. **Curation humaine** dans l'outil d'admin : sélection, catégorie(s), rareté.
-6. **Génération des stats** à partir du budget de puissance (3.9) et d'une bibliothèque d'effets par catégorie ; ajustement manuel.
+6. **Stats et effets** : proposés par lots de brouillons (`tools/pipeline/drafts/<série>.json`) dans le style de la catégorie (section 4.1), vérifiés par le budget de puissance (3.9) ; ajustement dans l'éditeur.
 7. **Textes** : nom + texte d'ambiance (flavor) multilingues, relecture par un ambassadeur local.
 8. **Images** : récupération Commons + filtre de licences + traitement (section 10).
 9. **Validation finale** et publication dans une série (statut `draft` → `review` → `published`).
 
-Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `pipeline images --series fr_01`, `pipeline validate --series fr_01`.
+Commandes CLI (`pnpm --filter @rabbithole/pipeline pipeline <commande>`) : `extract --series base_01 [--country FR] [--categories musique,sport]`, `score [--refresh]`, `policy`, `images`, `export` (CSV), `validate` (bilan), `all`. Résultats dans `tools/pipeline/out/<série>.json`, importés dans l'admin (page Candidats). Détails : `tools/pipeline/README.md`.
+
+Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, ≥ 40 langues), 3 191 avec une image libre ; 9 exclus, 270 à revoir ; premier lot de 30 cartes en brouillon.
 
 ---
 
@@ -419,6 +431,8 @@ Fournir des commandes CLI : `pipeline extract --country FR`, `pipeline score`, `
 - Tableaux de bord d'équilibrage : taux de victoire, taux de jeu par carte et par Leader, simulations IA contre IA.
 - Gestion de la boutique, des prix régionaux, du pass, des événements.
 - Journal d'audit de toutes les actions admin.
+
+**Implémenté** (phase 4) : accès par rôle (`ADMIN_EMAILS`) ; import des candidats du pipeline (filtres, retenir / rejeter, carte créée en brouillon prérempli) ; import de lots de brouillons ; éditeur avec aperçu en direct (validation du moteur, budget, texte de la carte), statuts brouillon → relecture → publiée → retirée ; validation de la politique de contenu avec note ; images et crédits, retrait en un clic ; séries ; file des signalements ; file des demandes de retrait (échéance 72 h, retrait de la carte en un clic) ; règles par pays ; budget du catalogue et simulations IA contre IA ; journal d'audit. **À venir** : éditeur dédié des Leaders et des mots-clés, statistiques de victoire réelles par carte (section 15), boutique, prix régionaux, pass, événements.
 
 ---
 
@@ -467,16 +481,21 @@ KPIs : rétention J1 / J7 / J30, parties par jour, durée moyenne de partie, con
 
 ```sql
 users(id, created_at, country, locale, email UNIQUE, canonical_email UNIQUE, phone_hash UNIQUE,
-      phone_verified_at, starter_leader, auth_provider, status)
+      phone_verified_at, starter_leader, role /*player|admin*/, show_sensitive BOOLEAN, auth_provider, status)
 pending_signups(id, payload JSONB, signals JSONB, reasons TEXT[], phone_hash, code_hash, attempts, expires_at)
 sms_sends(phone_hash, ip_hash, created_at)
 user_devices(device_hash, user_id, kind /*cookie|fp*/, first_seen, last_seen) / user_ips(ip_hash, user_id, first_seen, last_seen)
 account_flags(user_id, other_user_id, reason /*shared_device|shared_ip*/, created_at)
-cards(id, wikidata_id, series_id, rarity, cost, power, categories TEXT[], keywords TEXT[],
-      effects JSONB, names JSONB, flavor JSONB, flags JSONB, image_asset_id, status, version)
-card_images(id, card_id, source_url, author, license, license_url, modified BOOLEAN,
-            personality_warning BOOLEAN, r2_key, fallback BOOLEAN)
-series(id, type /*base|world|country*/, country, name JSONB, release_at, status)
+cards(id, series_id, wikidata_id, status /*draft|review|published|retired*/, def JSONB /*CardDef du moteur*/,
+      version, policy_status, policy_reasons TEXT[], policy_cleared_by, policy_note, created_at, updated_at)
+card_images(id, card_id, source_url, file_page, author, license, license_url, modified BOOLEAN,
+            personality_warning BOOLEAN, r2_key, active BOOLEAN)
+series(id, type /*prototype|tokens|base|world|country*/, country, name JSONB, release_at, status)
+catalog_versions(version, cards JSONB, created_at)   -- chaque catalogue publié, pour rejouer les replays
+candidates(qid, run_series, data JSONB, status /*new|shortlisted|rejected|carded*/, primary_category,
+           policy_status, score, card_id, imported_at, updated_at)
+reports(id, reporter_id, target_type /*card|player*/, card_id, target_user_id, match_id, reason, details,
+        status /*open|resolved|dismissed*/, resolution, resolved_by, created_at, resolved_at)
 keywords(id, definition JSONB, effect JSONB)
 country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
@@ -497,8 +516,9 @@ passes(user_id, season_id, tier, points, claimed JSONB)
 products(id, type, contents JSONB, active) / price_tiers(product_id, country, currency, amount)
 transactions(id, user_id, product_id, provider, provider_transaction_id UNIQUE, amount,
              currency, status, created_at)
-takedown_requests(id, card_id, requester_contact, reason, status, created_at, resolved_at)
-admin_audit(id, admin_id, action, payload JSONB, created_at)
+takedown_requests(id, card_id, requester_name, requester_contact, relation, reason,
+                  status /*open|in_progress|done|rejected*/, resolution, created_at, due_at /*+72 h*/, resolved_at)
+admin_audit(id, admin_id, action, target, payload JSONB, created_at)
 ```
 
 ---
@@ -552,10 +572,12 @@ POST /takedown
 - `tools/pipeline` (Wikidata, Pageviews, Commons, filtres de licences, traitement d'images, carte typographique de secours).
 - `apps/admin` (éditeur, budget de puissance, retraits, country_rules).
 - Production du set de base de 250 cartes.
+- **État (2026-10-02)** : code terminé (catalogue en base, pipeline, admin, signalements, contenu sensible, retraits, crédits, règles par pays) ; premier lot de 30 cartes réelles en brouillon. Reste : Leaders réels, suite des 250 cartes, illustrations en jeu (R2).
 
 ### Phase 5 — Économie
 - Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges, boutique quotidienne.
 - `PaymentProvider` en sandbox, prix régionaux, webhooks.
+- **Déjà fait en phase 3** : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting.
 
 ### Phase 6 — Rétention
 - Classé et saisons, missions, pass (3 pistes), progression de collection, succès, défi du jour, draft, tournois, Tendance du jour, partage de clips.

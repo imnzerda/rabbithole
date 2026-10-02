@@ -13,7 +13,7 @@ TCG (jeu de cartes à collectionner) jouable dans le navigateur, sur desktop et 
 
 ## Stack
 
-Monorepo pnpm (`apps/web`, `apps/server`, `apps/admin`, `packages/engine`, `packages/shared`, `tools/pipeline`) :
+Monorepo pnpm (`apps/web`, `apps/server`, `apps/admin`, `packages/engine`, `packages/content`, `packages/shared`, `tools/pipeline`) :
 - PixiJS v8 pour le rendu de jeu ; SvelteKit pour l'UI.
 - Node.js + Fastify, avec WebSocket.
 - PostgreSQL et Redis.
@@ -24,12 +24,15 @@ Monorepo pnpm (`apps/web`, `apps/server`, `apps/admin`, `packages/engine`, `pack
 pnpm install
 pnpm dev         # serveur de jeu (:3000) + site (:5173) + admin (:5174) ; ouvrir http://localhost:5173
 pnpm dev:lan     # idem, accessible depuis un téléphone du même Wi-Fi
-pnpm test        # tests unitaires (moteur, contenu, serveur)
+pnpm test        # tests unitaires (moteur, contenu, serveur, pipeline)
 pnpm typecheck   # tsc / svelte-check strict sur tous les packages
-pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
+pnpm test:e2e    # Playwright (lance les serveurs si besoin)
+pnpm --filter @rabbithole/pipeline pipeline all --series base_01   # pipeline de contenu
 ```
 
-`apps/web` utilise TypeScript 5.9 : `svelte-check` a besoin de l'API JS que TypeScript 7 n'expose plus. Le reste du monorepo est en TypeScript 7.
+Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par exemple `ADMIN_EMAILS=…` pour l'accès à l'admin. En dev, PostgreSQL tourne en embarqué (PGlite, `apps/server/.data/`).
+
+`apps/web` et `apps/admin` utilisent TypeScript 5.9 : `svelte-check` a besoin de l'API JS que TypeScript 7 n'expose plus. Le reste du monorepo est en TypeScript 7.
 
 ## Règles non négociables
 
@@ -53,12 +56,13 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
 - Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Exclusions strictes :
   - toute personne encore mineure aujourd'hui (une carrière commencée avant 18 ans n'exclut pas) ;
   - les victimes ;
-  - le terrorisme ;
+  - le terrorisme (attentats, figures et organisations terroristes) et la négation de crimes contre l'humanité ;
   - les personnes privées ;
   - les performeurs X ayant dénoncé une exploitation.
 - Les textes sont décalés mais **jamais dégradants ni diffamatoires**, et aucune image n'est explicite.
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
-- Le contenu `adult` est filtré par pays (`country_rules`).
+- Le contenu `adult` (et `politicallySensitive`) est filtré par pays (`country_rules`).
+- Aucune carte n'est publiée sans passer par l'outil d'admin : politique de contenu validée (note obligatoire si « à revoir »), image créditée ou carte typographique.
 - **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À la place : **signalements** (cartes, joueurs) et **interrupteur « contenu sensible »** (masqué par défaut, affichage seulement).
 - **Inscription protégée** : captcha invisible (Turnstile), pot de miel, débit limité par IP et sous-réseau, e-mails jetables et alias refusés, un compte par appareil (empreinte numérique, cookie d'appareil), SMS demandé en cas de risque (VPN, appareil vu ailleurs) avec un compte par numéro. Comptes partageant un appareil ou une IP signalés. IP, appareils et numéros stockés uniquement en empreinte salée.
 - **Pas de kit de départ** : les joueurs construisent leur deck en ouvrant des boosters.
@@ -95,15 +99,18 @@ pnpm test:e2e    # Playwright (lance le serveur de dev si besoin)
   - `src/decks/` : collection et decks (validation par le moteur et par la possession).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
-- [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : candidats, éditeur de cartes, séries, équilibrage, journal. API : `apps/server/src/admin/`. Accès : `ADMIN_EMAILS`.
-- [tools/pipeline/](tools/pipeline/) : pipeline de contenu (Wikidata, notoriété, politique de contenu, images Commons), avec un README. Réglages dans `src/config.ts`, résultats dans `out/` (hors dépôt).
+- [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : tableau de bord, candidats (import du pipeline), cartes (éditeur avec aperçu en direct, import de brouillons), séries, modération (signalements, demandes de retrait), règles par pays, équilibrage (budget, simulations), journal d'audit. API : `apps/server/src/admin/` et `src/moderation/`. Accès : `ADMIN_EMAILS`.
+- [tools/pipeline/](tools/pipeline/) : pipeline de contenu (Wikidata, notoriété, politique de contenu, images Commons), avec un README. Réglages dans `src/config.ts` (sources, seuils, politique), résultats dans `out/` (hors dépôt). `drafts/<série>.json` : lots de cartes en brouillon, vérifiés par un test (valides, dans le budget, textes FR/EN), à importer dans l'admin.
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
   - `lib/match/` : `LocalMatch` (entraînement hors ligne), `OnlineMatch` et `Lobby` (serveur), `ReplayMatch` (relecture).
   - `lib/ui/Game.svelte` : affichage d'une partie, quelle qu'en soit la source.
   - `lib/api.ts`, `lib/session.svelte.ts` : API REST et session.
+  - `lib/catalog.ts` : catalogue publié par le serveur (et versions passées pour les replays) ; `lib/viewer.svelte.ts` : ce que le joueur voit (cartes masquées ou bloquées, crédits).
+  - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
+  - Pages : `collection`, `decks`, `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.
-  - `lib/ui/` : fiches (carte, règles, fin de partie) et `DecisionPanel` (mulligan, blocage, contres, Déclencheur).
+  - `lib/ui/` : fiches (carte, règles, fin de partie), `DecisionPanel` (mulligan, blocage, contres, Déclencheur), `MiniCard` (carte HTML), `ReportDialog` (signalement), `PageShell` (pages simples).
   - `e2e/` : tests Playwright (exécutés sur smartphone et sur PC) et `shots.mjs` (captures de contrôle, `DEVICE=desktop` pour le format PC).
