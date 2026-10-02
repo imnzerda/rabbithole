@@ -143,6 +143,9 @@ export const POLICY = {
   majority: 18,
   /** Natures exclues d'office (terrorisme). */
   excludedInstances: { Q2223653: 'attaque terroriste', Q17127659: 'organisation terroriste' } as Record<string, string>,
+  /** Descriptions qui excluent d'office : terrorisme, négation de crimes contre l'humanité. */
+  // « terroris » (terrorisme, terroriste, terrorista…) et non « terror » : en portugais, terror = film d'horreur.
+  excludedWords: /\b(terroris|attentat|négation(?:nisme)? de la shoah|holocaust denial|negationism|négationnisme)/i,
   /** Condamnations qui excluent (terrorisme). */
   excludedConvictions: { Q7283: 'terrorisme' } as Record<string, string>,
   /** Occupations contenu adulte : drapeau `adult`, revue (exploitation dénoncée ?). */

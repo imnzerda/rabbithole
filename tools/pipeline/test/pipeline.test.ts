@@ -141,6 +141,8 @@ describe('politique de contenu', () => {
   it('terrorisme exclu ; victimes, condamnations, morts violentes à revoir', () => {
     expect(evaluatePolicy(candidate({ kind: 'event', instanceOf: ['Q2223653'], birth: null }), NOW).status).toBe('excluded');
     expect(evaluatePolicy(candidate({ convictedOf: ['Q7283'] }), NOW).status).toBe('excluded');
+    expect(evaluatePolicy(candidate({ kind: 'event', birth: null, descriptions: { fr: "série d'attentats-suicides aux États-Unis" } }), NOW).status).toBe('excluded');
+    expect(evaluatePolicy(candidate({ kind: 'concept', birth: null, labels: { fr: 'négation de la Shoah' } }), NOW).status).toBe('excluded');
     expect(evaluatePolicy(candidate({ listedAsVictim: true }), NOW).reasons).toEqual(['listed_as_victim']);
     const convicted = evaluatePolicy(candidate({ convictedOf: ['Q132821'] }), NOW);
     expect(convicted).toMatchObject({ status: 'needs_review', reasons: ['convicted'], flags: { sensitive: true } });

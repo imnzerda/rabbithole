@@ -177,8 +177,8 @@ export const api = {
   cards: (f: { series?: string; status?: string; q?: string }) => request<{ cards: CardRow[] }>('GET', `/admin/cards${qs(f)}`),
   card: (id: string) => request<CardDetail>('GET', `/admin/cards/${encodeURIComponent(id)}`),
   createCard: (series: string, type: CardDef['type'], name: string) => request<{ card: CardDef }>('POST', '/admin/cards', { series, type, name }),
-  importDrafts: (series: string, cards: unknown[]) =>
-    request<{ created: string[]; skipped: { id: string; reason: string; details?: unknown }[] }>('POST', '/admin/cards/import', { series, cards }),
+  importDrafts: (file: { series: string; seriesInfo?: unknown; cards: unknown[] }) =>
+    request<{ created: string[]; skipped: { id: string; reason: string; details?: unknown }[] }>('POST', '/admin/cards/import', file),
   preview: (def: CardDef) => request<Preview>('POST', '/admin/cards/preview', { def }),
   saveCard: (id: string, def: CardDef) => request<{ status: CardStatus; version: number }>('PUT', `/admin/cards/${encodeURIComponent(id)}`, { def }),
   cardStatus: (id: string, status: CardStatus) => request<{ ok: true; catalogVersion: string }>('POST', `/admin/cards/${encodeURIComponent(id)}/status`, { status }),

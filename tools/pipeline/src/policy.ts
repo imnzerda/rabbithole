@@ -22,6 +22,8 @@ export function evaluatePolicy(c: Candidate, now = new Date()): { status: Policy
   // Terrorisme.
   for (const i of c.instanceOf) if (POLICY.excludedInstances[i]) excluded.push(`terrorism:${i}`);
   for (const x of c.convictedOf) if (POLICY.excludedConvictions[x]) excluded.push(`convicted_terrorism:${x}`);
+  const allText = [...Object.values(c.labels), ...Object.values(c.descriptions)].join(' ');
+  if (POLICY.excludedWords.test(allText)) excluded.push('terrorism_or_denial');
 
   // Victimes, condamnations, morts violentes : revue humaine.
   if (c.listedAsVictim) review.push('listed_as_victim');

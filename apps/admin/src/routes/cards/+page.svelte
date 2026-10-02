@@ -24,8 +24,8 @@
     if (!file) return;
     error = importReport = null;
     try {
-      const data = JSON.parse(await file.text()) as { series: string; cards: unknown[] };
-      const res = await api.importDrafts(data.series, data.cards);
+      const data = JSON.parse(await file.text()) as { series: string; seriesInfo?: unknown; cards: unknown[] };
+      const res = await api.importDrafts(data);
       importReport = `${res.created.length} brouillon(s) créé(s) dans ${data.series}.` + (res.skipped.length ? ` Ignorées : ${res.skipped.map((x) => `${x.id} (${x.reason})`).join(', ')}.` : '');
       await load();
     } catch (err) {

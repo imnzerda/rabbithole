@@ -138,9 +138,21 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
 
   /** Lot de brouillons préparé hors de l'outil (fichier JSON). */
   app.post('/api/admin/cards/import', { ...admin, bodyLimit: 10 * 1024 * 1024 }, async (request, reply) => {
-    const body = z.object({ series: id, cards: z.array(z.record(z.string(), z.unknown())).max(500) }).safeParse(request.body);
+    const body = z
+      .object({
+        series: id,
+        /** Série créée (en brouillon) si elle n'existe pas encore. */
+        seriesInfo: z.object({ type: z.enum(['base', 'world', 'country']), country: z.string().regex(/^[A-Z]{2}$/).nullable().default(null), name: z.object({ fr: z.string(), en: z.string() }) }).optional(),
+        cards: z.array(z.record(z.string(), z.unknown())).max(500),
+      })
+      .safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
+      const [exists] = await db.query('SELECT 1 FROM series WHERE id = $1', [body.data.series]);
+      if (!exists && body.data.seriesInfo) {
+        await createSeries(db, { id: body.data.series, ...body.data.seriesInfo });
+        await audit(db, me(request), 'series.create', body.data.series);
+      }
       const result = await importDrafts(db, body.data.series, body.data.cards as unknown as CardDef[]);
       await audit(db, me(request), 'cards.import_drafts', body.data.series, { created: result.created.length, skipped: result.skipped.length });
       return result;
