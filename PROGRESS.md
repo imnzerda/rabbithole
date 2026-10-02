@@ -25,9 +25,9 @@
 - **Pipeline sur le set de base** : 3 672 candidats, 3 191 avec une image libre ; politique : 9 exclus (terrorisme, négation de la Shoah, mineurs aujourd'hui), 270 à revoir.
 - Vues Wikipédia **par lots de 50** sur 60 jours : l'API « par article » (12 mois) refusait les requêtes (HTTP 429). La continuation des lots est suivie (sinon biais alphabétique).
 - Politique renforcée : descriptions évoquant le terrorisme ou la négation de la Shoah → exclusion d'office (« terroris… », pas « terror » : en portugais, c'est le film d'horreur).
-- **Lot ** : 30 cartes (3 par catégorie, styles de la section 4.1), dont 1 GOAT (Freddie Mercury) et 4 iconiques (Churchill, Madonna, Wikipédia, Einstein). Toutes valides et dans le budget (test automatique), textes FR et EN, images libres créditées. Deux cartes à valider (Al Capone : condamné ; Jules César : mort violente).
-- **Import dans l'admin** : Candidats → importer , puis Cartes → « Importer des brouillons »  (la série est créée si besoin).
-- Reste à faire hors code : relire et publier le lot, publier la série  ; puis les Leaders réels et le reste des 250 cartes.
+- **Lot `tools/pipeline/drafts/base_01.json`** : 30 cartes (3 par catégorie, styles de la section 4.1), dont 1 GOAT (Freddie Mercury) et 4 iconiques (Churchill, Madonna, Wikipédia, Einstein). Toutes valides et dans le budget (test automatique), textes FR et EN, images libres créditées. Deux cartes à valider (Al Capone : condamné ; Jules César : mort violente).
+- **Import dans l'admin** : Candidats → importer `tools/pipeline/out/base_01.json`, puis Cartes → « Importer des brouillons » `tools/pipeline/drafts/base_01.json` (la série est créée si besoin).
+- Reste à faire hors code : relire et publier le lot, publier la série `base_01` ; puis les Leaders réels et le reste des 250 cartes.
 
 
 ### 2026-10-02 — Règle des mineurs simplifiée
