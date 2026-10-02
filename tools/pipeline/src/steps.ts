@@ -2,7 +2,7 @@ import { CATEGORIES, type CategoryId } from '@rabbithole/engine';
 import { PER_SOURCE_LIMIT, SERIES_RULES, SOURCES } from './config.js';
 import { fetchImages } from './commons.js';
 import { mapLimit } from './http.js';
-import { candidateViews } from './pageviews.js';
+import { allViews } from './pageviews.js';
 import { evaluatePolicy } from './policy.js';
 import { scoreRun } from './score.js';
 import type { Candidate, RunFile } from './types.js';
@@ -69,31 +69,11 @@ export async function extract(opts: ExtractOptions, log: Log): Promise<RunFile> 
   return { series: opts.series, seriesType: opts.seriesType, country: opts.country, createdAt: now, updatedAt: now, steps: [], candidates };
 }
 
-/** Étape 2a : vues Wikipédia (toutes langues suivies). */
-export async function views(run: RunFile, log: Log, now = new Date()): Promise<void> {
+/** Étape 2a : vues Wikipédia des 60 derniers jours (toutes langues suivies, par lots de 50). */
+export async function views(run: RunFile, log: Log): Promise<void> {
   const todo = run.candidates.filter((c) => !c.views);
-  let last = 0;
-  let failed = 0;
-  await mapLimit(
-    todo,
-    2,
-    async (c) => {
-      // Un échec n'arrête pas l'étape : le sujet sera repris au prochain « pipeline score ».
-      try {
-        c.views = await candidateViews(c, now);
-      } catch (err) {
-        failed++;
-        log(`  vues indisponibles pour ${c.qid} : ${(err as Error).message}`);
-      }
-    },
-    (done) => {
-      if (done - last >= 50 || done === todo.length) {
-        last = done;
-        log(`  vues : ${done}/${todo.length}`);
-      }
-    },
-  );
-  if (failed) log(`  ${failed} sujet(s) sans vues : relance « pipeline score » pour les reprendre.`);
+  log(`  ${todo.length} sujets sans vues`);
+  await allViews(todo, log);
 }
 
 /** Étape 2b : score de notoriété. */

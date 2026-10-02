@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifyLicense, parseImagePage, stripHtml } from '../src/commons.js';
 import { SOURCES } from '../src/config.js';
-import { sumViews, window60 } from '../src/pageviews.js';
+import { sumDaily } from '../src/pageviews.js';
 import { evaluatePolicy } from '../src/policy.js';
 import { activeSince, percentiles, scoreRun } from '../src/score.js';
 import { toCsv } from '../src/store.js';
@@ -96,10 +96,9 @@ describe('notoriété', () => {
     expect(percentiles([7])).toEqual([100]);
   });
 
-  it('vues : 12 et 60 derniers mois complets', () => {
-    const w = window60(NOW);
-    expect(w).toEqual({ start: '2021100100', end: '2026090100', cut12: '2025100100' });
-    expect(sumViews([{ timestamp: '2025090100', views: 5 }, { timestamp: '2025100100', views: 7 }, { timestamp: '2026090100', views: 3 }], w.cut12)).toEqual({ last12: 10, last60: 15 });
+  it('vues : somme des jours, jours sans donnée comptés à zéro', () => {
+    expect(sumDaily({ '2026-09-01': 5, '2026-09-02': null, '2026-09-03': 7 })).toBe(12);
+    expect(sumDaily(undefined)).toBe(0);
   });
 
   it('pertinence générationnelle : actif depuis 1990', () => {
@@ -112,8 +111,8 @@ describe('notoriété', () => {
   it('score rangé par catégorie ; seuil de la série ; iconiques = top 1 %', () => {
     const list: Candidate[] = [];
     for (let i = 0; i < 100; i++) {
-      list.push(candidate({ qid: `M${i}`, categories: ['musique'], sitelinks: 40 + i, views: { last12Months: 1000 * (i + 1), last60Months: 5000 * (i + 1), byLanguage: {} } }));
-      list.push(candidate({ qid: `E${i}`, categories: ['exploration'], sitelinks: 40 + i, views: { last12Months: 10 * (i + 1), last60Months: 50 * (i + 1), byLanguage: {} } }));
+      list.push(candidate({ qid: `M${i}`, categories: ['musique'], sitelinks: 40 + i, views: { last60Days: 1000 * (i + 1), annualEstimate: 6000 * (i + 1), byLanguage: {} } }));
+      list.push(candidate({ qid: `E${i}`, categories: ['exploration'], sitelinks: 40 + i, views: { last60Days: 10 * (i + 1), annualEstimate: 60 * (i + 1), byLanguage: {} } }));
     }
     const run: RunFile = { series: 't', seriesType: 'base', country: null, createdAt: '', updatedAt: '', steps: [], candidates: list };
     scoreRun(run, NOW);

@@ -46,7 +46,8 @@ export interface CandidateRow {
   categories: CategoryId[];
   countries: string[];
   sitelinks: number;
-  views12: number | null;
+  /** Vues Wikipédia par an (estimées sur 60 jours). */
+  viewsYear: number | null;
   score: { total: number; iconic: boolean; meetsThreshold: boolean } | null;
   policy: { status: PolicyStatus; reasons: string[] } | null;
   flags: { adult?: boolean; sensitive?: boolean; politicallySensitive?: boolean };

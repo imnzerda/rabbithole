@@ -31,7 +31,7 @@ const csvCell = (v: unknown) => {
 
 /** Liste courte (section 11, étape 4) : triée par catégorie puis par score. */
 export function toCsv(candidates: Candidate[]): string {
-  const header = ['qid', 'nom_fr', 'nom_en', 'categories', 'type', 'pays', 'langues', 'vues_12_mois', 'score', 'iconique', 'seuil', 'politique', 'raisons', 'image', 'licence', 'adulte', 'sensible', 'description'];
+  const header = ['qid', 'nom_fr', 'nom_en', 'categories', 'type', 'pays', 'langues', 'vues_an_estimees', 'score', 'iconique', 'seuil', 'politique', 'raisons', 'image', 'licence', 'adulte', 'sensible', 'description'];
   const rows = [...candidates]
     .sort((a, b) => (a.categories[0] ?? '').localeCompare(b.categories[0] ?? '') || (b.score?.total ?? 0) - (a.score?.total ?? 0))
     .map((c) => [
@@ -42,7 +42,7 @@ export function toCsv(candidates: Candidate[]): string {
       c.kind,
       c.countries.join('|'),
       c.sitelinks,
-      c.views?.last12Months ?? '',
+      c.views?.annualEstimate ?? '',
       c.score?.total ?? '',
       c.score?.iconic ? 'oui' : '',
       c.score?.meetsThreshold ? 'oui' : 'non',

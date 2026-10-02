@@ -56,7 +56,8 @@ export interface Candidate {
   listedAsVictim: boolean;
   memberOf: string[];
 
-  views?: { last12Months: number; last60Months: number; byLanguage: Record<string, number> };
+  /** Vues Wikipédia des 60 derniers jours (langues suivies), et estimation annuelle. */
+  views?: { last60Days: number; annualEstimate: number; byLanguage: Record<string, number> };
   score?: { total: number; reach: number; popularity: number; generation: number; iconic: boolean; meetsThreshold: boolean };
   policy?: { status: PolicyStatus; reasons: string[] };
   flags?: { adult?: boolean; sensitive?: boolean; politicallySensitive?: boolean };

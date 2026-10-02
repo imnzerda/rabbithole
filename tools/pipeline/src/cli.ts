@@ -62,7 +62,7 @@ async function main(): Promise<void> {
     return run;
   };
   const runScore = async (run: RunFile) => {
-    log('Vues Wikipédia (12 et 60 derniers mois)…');
+    log('Vues Wikipédia (60 derniers jours)…');
     await views(run, log);
     score(run);
     log(`→ ${saveRun(run, 'score')}`);

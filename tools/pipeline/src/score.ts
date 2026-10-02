@@ -4,8 +4,8 @@ import type { Candidate, RunFile } from './types.js';
 /**
  * Score de notoriété (section 4.6), de 0 à 100 :
  * - portée internationale (30 %) : nombre d'éditions de Wikipédia (sitelinks) ;
- * - popularité (50 %) : vues des 12 derniers mois, toutes langues suivies ;
- * - pertinence générationnelle (20 %) : activité depuis 1990 et tendance des vues sur 5 ans.
+ * - popularité (50 %) : vues des 60 derniers jours, toutes langues suivies (extrapolées sur un an) ;
+ * - pertinence générationnelle (20 %) : activité depuis 1990.
  * Chaque critère devient un percentile dans le lot, puis les percentiles sont pondérés.
  */
 
@@ -49,12 +49,12 @@ export function activeSince(c: Candidate, year = GENERATION_YEAR, now = new Date
   return y >= year ? 1 : 0;
 }
 
-/** Pertinence générationnelle brute : activité récente + tendance (vues de l'an dernier / moyenne annuelle sur 5 ans). */
+/**
+ * Pertinence générationnelle brute : activité depuis 1990. La tendance des vues sur 5 ans n'est pas
+ * disponible avec l'API par lots (60 jours) : les ex æquo sont départagés par la popularité dans le total.
+ */
 export function generationRaw(c: Candidate, now = new Date()): number {
-  const v = c.views;
-  const yearlyAvg = v && v.last60Months > 0 ? v.last60Months / 5 : 0;
-  const trend = yearlyAvg > 0 ? Math.min(2, v!.last12Months / yearlyAvg) / 2 : 0;
-  return 0.5 * activeSince(c, GENERATION_YEAR, now) + 0.5 * trend;
+  return activeSince(c, GENERATION_YEAR, now);
 }
 
 /**
@@ -75,7 +75,7 @@ export function scoreRun(run: RunFile, now = new Date()): void {
   const parts = new Map<Candidate, { reach: number; popularity: number; generation: number }>();
   for (const group of groups.values()) {
     const reach = percentiles(group.map((c) => c.sitelinks));
-    const popularity = percentiles(group.map((c) => c.views?.last12Months ?? 0));
+    const popularity = percentiles(group.map((c) => c.views?.annualEstimate ?? 0));
     const generation = percentiles(group.map((c) => generationRaw(c, now)));
     group.forEach((c, i) => {
       parts.set(c, { reach: reach[i]!, popularity: popularity[i]!, generation: generation[i]! });
@@ -97,7 +97,7 @@ export function scoreRun(run: RunFile, now = new Date()): void {
   }
   // Iconiques : top 1 % de tout le lot (portée et popularité, toutes catégories confondues).
   const reachAll = percentiles(list.map((c) => c.sitelinks));
-  const popularityAll = percentiles(list.map((c) => c.views?.last12Months ?? 0));
+  const popularityAll = percentiles(list.map((c) => c.views?.annualEstimate ?? 0));
   const overall = percentiles(list.map((_, i) => SCORE_WEIGHTS.reach * reachAll[i]! + SCORE_WEIGHTS.popularity * popularityAll[i]!));
   list.forEach((c, i) => {
     if (c.score) c.score.iconic = overall[i]! >= ICONIC_PERCENTILE;

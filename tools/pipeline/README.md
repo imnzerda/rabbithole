@@ -16,7 +16,7 @@ Les résultats vont dans `tools/pipeline/out/` (hors dépôt) : `<série>.json` 
 | Commande | Étape | Source |
 |---|---|---|
 | `extract` | Sujets classés par nombre de langues, pour chaque source de chaque catégorie, puis leurs détails (libellés, dates, pays, occupations, image) | Wikidata (SPARQL + `wbgetentities`) |
-| `score` | Vues des 12 et 60 derniers mois (10 langues), puis **score de notoriété** | API Pageviews |
+| `score` | Vues des 60 derniers jours (10 langues, par lots de 50 articles), puis **score de notoriété** | API MediaWiki (PageViewInfo) |
 | `policy` | **Politique de contenu** : `ok`, `needs_review` ou `excluded`, avec les raisons | Données Wikidata |
 | `images` | Image principale, **licence vérifiée** et crédit complet | Wikimedia Commons |
 | `export` | Liste courte en CSV, triée par catégorie puis score | — |
@@ -29,7 +29,7 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 
 - **Sources** : une requête par type de sujet (occupation ou nature Wikidata), rattachée à une catégorie. Les identifiants ont été vérifiés via l'API. Les occupations trop ambiguës (pilote, marin, entrepreneur) sont écartées : ces sujets s'ajoutent à la main.
 - **Seuils par série** : set de base ≥ 40 langues, série mondiale ≥ 25, série pays ≥ 10 ; score minimal 90 / 80 / 0.
-- **Score de notoriété** : portée (sitelinks, 30 %), popularité (vues sur 12 mois, 50 %), pertinence générationnelle (actif depuis 1990 et tendance des vues, 20 %). Chaque critère devient un percentile **dans la catégorie principale** du sujet, puis le total pondéré est lui-même rangé : 90 = les 10 % les plus connus de la catégorie. Les **iconiques** (candidats GOAT) sont le top 1 % de tout le lot.
+- **Score de notoriété** : portée (sitelinks, 30 %), popularité (vues des 60 derniers jours extrapolées sur un an, 50 %), pertinence générationnelle (actif depuis 1990, 20 %). Chaque critère devient un percentile **dans la catégorie principale** du sujet, puis le total pondéré est lui-même rangé : 90 = les 10 % les plus connus de la catégorie. Les **iconiques** (candidats GOAT) sont le top 1 % de tout le lot.
 - **Licences** : domaine public, CC0, CC BY, CC BY-SA acceptés ; NC, ND, non libre, GFDL seule ou licence absente refusés.
 
 ## Politique de contenu (section 5)
@@ -47,6 +47,7 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 
 ## Limites connues
 
-- Les vues ne couvrent que 10 langues (`PAGEVIEW_LANGUAGES`) et commencent en juillet 2015.
+- **Écart au cahier des charges** : les vues portent sur 60 jours, pas 12 mois, et la tendance sur 5 ans n'est pas mesurée. L'API « par article » (12 mois) n'accepte qu'un article par requête et refuse rapidement les requêtes (HTTP 429) : intenable pour des milliers de sujets. Un événement d'actualité peut donc gonfler un score ; la curation humaine corrige.
+- Les vues ne couvrent que 10 langues (`PAGEVIEW_LANGUAGES`).
 - Les images ne sont pas encore recadrées, teintées ni envoyées sur R2 (section 10.3) : à faire quand le stockage sera configuré.
 - Le test de reconnaissance par sondage (section 4.6) se fera en jeu, après la phase 6.

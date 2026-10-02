@@ -1,53 +1,68 @@
 import { PAGEVIEW_LANGUAGES } from './config.js';
-import { getJson } from './http.js';
+import { chunk, getJson } from './http.js';
 import type { Candidate } from './types.js';
 
-/** Vues mensuelles (API Pageviews de Wikimedia, données depuis juillet 2015). */
+/**
+ * Vues Wikipédia des 60 derniers jours, par lots de 50 articles (API MediaWiki, extension PageViewInfo).
+ *
+ * L'API REST « par article » (12 mois, 5 ans) est trop limitée en débit pour des milliers de sujets
+ * (une requête par article et par langue, refusées en HTTP 429). Ici : une requête pour 50 articles,
+ * soit environ 75 requêtes par langue pour 3 700 sujets. La popularité annuelle est extrapolée
+ * à partir des 60 jours (écart au cahier des charges, section 4.6, documenté dans le README).
+ */
 
-const BASE = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article';
+export const PAGEVIEW_DAYS = 60;
 
-const stamp = (d: Date) => `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}0100`;
-
-/** Fenêtre des 60 derniers mois complets avant `now`. */
-export function window60(now: Date): { start: string; end: string; cut12: string } {
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 59, 1));
-  const cut12 = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 11, 1));
-  return { start: stamp(start), end: stamp(end), cut12: stamp(cut12) };
+interface PageviewsResponse {
+  query?: { pages?: { title: string; pageviews?: Record<string, number | null> }[]; normalized?: { from: string; to: string }[] };
 }
 
-/** Additionne les vues mensuelles : 12 derniers mois et 60 derniers mois. */
-export function sumViews(items: { timestamp: string; views: number }[], cut12: string): { last12: number; last60: number } {
-  let last12 = 0;
-  let last60 = 0;
-  for (const it of items) {
-    last60 += it.views;
-    if (it.timestamp >= cut12) last12 += it.views;
+/** Somme des vues quotidiennes (jours sans donnée = 0). */
+export function sumDaily(pageviews: Record<string, number | null> | undefined): number {
+  return Object.values(pageviews ?? {}).reduce<number>((s, v) => s + (v ?? 0), 0);
+}
+
+/** Vues des 60 derniers jours pour une liste de titres d'une même langue. */
+export async function languageViews(lang: string, titles: string[], pause = 300): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  for (const part of chunk([...new Set(titles)], 50)) {
+    const url = `https://${lang}.wikipedia.org/w/api.php?${new URLSearchParams({
+      action: 'query',
+      prop: 'pageviews',
+      pvipdays: String(PAGEVIEW_DAYS),
+      titles: part.join('|'),
+      format: 'json',
+      formatversion: '2',
+      maxlag: '5',
+    })}`;
+    const json = await getJson<PageviewsResponse>(url);
+    const normalized = new Map((json?.query?.normalized ?? []).map((n) => [n.from, n.to]));
+    const byTitle = new Map((json?.query?.pages ?? []).map((p) => [p.title, sumDaily(p.pageviews)]));
+    for (const t of part) out.set(t, byTitle.get(normalized.get(t) ?? t) ?? 0);
+    // Une requête à la fois, avec une pause : on reste sous les limites de Wikimedia.
+    await new Promise((r) => setTimeout(r, pause));
   }
-  return { last12, last60 };
+  return out;
 }
 
-async function articleViews(lang: string, title: string, w: ReturnType<typeof window60>): Promise<{ last12: number; last60: number }> {
-  const article = encodeURIComponent(title.replaceAll(' ', '_'));
-  const json = await getJson<{ items?: { timestamp: string; views: number }[] } | null>(
-    `${BASE}/${lang}.wikipedia/all-access/user/${article}/monthly/${w.start}/${w.end}`,
-  );
-  return sumViews(json?.items ?? [], w.cut12);
-}
-
-/** Vues toutes langues suivies confondues (section 4.6 : popularité et tendance). */
-export async function candidateViews(c: Candidate, now: Date): Promise<NonNullable<Candidate['views']>> {
-  const w = window60(now);
-  const byLanguage: Record<string, number> = {};
-  let last12Months = 0;
-  let last60Months = 0;
+/** Vues de tous les candidats, toutes langues suivies confondues. */
+export async function allViews(candidates: Candidate[], log: (msg: string) => void): Promise<void> {
+  const totals = new Map<string, Record<string, number>>();
   for (const lang of PAGEVIEW_LANGUAGES) {
-    const title = c.wikis[lang];
-    if (!title) continue;
-    const v = await articleViews(lang, title, w);
-    byLanguage[lang] = v.last12;
-    last12Months += v.last12;
-    last60Months += v.last60;
+    const titles = candidates.flatMap((c) => (c.wikis[lang] ? [c.wikis[lang]!] : []));
+    const views = await languageViews(lang, titles);
+    for (const c of candidates) {
+      const title = c.wikis[lang];
+      if (!title) continue;
+      const byLang = totals.get(c.qid) ?? {};
+      byLang[lang] = views.get(title) ?? 0;
+      totals.set(c.qid, byLang);
+    }
+    log(`  vues ${lang} : ${titles.length} articles`);
   }
-  return { last12Months, last60Months, byLanguage };
+  for (const c of candidates) {
+    const byLanguage = totals.get(c.qid) ?? {};
+    const last60Days = Object.values(byLanguage).reduce((s, v) => s + v, 0);
+    c.views = { last60Days, annualEstimate: Math.round((last60Days * 365) / PAGEVIEW_DAYS), byLanguage };
+  }
 }

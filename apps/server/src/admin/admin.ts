@@ -36,7 +36,7 @@ export interface PipelineCandidate {
   sitelinks: number;
   birth?: string | null;
   start?: string | null;
-  views?: { last12Months: number };
+  views?: { annualEstimate: number };
   score?: { total: number; iconic: boolean; meetsThreshold: boolean };
   policy?: { status: 'ok' | 'needs_review' | 'excluded'; reasons: string[] };
   flags?: { adult?: boolean; sensitive?: boolean; politicallySensitive?: boolean };
@@ -127,7 +127,7 @@ export async function listCandidates(db: Db, f: CandidateFilter) {
       categories: r.data.categories,
       countries: r.data.countries,
       sitelinks: r.data.sitelinks,
-      views12: r.data.views?.last12Months ?? null,
+      viewsYear: r.data.views?.annualEstimate ?? null,
       score: r.data.score ?? null,
       policy: r.data.policy ?? null,
       flags: r.data.flags ?? {},

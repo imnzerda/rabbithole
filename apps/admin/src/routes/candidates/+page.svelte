@@ -165,7 +165,7 @@
           <strong>{c.score?.total ?? '—'}</strong>
           {#if c.score?.iconic}<span class="tag ok">iconique</span>{/if}
           {#if c.score && !c.score.meetsThreshold}<span class="tag warn">sous le seuil</span>{/if}<br />
-          <span class="muted">{c.sitelinks} langues · {c.views12?.toLocaleString('fr-FR') ?? '—'} vues/an</span>
+          <span class="muted">{c.sitelinks} langues · {c.viewsYear?.toLocaleString('fr-FR') ?? '—'} vues/an (est.)</span>
         </td>
         <td>
           <span class="tag {policyClass(c.policy?.status)}">{c.policy?.status ?? '—'}</span>
