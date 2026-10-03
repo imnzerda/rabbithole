@@ -108,7 +108,9 @@ test('trade-up : rubrique dédiée, doublons choisis par le joueur, probabilité
   await garde.click();
   await expect(page.getByTestId('tu-count')).toHaveText('5 / 5');
 
-  await page.getByTestId('tu-go').click();
+  // Le bouton d'échange est en haut et en bas de la sélection.
+  await expect(page.getByTestId('tu-go')).toBeEnabled();
+  await page.getByTestId('tu-go-top').click();
   const opened = page.getByTestId('opened');
   await expect(opened).toContainText('Ton trade-up');
   await expect(opened.getByRole('button')).toHaveCount(2); // 1 carte + Fermer
@@ -119,6 +121,7 @@ test('trade-up : rubrique dédiée, doublons choisis par le joueur, probabilité
   // Il reste 2 doublons : pas assez pour un nouveau trade-up.
   await expect(page.getByTestId('tu-basique')).toContainText('2 doublons');
   await expect(page.getByTestId('tu-go')).toBeDisabled();
+  await expect(page.getByTestId('tu-go-top')).toHaveCount(0);
 });
 
 test('amis et échange : ajout par code ami, plusieurs cartes de raretés différentes, acceptation', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {

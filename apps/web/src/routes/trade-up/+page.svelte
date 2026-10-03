@@ -87,6 +87,14 @@
   }
 </script>
 
+{#snippet tradeButton(testid: string)}
+  <div class="actions">
+    <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid={testid} onclick={() => give && tradeUp(give)}>
+      {t('tradeup_btn', { n: required })}
+    </button>
+  </div>
+{/snippet}
+
 <main>
   <header class="top">
     <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
@@ -146,6 +154,7 @@
       {#if spareTotal < required}
         <p class="muted">{t('tradeup_missing', { n: required - spareTotal, r: t(`rarity_${rarity}`) })}</p>
       {:else}
+        {@render tradeButton('tu-go-top')}
         <p class="muted">{t('tradeup_pick_hint')}</p>
         <div class="tools">
           <button class="btn" disabled={pickedCount >= required} data-testid="tu-complete" onclick={() => (picked = completeSpares(spares, picked, required))}>{t('tradeup_complete')}</button>
@@ -160,11 +169,7 @@
           </div>
         {/each}
       </div>
-      <div class="actions">
-        <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid="tu-go" onclick={() => give && tradeUp(give)}>
-          {t('tradeup_btn', { n: required })}
-        </button>
-      </div>
+      {@render tradeButton('tu-go')}
     </section>
   {/if}
 </main>
@@ -328,7 +333,7 @@
   }
   .actions {
     display: flex;
-    margin-top: 14px;
+    margin: 14px 0;
   }
   .actions .btn {
     flex: 1;

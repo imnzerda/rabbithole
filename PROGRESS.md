@@ -25,6 +25,7 @@
 ### 2026-10-03 — Trade-up : le joueur choisit ses doublons
 
 - Dans la rubrique Trade-up, la section « Tu donnes » affiche tous les doublons de la rareté choisie. Un toucher ajoute un exemplaire, et un toucher de plus au maximum le retire. Le compteur « 3 / 5 » passe au vert au bon nombre (rouge au-delà), et le bouton d'échange ne s'active qu'au nombre exact.
+- Le bouton « Échanger » apparaît en haut et en bas de la sélection. Celui du haut est masqué tant qu'il n'y a pas assez de doublons.
 - Deux aides : « Compléter » (ajoute les doublons manquants, les plus nombreux d'abord) et « Vider ». La sélection repart de zéro à chaque changement de rareté et après chaque trade-up.
 - Le serveur vérifie toujours tout : doublons au-delà des exemplaires jouables, même rareté, nombre exact.
 
