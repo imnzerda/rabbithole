@@ -4,7 +4,7 @@
   import { api, errorMessage } from '$lib/api';
 
   let budget = $state.raw<{ id: string; status: string; report: BudgetReport }[]>([]);
-  let decks = $state.raw<{ id: string; name: Record<string, string>; leader: string }[]>([]);
+  let decks = $state.raw<{ id: string; name: Record<string, string>; leader: string; series: string }[]>([]);
   let onlyFlagged = $state(true);
   let a = $state('');
   let b = $state('');
@@ -48,9 +48,9 @@
 
 <h2>Simulations IA contre IA</h2>
 <form class="panel row" onsubmit={simulate}>
-  <select bind:value={a}>{#each decks as d (d.id)}<option value={d.id}>{d.name.fr ?? d.id}</option>{/each}</select>
+  <select bind:value={a}>{#each decks as d (d.id)}<option value={d.id}>{d.name.fr ?? d.id} ({d.series})</option>{/each}</select>
   <span>contre</span>
-  <select bind:value={b}>{#each decks as d (d.id)}<option value={d.id}>{d.name.fr ?? d.id}</option>{/each}</select>
+  <select bind:value={b}>{#each decks as d (d.id)}<option value={d.id}>{d.name.fr ?? d.id} ({d.series})</option>{/each}</select>
   <label>Parties <input type="number" min="2" max="200" bind:value={games} style="width: 80px" /></label>
   <label class="row"><input type="checkbox" bind:checked={includeDrafts} /> Inclure les brouillons</label>
   <button class="primary" type="submit" disabled={busy}>{busy ? 'Simulation…' : 'Simuler'}</button>
@@ -61,7 +61,7 @@
     · égalités {result.draws} · le premier joueur gagne {result.firstPlayerWinRate} % · {result.averageTurns} tours en moyenne
   </p>
 {/if}
-<p class="muted">Les decks préconstruits du prototype servent de référence ; les decks des nouvelles séries viendront avec le set de base.</p>
+<p class="muted">Decks de référence des séries (importés sur la page Séries) et decks du prototype.</p>
 
 <h2>Budget de puissance <span class="muted">({shown.length} / {budget.length})</span></h2>
 <label class="row"><input type="checkbox" bind:checked={onlyFlagged} /> Seulement les cartes hors norme</label>

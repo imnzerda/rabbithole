@@ -1,5 +1,6 @@
 import { PROTOTYPE_DECKS } from '@rabbithole/content';
-import { catalogBudget, simulateMatchup, validateDeck, type CardDef } from '@rabbithole/engine';
+import { catalogBudget, simulateMatchup, validateDeck, type CardDef, type LocalizedText } from '@rabbithole/engine';
+import { importReferenceDecks } from '../decks/reference.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
@@ -38,6 +39,14 @@ const id = z.string().min(1).max(80);
 
 /** API de l'outil d'administration (`apps/admin`) : réservée au rôle `admin`, chaque modification est journalisée. */
 export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): void {
+  /** Decks connus de l'admin : decks de référence de toutes les séries, puis decks du prototype. */
+  const adminDecks = async () => {
+    const rows = await db.query<{ id: string; series_id: string; name: LocalizedText; leader_id: string; card_ids: string[] }>('SELECT * FROM series_decks ORDER BY series_id, id');
+    return [
+      ...rows.map((r) => ({ id: r.id, series: r.series_id, name: r.name, leader: r.leader_id, cards: r.card_ids })),
+      ...PROTOTYPE_DECKS.map((d) => ({ id: d.id, series: 'prototype', name: d.name, leader: d.leader, cards: d.cards })),
+    ];
+  };
   const admin = { preHandler: requireAdmin };
   const fail = (reply: FastifyReply, err: unknown) => {
     if (err instanceof AdminError) return reply.code(err.status).send({ error: err.code, details: err.details });
@@ -275,9 +284,10 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
     const body = z.object({ a: deck, b: deck, games: z.number().int().min(2).max(200).default(50), includeDrafts: z.boolean().default(false) }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     const ctx = body.data.includeDrafts ? await workingContext(db) : catalog.current.ctx;
+    const known = await adminDecks();
     const resolve = (d: z.infer<typeof deck>) => {
       if ('prebuilt' in d) {
-        const p = PROTOTYPE_DECKS.find((x) => x.id === d.prebuilt);
+        const p = known.find((x) => x.id === d.prebuilt);
         return p ? { leader: p.leader, deck: p.cards } : null;
       }
       return d;
@@ -292,7 +302,23 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
     return result;
   });
 
-  app.get('/api/admin/decks', admin, async () => ({ decks: PROTOTYPE_DECKS.map((d) => ({ id: d.id, name: d.name, leader: d.leader })) }));
+  app.get('/api/admin/decks', admin, async () => ({ decks: (await adminDecks()).map((d) => ({ id: d.id, name: d.name, leader: d.leader, series: d.series })) }));
+
+  /** Decks de référence d'une série (`tools/pipeline/decks/<série>.json`), validés avec les cartes non retirées. */
+  app.post('/api/admin/decks/import', admin, async (request, reply) => {
+    const body = z
+      .object({
+        series: id,
+        decks: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]{3,80}$/), name: z.record(z.string(), z.string()), description: z.record(z.string(), z.string()).optional(), leader: id, cards: z.array(id).max(60) })).max(50),
+      })
+      .safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    const [series] = await db.query('SELECT 1 FROM series WHERE id = $1', [body.data.series]);
+    if (!series) return reply.code(404).send({ error: 'unknown_series' });
+    const result = await importReferenceDecks(db, body.data.series, body.data.decks, await workingContext(db));
+    await audit(db, me(request), 'decks.import', body.data.series, { imported: result.imported.length, invalid: result.invalid.length });
+    return result;
+  });
 
   // --- Journal -----------------------------------------------------------------------------
   app.get('/api/admin/audit', admin, async (request) => {

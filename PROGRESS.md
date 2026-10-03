@@ -22,6 +22,15 @@
 
 ## Journal
 
+### 2026-10-03 — Decks de référence en jeu
+
+- Table `series_decks` (migration `010`) : les decks de référence d'une série (`tools/pipeline/decks/<série>.json`) s'importent dans l'admin (page Séries), validés avec les cartes de la série.
+- **Entraînement contre l'IA** (accueil et partie) : decks de la série publiée, avec les cartes réelles telles que le joueur les voit (contenu sensible masqué). Repli sur les decks du prototype embarqués si aucune série n'est publiée ou si le serveur est injoignable.
+- **Fantômes de repli** : deck d'un autre joueur d'abord, sinon un deck de référence de la série publiée, sinon un deck du prototype.
+- **Admin** : simulations avec les decks de référence de toutes les séries.
+- Test d'intégration avec les vrais lots : import des 85 cartes et des 5 decks, publication, decks proposés à l'entraînement, fantôme avec un Leader réel. Tests : 68 serveur, 24 E2E.
+
+
 ### 2026-10-03 — Plus de validation humaine ; suppression manuelle des cartes
 
 - La politique de contenu ne bloque plus la publication, sauf pour un sujet exclu (personne mineure aujourd'hui). Les raisons « à revoir » restent affichées dans l'admin, pour information ; l'étape « Valider la politique de contenu » est supprimée.
@@ -301,12 +310,11 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ## Prochaines étapes
 
 ### Clore la phase 4 (à faire dans l'admin)
-1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis les lots `tools/pipeline/drafts/base_01.json` et `base_01_lot2.json` (Cartes → Importer des brouillons).
+1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis les lots `tools/pipeline/drafts/base_01.json` et `base_01_lot2.json` (Cartes → Importer des brouillons), puis les decks `tools/pipeline/decks/base_01.json` (Séries → Decks de référence).
 2. Relire les 85 cartes (enlever celles qui ne conviennent pas), passer en relecture, publier ; publier la série `base_01`.
 
 ### Set de base (suite)
 - Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons ; davantage de Leaders (plusieurs par paire de catégories).
-- Servir les **decks de référence** en jeu : decks préconstruits de la série, fantômes de repli, entraînement hors ligne avec les cartes réelles.
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)

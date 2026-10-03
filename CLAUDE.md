@@ -82,7 +82,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `budget.ts` : budget de puissance (section 3.9), valeurs dans `DEFAULT_BUDGET` (`rules.ts`).
   - `simulate.ts` : simulations IA contre IA pour l'équilibrage.
 - `packages/engine/test/` : `fixtures.ts` contient un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`, classe `Duel`) pour écrire des scénarios, et `playOut` pour simuler des parties.
-- [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans sa base au premier démarrage ; le site ne l'utilise plus que pour l'entraînement hors ligne. Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
+- [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans sa base au premier démarrage ; le site ne l'utilise plus qu'en repli, pour l'entraînement quand le serveur est injoignable ou qu'aucune série n'est publiée (`apps/web/src/lib/practice.ts`). Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
 - [apps/server/](apps/server/) : Fastify, PostgreSQL (PGlite en dev et en test), WebSocket.
   - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `FINGERPRINT_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
@@ -91,7 +91,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, Leader de départ, pièces de fin de partie.
   - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
-  - `src/decks/` : collection et decks (validation par le moteur et par la possession).
+  - `src/decks/` : collection et decks (validation par le moteur et par la possession) ; `reference.ts` : decks de référence des séries (entraînement, fantômes de repli, route `/api/decks/reference`).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
 - [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : tableau de bord, candidats (import du pipeline), cartes (éditeur avec aperçu en direct, import de brouillons), séries, modération (signalements, demandes de retrait), règles par pays, équilibrage (budget, simulations), journal d'audit. API : `apps/server/src/admin/` et `src/moderation/`. Accès : `ADMIN_EMAILS`.

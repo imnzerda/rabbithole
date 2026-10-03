@@ -13,6 +13,22 @@
 
   const STATUS: Record<string, string> = { draft: 'Brouillon', review: 'Relecture', published: 'Publiée' };
 
+  /** Decks de référence d'une série : fichier tools/pipeline/decks/<série>.json. */
+  async function importDecks(e: Event): Promise<void> {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    error = message = null;
+    try {
+      const res = await api.importDecks(JSON.parse(await file.text()) as { series: string; decks: unknown[] });
+      message = `${res.imported.length} deck(s) de référence importé(s).` + (res.invalid.length ? ` Invalides : ${res.invalid.map((d) => `${d.id} (${d.errors.join(' ; ')})`).join(', ')}.` : '');
+    } catch (err) {
+      error = errorMessage(err);
+    } finally {
+      input.value = '';
+    }
+  }
+
   async function load(): Promise<void> {
     rows = (await api.series()).series;
   }
@@ -67,6 +83,10 @@
     {/each}
   </tbody>
 </table>
+
+<h2>Decks de référence</h2>
+<label class="panel row">Importer les decks d'une série (JSON, <code>tools/pipeline/decks/&lt;série&gt;.json</code>) <input type="file" accept=".json,application/json" onchange={importDecks} data-testid="import-decks" /></label>
+<p class="muted">Les decks servent à l'entraînement contre l'IA et de fantômes de repli, une fois la série publiée. Importer les cartes de la série avant ses decks.</p>
 
 <h2>Nouvelle série</h2>
 <form class="panel row" onsubmit={create}>

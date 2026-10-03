@@ -1,19 +1,20 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { CATEGORY_NAMES, type CategoryId } from '@rabbithole/engine';
-  import { PROTOTYPE_DECKS, prototypeContext } from '@rabbithole/content';
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
   import { loadSession, logout, session } from '$lib/session.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
 
   onMount(() => {
     if (!session.loaded) void loadSession();
   });
 
-  const ctx = prototypeContext();
-  let selected = $state(PROTOTYPE_DECKS[0]?.id ?? '');
+  let { data } = $props();
+  // Decks d'entraînement lus une fois (série publiée, sinon prototype).
+  const { ctx, decks } = untrack(() => data.practice);
+  let selected = $state(decks[0]?.id ?? '');
   let showRules = $state(false);
 
   /** Catégories dominantes d'un deck, pour l'aperçu. */
@@ -56,7 +57,7 @@
     <h2>{t('practice')}</h2>
     <p class="hint">{t('practice_hint')} {t('choose_deck')} :</p>
     <div class="decks" role="radiogroup" aria-label={t('choose_deck')}>
-      {#each PROTOTYPE_DECKS as deck (deck.id)}
+      {#each decks as deck (deck.id)}
         <button
           class="deck"
           class:active={selected === deck.id}

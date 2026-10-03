@@ -190,7 +190,9 @@ export const api = {
   seriesStatus: (id: string, status: SeriesRow['status']) => request<{ ok: true; catalogVersion: string }>('POST', `/admin/series/${id}/status`, { status }),
 
   budget: () => request<{ cards: { id: string; status: string; report: BudgetReport }[] }>('GET', '/admin/budget'),
-  decks: () => request<{ decks: { id: string; name: Record<string, string>; leader: string }[] }>('GET', '/admin/decks'),
+  decks: () => request<{ decks: { id: string; name: Record<string, string>; leader: string; series: string }[] }>('GET', '/admin/decks'),
+  importDecks: (file: { series: string; decks: unknown[] }) =>
+    request<{ imported: string[]; invalid: { id: string; errors: string[] }[] }>('POST', '/admin/decks/import', file),
   simulate: (body: { a: { prebuilt: string }; b: { prebuilt: string }; games: number; includeDrafts: boolean }) => request<SimulationResult>('POST', '/admin/simulate', body),
 
   reports: (status: 'open' | 'resolved' | 'dismissed') => request<{ reports: ReportRow[] }>('GET', `/admin/reports${qs({ status })}`),

@@ -503,6 +503,7 @@ keywords(id, definition JSONB, effect JSONB)
 country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
 decks(id, user_id, name, leader_id, card_ids TEXT[], updated_at)
+series_decks(id, series_id, name JSONB, description JSONB, leader_id, card_ids TEXT[])   -- decks de référence
 wallets(user_id, coins, gems, essence, guild_tokens, free_boosters)
 coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
 booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)

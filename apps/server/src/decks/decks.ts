@@ -5,6 +5,7 @@ import { requireUser } from '../auth/routes.js';
 import type { Db } from '../db/db.js';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
+import { referenceDecks } from './reference.js';
 import type { CatalogDto } from '@rabbithole/shared';
 
 export interface Deck {
@@ -78,6 +79,9 @@ export function registerDecks(app: FastifyInstance, { db, catalog }: AppDeps): v
     if (!cards) return reply.code(404).send({ error: 'not_found' });
     return { version, rules: catalog.current.ctx.rules, cards, collectible: [] } satisfies CatalogDto;
   });
+
+  /** Decks de référence jouables avec le catalogue publié (entraînement contre l'IA). */
+  app.get('/api/decks/reference', async () => ({ decks: await referenceDecks(db, catalog.current.ctx) }));
 
   app.get('/api/collection', { preHandler: requireUser }, async (request) => {
     const owned = await getCollection(db, request.user!.id);

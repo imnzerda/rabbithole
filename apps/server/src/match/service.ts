@@ -2,7 +2,7 @@ import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import { EngineError, validateDeck, type GameAction } from '@rabbithole/engine';
 import type { QueueMode } from '@rabbithole/shared';
 import type { User } from '../auth/accounts.js';
-import { PROTOTYPE_DECKS } from '../content.js';
+import { referenceDecks } from '../decks/reference.js';
 import { checkDeck, getDeck } from '../decks/decks.js';
 import { awardMatchCoins } from '../economy/economy.js';
 import type { AppDeps } from '../deps.js';
@@ -120,7 +120,7 @@ export class MatchService {
     room.act(user.id, action);
   }
 
-  /** Fantôme : le deck enregistré d'un autre joueur, piloté par l'IA (repli : un deck préconstruit). */
+  /** Fantôme : le deck enregistré d'un autre joueur, piloté par l'IA (repli : un deck de référence de la série, puis du prototype). */
   private async startGhostMatch(seat: SeatInfo, mode: QueueMode): Promise<void> {
     const candidates = await this.deps.db.query<{ leader_id: string; card_ids: string[]; display_name: string }>(
       `SELECT d.leader_id, d.card_ids, u.display_name FROM decks d JOIN users u ON u.id = d.user_id
@@ -133,7 +133,9 @@ export class MatchService {
       const pick = valid[randomInt(valid.length)]!;
       ghost = { userId: null, name: pick.display_name, leader: pick.leader_id, deck: pick.card_ids };
     } else {
-      const fallback = PROTOTYPE_DECKS.filter((d) => validateDeck(this.ctx, d.leader, d.cards).length === 0);
+      const refs = await referenceDecks(this.deps.db, this.ctx);
+      const series = refs.filter((d) => d.series !== 'prototype');
+      const fallback = series.length ? series : refs;
       if (!fallback.length) throw new ServiceError('no_ghost', 'Aucun adversaire disponible.');
       const pick = fallback[randomInt(fallback.length)]!;
       ghost = { userId: null, name: 'RABBIT HOLE', leader: pick.leader, deck: pick.cards };
