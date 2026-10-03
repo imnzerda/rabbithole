@@ -79,9 +79,9 @@ export const api = {
   removeFriend: (id: string) => request<{ ok: true }>('DELETE', `/friends/${id}`),
   friendCollection: (id: string) => request<{ cards: { cardId: string; quantity: number }[] }>('GET', `/friends/${id}/collection`),
   trades: () =>
-    request<{ incoming: TradeDto[]; outgoing: TradeDto[]; history: TradeDto[]; limits: { perDay: number; goatPerWeek: number; expiryHours: number } }>('GET', '/trades'),
-  proposeTrade: (toUserId: string, offeredCardId: string, requestedCardId: string) =>
-    request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offeredCardId, requestedCardId }),
+    request<{ incoming: TradeDto[]; outgoing: TradeDto[]; history: TradeDto[]; limits: { expiryHours: number } }>('GET', '/trades'),
+  proposeTrade: (toUserId: string, offered: { cardId: string; quantity: number }[], requested: { cardId: string; quantity: number }[]) =>
+    request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offered, requested }),
   tradeAction: (id: string, action: 'accept' | 'decline' | 'cancel') => request<{ trade?: TradeDto }>('POST', `/trades/${id}/${action}`),
 
   decks: () => request<{ decks: DeckDto[] }>('GET', '/decks'),

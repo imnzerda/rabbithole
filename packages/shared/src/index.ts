@@ -169,9 +169,10 @@ export interface TradeDto {
   id: string;
   fromUser: { id: string; name: string };
   toUser: { id: string; name: string };
-  offeredCardId: string;
-  requestedCardId: string;
-  rarity: string;
+  /** Cartes données par l'auteur de la proposition (vide pour une demande de don). */
+  offered: { cardId: string; quantity: number }[];
+  /** Cartes demandées à son ami (vide pour un don). */
+  requested: { cardId: string; quantity: number }[];
   status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
   createdAt: string;
   expiresAt: string;

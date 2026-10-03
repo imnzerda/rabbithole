@@ -104,7 +104,7 @@ test('trade-up : 5 doublons contre 1 carte de la rareté supérieure, probabilit
   await expect(panel.getByTestId('tu-go')).toBeDisabled();
 });
 
-test('amis et échange : ajout par code ami, proposition 1 contre 1, acceptation', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {
+test('amis et échange : ajout par code ami, plusieurs cartes de raretés différentes, acceptation', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {
   // Bob, sur un autre appareil.
   const other = await browser.newContext({ viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL, locale: 'fr-FR' });
   await asDevice(other, device + 1);
@@ -121,16 +121,20 @@ test('amis et échange : ajout par code ami, proposition 1 contre 1, acceptation
   await bob.getByTestId('accept-friend').click();
   await expect(bob.getByTestId('friend')).toHaveCount(1);
 
-  // Une carte basique chacun ; même adresse en test, donc on lève le signalement « comptes liés ».
-  await page.request.post('/api/test/set-card', { data: { cardId: 'proto_chevalier', quantity: 1 } });
+  // Alice donne 2 basiques et une GOAT contre une basique de Bob : raretés et nombres libres.
+  await page.request.post('/api/test/set-card', { data: { cardId: 'proto_chevalier', quantity: 2 } });
+  await page.request.post('/api/test/set-card', { data: { cardId: 'proto_empereur', quantity: 1 } });
   await bob.request.post('/api/test/set-card', { data: { cardId: 'proto_garde', quantity: 1 } });
-  await page.request.post('/api/test/unlink');
 
   await page.reload();
   await page.getByTestId('propose-trade').click();
   const sheet = page.getByTestId('proposal');
-  await sheet.getByTestId('theirs').getByRole('button').first().click();
-  await sheet.getByTestId('mine').getByRole('button').first().click();
+  await sheet.getByTestId('theirs').getByRole('button', { name: /Garde/ }).click();
+  const chevalier = sheet.getByTestId('mine').getByRole('button', { name: /Chevalier/ });
+  await chevalier.click();
+  await chevalier.click();
+  await sheet.getByTestId('mine').getByRole('button', { name: /Empereur/ }).click();
+  await expect(sheet.getByTestId('trade-summary')).toHaveText('Tu donnes 3 carte(s), tu reçois 1 carte(s).');
   await sheet.getByTestId('send-trade').click();
   await expect(page.getByTestId('message')).toHaveText('Proposition envoyée.');
   await expect(page.getByTestId('trade-outgoing')).toHaveCount(1);
@@ -140,7 +144,10 @@ test('amis et échange : ajout par code ami, proposition 1 contre 1, acceptation
   await bob.getByTestId('trade-accept').click();
   await expect(bob.getByTestId('message')).toHaveText('Échange effectué !');
   const owned = (await (await bob.request.get('/api/collection')).json()).cards as { cardId: string; quantity: number }[];
-  expect(owned).toEqual([{ cardId: 'proto_chevalier', quantity: 1 }]);
+  expect(owned.sort((x, y) => x.cardId.localeCompare(y.cardId))).toEqual([
+    { cardId: 'proto_chevalier', quantity: 2 },
+    { cardId: 'proto_empereur', quantity: 1 },
+  ]);
   await other.close();
 });
 

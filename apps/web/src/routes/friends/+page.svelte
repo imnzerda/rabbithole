@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { RARITIES, type CardDef, type Rarity } from '@rabbithole/engine';
+  import { RARITIES, type CardDef } from '@rabbithole/engine';
   import type { FriendDto, FriendsDto, TradeDto } from '@rabbithole/shared';
   import { onMount, untrack } from 'svelte';
   import { api, ApiError } from '$lib/api';
@@ -26,12 +26,27 @@
   let detail = $state<string | null>(null);
   let now = $state(Date.now());
 
-  // Proposition d'échange en cours : l'ami, sa carte, puis la mienne (même rareté).
-  let proposal = $state<{ friend: FriendDto; theirs: { cardId: string; quantity: number }[]; wanted: string | null; offered: string | null } | null>(null);
-  const wantedRarity = $derived(proposal?.wanted ? ctx.cards[proposal.wanted]!.rarity : null);
-  const myOptions = $derived(
-    wantedRarity ? [...mine].filter(([id, n]) => n > 0 && tradable(id) && ctx.cards[id]!.rarity === wantedRarity && id !== proposal?.wanted).map(([id]) => id) : [],
-  );
+  type Item = { cardId: string; quantity: number };
+  /** Cartes échangeables, les plus rares d'abord. */
+  const byRarity = (items: Item[]) => items.filter((c) => tradable(c.cardId)).sort((a, b) => rarityRank(b.cardId) - rarityRank(a.cardId) || a.cardId.localeCompare(b.cardId));
+
+  // Proposition en cours : autant de cartes que voulu de chaque côté ; un côté vide = don (ou demande de don).
+  let proposal = $state.raw<{ friend: FriendDto; theirs: Item[]; asked: Map<string, number>; given: Map<string, number> } | null>(null);
+  let search = $state('');
+  const matches = (id: string) => !search.trim() || loc(ctx.cards[id]!.name).toLowerCase().includes(search.trim().toLowerCase());
+  const myItems = $derived(byRarity([...mine].map(([cardId, quantity]) => ({ cardId, quantity }))));
+  const total = (m: Map<string, number>) => [...m.values()].reduce((a, b) => a + b, 0);
+
+  /** Un toucher ajoute un exemplaire ; au maximum, le suivant remet à zéro. */
+  function tap(side: 'asked' | 'given', item: Item): void {
+    if (!proposal) return;
+    const next = new Map(proposal[side]);
+    const n = (next.get(item.cardId) ?? 0) + 1;
+    if (n > item.quantity) next.delete(item.cardId);
+    else next.set(item.cardId, n);
+    proposal = { ...proposal, [side]: next };
+  }
+  const items = (m: Map<string, number>) => [...m].map(([cardId, quantity]) => ({ cardId, quantity }));
 
   async function refresh(): Promise<void> {
     const [f, tr, c] = await Promise.all([api.friends(), api.trades(), api.collection()]);
@@ -56,17 +71,15 @@
     'self',
     'already_friends',
     'already_requested',
-    'daily_limit',
-    'goat_weekly_limit',
-    'linked_accounts',
     'not_owned',
     'not_owned_by_friend',
     'trade_expired',
     'trade_closed',
-    'rarity_mismatch',
     'not_friends',
     'too_many_pending',
     'too_many_requests',
+    'empty_trade',
+    'same_card',
   ] as const;
 
   async function run(fn: () => Promise<string | void>): Promise<void> {
@@ -108,18 +121,14 @@
   const openProposal = (friend: FriendDto) =>
     run(async () => {
       const { cards } = await api.friendCollection(friend.id);
-      proposal = {
-        friend,
-        theirs: cards.filter((c) => tradable(c.cardId)).sort((a, b) => rarityRank(b.cardId) - rarityRank(a.cardId) || a.cardId.localeCompare(b.cardId)),
-        wanted: null,
-        offered: null,
-      };
+      search = '';
+      proposal = { friend, theirs: byRarity(cards), asked: new Map(), given: new Map() };
     });
 
   const sendProposal = () =>
     run(async () => {
-      if (!proposal?.wanted || !proposal.offered) return;
-      await api.proposeTrade(proposal.friend.id, proposal.offered, proposal.wanted);
+      if (!proposal || total(proposal.asked) + total(proposal.given) === 0) return;
+      await api.proposeTrade(proposal.friend.id, items(proposal.given), items(proposal.asked));
       proposal = null;
       return t('trade_sent');
     });
@@ -133,7 +142,7 @@
   /** Ce que je reçois et ce que je donne, vu de mon côté. */
   const sides = (trade: TradeDto) => {
     const sent = trade.fromUser.id === session.user?.id;
-    return { other: sent ? trade.toUser.name : trade.fromUser.name, receive: sent ? trade.requestedCardId : trade.offeredCardId, give: sent ? trade.offeredCardId : trade.requestedCardId };
+    return { other: sent ? trade.toUser.name : trade.fromUser.name, receive: sent ? trade.requested : trade.offered, give: sent ? trade.offered : trade.requested };
   };
 
   function countdown(iso: string): string {
@@ -155,15 +164,21 @@
       {/if}
     </p>
     <div class="swap">
-      <figure>
-        <figcaption>{t('trade_receive')}</figcaption>
-        <MiniCard {ctx} defId={s.receive} fresh={!mine.get(s.receive)} onclick={() => (detail = s.receive)} />
-      </figure>
-      <span class="arrow" aria-hidden="true">⇄</span>
-      <figure>
-        <figcaption>{t('trade_give')}</figcaption>
-        <MiniCard {ctx} defId={s.give} onclick={() => (detail = s.give)} />
-      </figure>
+      {#each [{ label: t('trade_receive'), list: s.receive, fresh: true }, { label: t('trade_give'), list: s.give, fresh: false }] as side, i (i)}
+        {#if i === 1}<span class="arrow" aria-hidden="true">⇄</span>{/if}
+        <div class="side">
+          <p class="caption">{side.label}</p>
+          {#if side.list.length === 0}
+            <p class="muted nothing">{t('trade_nothing')}</p>
+          {:else}
+            <div class="cards">
+              {#each side.list as item (item.cardId)}
+                <MiniCard {ctx} defId={item.cardId} count={item.quantity} fresh={side.fresh && !mine.get(item.cardId)} onclick={() => (detail = item.cardId)} />
+              {/each}
+            </div>
+          {/if}
+        </div>
+      {/each}
     </div>
     {#if actions === 'incoming'}
       <div class="actions">
@@ -232,7 +247,7 @@
 
     <section class="panel">
       <h2>{t('my_friends')}</h2>
-      <p class="muted small">{t('trade_limits', { n: trades.limits.perDay, g: trades.limits.goatPerWeek })}</p>
+      <p class="muted small">{t('trade_rules')}</p>
       {#if friends.friends.length === 0}
         <p class="muted">{t('no_friends')}</p>
       {/if}
@@ -272,36 +287,38 @@
   {/if}
 </main>
 
+{#snippet picker(side: 'asked' | 'given', list: Item[], picked: Map<string, number>)}
+  <div class="grid" data-testid={side === 'asked' ? 'theirs' : 'mine'}>
+    {#each list.filter((c) => matches(c.cardId)) as c (c.cardId)}
+      <div class="pick" class:on={picked.has(c.cardId)}>
+        <MiniCard {ctx} defId={c.cardId} count={c.quantity} fresh={side === 'asked' && !mine.get(c.cardId)} onclick={() => tap(side, c)} />
+        {#if picked.has(c.cardId)}<span class="picked">+{picked.get(c.cardId)}</span>{/if}
+      </div>
+    {/each}
+  </div>
+{/snippet}
+
 {#if proposal}
   {@const p = proposal}
+  {@const asked = total(p.asked)}
+  {@const given = total(p.given)}
   <div class="sheet-backdrop" role="presentation" onclick={() => (proposal = null)}>
     <div class="sheet wide" role="dialog" aria-modal="true" aria-label={t('propose_trade')} tabindex="-1" data-testid="proposal" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Escape' && (proposal = null)}>
       <h2>{t('propose_trade')} · {p.friend.name}</h2>
-      <h3>{t('trade_pick_theirs', { name: p.friend.name })}</h3>
-      {#if p.theirs.length === 0}
-        <p class="muted">{t('trade_none_theirs', { name: p.friend.name })}</p>
-      {/if}
-      <div class="grid" data-testid="theirs">
-        {#each p.theirs as c (c.cardId)}
-          <div class="pick" class:on={p.wanted === c.cardId}>
-            <MiniCard {ctx} defId={c.cardId} count={c.quantity} fresh={!mine.get(c.cardId)} onclick={() => (proposal = { ...p, wanted: c.cardId, offered: null })} />
-          </div>
-        {/each}
-      </div>
-      {#if p.wanted && wantedRarity}
-        <h3>{t('trade_pick_mine', { r: t(`rarity_${wantedRarity as Rarity}`) })}</h3>
-        {#if myOptions.length === 0}<p class="muted">{t('trade_none_mine')}</p>{/if}
-        <div class="grid" data-testid="mine">
-          {#each myOptions as id (id)}
-            <div class="pick" class:on={p.offered === id}>
-              <MiniCard {ctx} defId={id} count={mine.get(id) ?? 0} onclick={() => (proposal = { ...p, offered: id })} />
-            </div>
-          {/each}
-        </div>
-      {/if}
+      <p class="muted small">{t('trade_tap_hint')}</p>
+      <input class="search" type="search" placeholder={t('trade_search')} aria-label={t('trade_search')} bind:value={search} />
+
+      <h3>{t('trade_ask', { name: p.friend.name })} {#if asked}<span class="count">({asked})</span>{/if}</h3>
+      {#if p.theirs.length === 0}<p class="muted">{t('trade_none_theirs', { name: p.friend.name })}</p>{/if}
+      {@render picker('asked', p.theirs, p.asked)}
+
+      <h3>{t('trade_offer')} {#if given}<span class="count">({given})</span>{/if}</h3>
+      {@render picker('given', myItems, p.given)}
+
+      <p class="summary" data-testid="trade-summary">{t('trade_summary', { g: given, r: asked })}</p>
       {#if message?.error}<p class="error">{message.text}</p>{/if}
       <div class="actions">
-        <button class="btn btn-primary" disabled={busy || !p.wanted || !p.offered} data-testid="send-trade" onclick={sendProposal}>{t('trade_send')}</button>
+        <button class="btn btn-primary" disabled={busy || asked + given === 0} data-testid="send-trade" onclick={sendProposal}>{t('trade_send')}</button>
         <button class="btn" onclick={() => (proposal = null)}>{t('close')}</button>
       </div>
       <p class="muted small">{t('trade_deck_note')}</p>
@@ -433,14 +450,62 @@
     align-items: center;
     gap: 12px;
   }
-  .swap figure {
-    margin: 0;
-    width: min(130px, 40vw);
+  .swap {
+    flex-wrap: wrap;
+    align-items: flex-start;
   }
-  figcaption {
+  .side {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+  .side .cards {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  .caption {
     font-size: 13px;
     color: var(--muted);
-    margin-bottom: 4px;
+    margin: 0 0 4px;
+  }
+  .nothing {
+    font-style: italic;
+  }
+  .arrow {
+    align-self: center;
+  }
+  .pick {
+    position: relative;
+  }
+  .picked {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 2px 8px;
+    pointer-events: none;
+  }
+  .search {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 16px;
+    margin: 4px 0 0;
+  }
+  .count {
+    color: var(--accent);
+  }
+  .summary {
+    font-weight: 700;
+    margin: 16px 0 0;
   }
   .arrow {
     font-size: 26px;
@@ -491,6 +556,11 @@
   details summary {
     cursor: pointer;
     font-weight: 700;
+  }
+  @media (max-width: 520px) {
+    .arrow {
+      display: none;
+    }
   }
   .sr-only {
     position: absolute;

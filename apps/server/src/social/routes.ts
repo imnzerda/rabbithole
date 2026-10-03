@@ -74,7 +74,8 @@ export function registerSocial(app: FastifyInstance, { db, config, catalog }: Ap
   app.get('/api/trades', { preHandler: requireUser }, async (request) => ({ ...(await listTrades(db, request.user!.id)), limits: economy.trades }));
 
   app.post('/api/trades', { preHandler: requireUser }, async (request, reply) => {
-    const body = z.object({ toUserId: uuid, offeredCardId: cardId, requestedCardId: cardId }).safeParse(request.body);
+    const items = z.array(z.object({ cardId, quantity: z.number().int().min(1).max(100) })).max(50);
+    const body = z.object({ toUserId: uuid, offered: items, requested: items }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
       return { trade: await proposeTrade(db, request.user!.id, body.data, economy, await catalogsFor(request.user!, body.data.toUserId)) };
@@ -91,7 +92,7 @@ export function registerSocial(app: FastifyInstance, { db, config, catalog }: Ap
       if (action.data === 'accept') {
         const [t] = await db.query<{ from_user: string }>('SELECT from_user FROM trades WHERE id = $1', [id.data]);
         if (!t) return reply.code(404).send({ error: 'unknown_trade' });
-        return { trade: await acceptTrade(db, request.user!.id, id.data, economy, await catalogsFor(request.user!, t.from_user)) };
+        return { trade: await acceptTrade(db, request.user!.id, id.data, await catalogsFor(request.user!, t.from_user)) };
       }
       await closeTrade(db, request.user!.id, id.data, action.data);
       return { ok: true };

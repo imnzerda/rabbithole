@@ -1,5 +1,3 @@
-import type { CardDef, Rarity } from '@rabbithole/engine';
-import { linkedAccounts } from '../auth/antiabuse.js';
 import type { CatalogSnapshot } from '../catalog/catalog.js';
 import type { EconomyConfig } from '../config.js';
 import type { Db } from '../db/db.js';
@@ -8,8 +6,9 @@ import { EconomyError } from '../economy/economy.js';
 
 /**
  * Amis et échanges entre joueurs (section 6.5). Amitié : demande puis acceptation, sans délai avant
- * de pouvoir échanger. Échange : 1 carte contre 1, même rareté, aucune monnaie ; interdit entre comptes
- * liés (même appareil ou même réseau) ; limites par jour et pour les GOAT par semaine (config).
+ * de pouvoir échanger. Échange libre entre amis (décision du 2026-10-03) : plusieurs cartes de chaque
+ * côté, raretés libres, dons compris, sans limite ; aucune monnaie. Seules règles : être amis, posséder
+ * les cartes, cartes autorisées dans les deux pays, et tout est revérifié à l'acceptation.
  */
 
 /** Demandes d'amitié en attente qu'un joueur peut avoir envoyées (anti-spam). */
@@ -113,15 +112,14 @@ export async function friendCollection(db: Db, userId: string, friendId: string)
 
 // --- Échanges ---
 
+export type TradeItem = { cardId: string; quantity: number };
+
 interface TradeRow {
   id: string;
   from_user: string;
   to_user: string;
   from_name: string;
   to_name: string;
-  offered_card_id: string;
-  requested_card_id: string;
-  rarity: Rarity;
   status: TradeDto['status'];
   created_at: string | Date;
   expires_at: string | Date;
@@ -131,18 +129,37 @@ interface TradeRow {
 const TRADE_SELECT = `SELECT t.*, fu.display_name AS from_name, tu.display_name AS to_name
   FROM trades t JOIN users fu ON fu.id = t.from_user JOIN users tu ON tu.id = t.to_user`;
 
-const tradeDto = (r: TradeRow): TradeDto => ({
-  id: r.id,
-  fromUser: { id: r.from_user, name: r.from_name },
-  toUser: { id: r.to_user, name: r.to_name },
-  offeredCardId: r.offered_card_id,
-  requestedCardId: r.requested_card_id,
-  rarity: r.rarity,
-  status: r.status,
-  createdAt: iso(r.created_at)!,
-  expiresAt: iso(r.expires_at)!,
-  resolvedAt: iso(r.resolved_at),
-});
+/** Cartes de chaque proposition, côté donné et côté demandé. */
+async function itemsOf(db: Db, ids: string[]): Promise<Map<string, { offered: TradeItem[]; requested: TradeItem[] }>> {
+  const map = new Map(ids.map((id) => [id, { offered: [] as TradeItem[], requested: [] as TradeItem[] }]));
+  if (!ids.length) return map;
+  const rows = await db.query<{ trade_id: string; side: 'offered' | 'requested'; card_id: string; quantity: number }>(
+    'SELECT trade_id, side, card_id, quantity FROM trade_items WHERE trade_id = ANY($1::uuid[]) ORDER BY card_id',
+    [ids],
+  );
+  for (const r of rows) map.get(r.trade_id)?.[r.side].push({ cardId: r.card_id, quantity: r.quantity });
+  return map;
+}
+
+async function tradeDtos(db: Db, rows: TradeRow[]): Promise<TradeDto[]> {
+  const items = await itemsOf(
+    db,
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    fromUser: { id: r.from_user, name: r.from_name },
+    toUser: { id: r.to_user, name: r.to_name },
+    offered: items.get(r.id)!.offered,
+    requested: items.get(r.id)!.requested,
+    status: r.status,
+    createdAt: iso(r.created_at)!,
+    expiresAt: iso(r.expires_at)!,
+    resolvedAt: iso(r.resolved_at),
+  }));
+}
+
+const tradeById = async (db: Db, id: string) => (await tradeDtos(db, await db.query<TradeRow>(`${TRADE_SELECT} WHERE t.id = $1`, [id])))[0]!;
 
 /** Les propositions dont le délai est passé deviennent « expirées ». */
 async function expireTrades(db: Db): Promise<void> {
@@ -152,134 +169,149 @@ async function expireTrades(db: Db): Promise<void> {
 export async function listTrades(db: Db, userId: string): Promise<{ incoming: TradeDto[]; outgoing: TradeDto[]; history: TradeDto[] }> {
   await expireTrades(db);
   const rows = await db.query<TradeRow>(`${TRADE_SELECT} WHERE t.from_user = $1 OR t.to_user = $1 ORDER BY t.created_at DESC LIMIT 100`, [userId]);
-  const pending = rows.filter((r) => r.status === 'pending');
+  const all = await tradeDtos(db, rows);
+  const pending = all.filter((r) => r.status === 'pending');
   return {
-    incoming: pending.filter((r) => r.to_user === userId).map(tradeDto),
-    outgoing: pending.filter((r) => r.from_user === userId).map(tradeDto),
-    history: rows.filter((r) => r.status !== 'pending').slice(0, 30).map(tradeDto),
+    incoming: pending.filter((r) => r.toUser.id === userId),
+    outgoing: pending.filter((r) => r.fromUser.id === userId),
+    history: all.filter((r) => r.status !== 'pending').slice(0, 30),
   };
 }
 
 const quantity = async (db: Db, userId: string, cardId: string) =>
   (await db.query<{ quantity: number }>('SELECT quantity FROM collections WHERE user_id = $1 AND card_id = $2', [userId, cardId]))[0]?.quantity ?? 0;
 
-/** Limites d'échanges acceptés d'un joueur : par jour, et pour les GOAT par semaine. */
-async function checkLimits(db: Db, userId: string, rarity: Rarity, economy: EconomyConfig): Promise<void> {
-  const [row] = await db.query<{ day: number; goat_week: number }>(
-    `SELECT count(*) FILTER (WHERE resolved_at > now() - interval '1 day')::int AS day,
-            count(*) FILTER (WHERE rarity = 'goat' AND resolved_at > now() - interval '7 days')::int AS goat_week
-     FROM trades WHERE status = 'accepted' AND (from_user = $1 OR to_user = $1)`,
-    [userId],
-  );
-  if ((row?.day ?? 0) >= economy.trades.perDay) throw new EconomyError('daily_limit', 429);
-  if (rarity === 'goat' && (row?.goat_week ?? 0) >= economy.trades.goatPerWeek) throw new EconomyError('goat_weekly_limit', 429);
-}
-
-/** Amis, et pas comptes liés (même appareil ou même réseau, section 14). */
-async function checkPartners(db: Db, a: string, b: string): Promise<void> {
-  if (!(await areFriends(db, a, b))) throw new EconomyError('not_friends', 403);
-  if ((await linkedAccounts(db, a)).includes(b)) throw new EconomyError('linked_accounts', 403);
-}
-
 /** Carte publiée et obtenable par les deux joueurs (règles de leurs pays). */
-function tradable(cardId: string, catalogs: CatalogSnapshot[]): CardDef {
-  const defs = catalogs.map((c) => [...c.collectibles, ...c.leaders].find((d) => d.id === cardId));
-  if (defs.some((d) => !d)) throw new EconomyError('unknown_card', 404);
-  return defs[0]!;
+function checkTradable(cardId: string, catalogs: CatalogSnapshot[]): void {
+  if (catalogs.some((c) => ![...c.collectibles, ...c.leaders].some((d) => d.id === cardId))) throw new EconomyError('unknown_card', 404);
+}
+
+/** Regroupe les cartes d'un côté (une carte citée deux fois voit ses quantités additionnées). */
+function merge(items: TradeItem[]): TradeItem[] {
+  const map = new Map<string, number>();
+  for (const i of items) map.set(i.cardId, (map.get(i.cardId) ?? 0) + i.quantity);
+  return [...map].map(([cardId, quantity]) => ({ cardId, quantity }));
+}
+
+/** Chaque joueur possède encore les exemplaires qu'il donne. */
+async function checkOwnership(db: Db, fromUser: string, toUser: string, offered: TradeItem[], requested: TradeItem[]): Promise<void> {
+  for (const i of offered) if ((await quantity(db, fromUser, i.cardId)) < i.quantity) throw new EconomyError('not_owned', 409);
+  for (const i of requested) if ((await quantity(db, toUser, i.cardId)) < i.quantity) throw new EconomyError('not_owned_by_friend', 409);
 }
 
 /**
- * Proposition d'échange : ma carte contre une carte de mon ami, de même rareté. Rien ne bouge avant
- * son acceptation ; tout est revérifié à ce moment-là.
+ * Proposition d'échange entre amis : des cartes données et des cartes demandées, raretés libres ;
+ * l'un des deux côtés peut être vide (don, ou demande de don). Rien ne bouge avant l'acceptation.
  */
 export async function proposeTrade(
   db: Db,
   userId: string,
-  input: { toUserId: string; offeredCardId: string; requestedCardId: string },
+  input: { toUserId: string; offered: TradeItem[]; requested: TradeItem[] },
   economy: EconomyConfig,
   catalogs: { mine: CatalogSnapshot; theirs: CatalogSnapshot },
 ): Promise<TradeDto> {
   if (input.toUserId === userId) throw new EconomyError('self');
-  await checkPartners(db, userId, input.toUserId);
-  if (input.offeredCardId === input.requestedCardId) throw new EconomyError('same_card');
-  const both = [catalogs.mine, catalogs.theirs];
-  const offered = tradable(input.offeredCardId, both);
-  const requested = tradable(input.requestedCardId, both);
-  if (offered.rarity !== requested.rarity) throw new EconomyError('rarity_mismatch');
-  if ((await quantity(db, userId, offered.id)) < 1) throw new EconomyError('not_owned');
-  if ((await quantity(db, input.toUserId, requested.id)) < 1) throw new EconomyError('not_owned_by_friend');
-  await checkLimits(db, userId, offered.rarity, economy);
+  if (!(await areFriends(db, userId, input.toUserId))) throw new EconomyError('not_friends', 403);
+  const offered = merge(input.offered);
+  const requested = merge(input.requested);
+  if (offered.length + requested.length === 0) throw new EconomyError('empty_trade');
+  if (offered.some((o) => requested.some((r) => r.cardId === o.cardId))) throw new EconomyError('same_card');
+  for (const i of [...offered, ...requested]) checkTradable(i.cardId, [catalogs.mine, catalogs.theirs]);
+  await checkOwnership(db, userId, input.toUserId, offered, requested);
   const [pending] = await db.query<{ n: number }>("SELECT count(*)::int AS n FROM trades WHERE from_user = $1 AND status = 'pending'", [userId]);
   if ((pending?.n ?? 0) >= MAX_PENDING_TRADES) throw new EconomyError('too_many_pending', 429);
 
-  const [row] = await db.query<{ id: string }>(
-    `INSERT INTO trades (from_user, to_user, offered_card_id, requested_card_id, rarity, expires_at)
-     VALUES ($1, $2, $3, $4, $5, now() + make_interval(hours => $6)) RETURNING id`,
-    [userId, input.toUserId, offered.id, requested.id, offered.rarity, economy.trades.expiryHours],
-  );
-  return tradeDto((await db.query<TradeRow>(`${TRADE_SELECT} WHERE t.id = $1`, [row!.id]))[0]!);
+  return db.transaction(async (tx) => {
+    const [row] = await tx.query<{ id: string }>(
+      `INSERT INTO trades (from_user, to_user, expires_at) VALUES ($1, $2, now() + make_interval(hours => $3)) RETURNING id`,
+      [userId, input.toUserId, economy.trades.expiryHours],
+    );
+    for (const [side, items] of [
+      ['offered', offered],
+      ['requested', requested],
+    ] as const) {
+      for (const i of items) await tx.query('INSERT INTO trade_items (trade_id, side, card_id, quantity) VALUES ($1, $2, $3, $4)', [row!.id, side, i.cardId, i.quantity]);
+    }
+    return tradeById(tx, row!.id);
+  });
 }
 
-async function pendingTrade(db: Db, tradeId: string): Promise<TradeRow> {
+async function pendingTrade(db: Db, tradeId: string): Promise<TradeDto> {
   await expireTrades(db);
   const [row] = await db.query<TradeRow>(`${TRADE_SELECT} WHERE t.id = $1`, [tradeId]);
   if (!row) throw new EconomyError('unknown_trade', 404);
   if (row.status === 'expired') throw new EconomyError('trade_expired', 410);
   if (row.status !== 'pending') throw new EconomyError('trade_closed', 409);
-  return row;
+  return (await tradeDtos(db, [row]))[0]!;
 }
 
-const takeOne = async (db: Db, userId: string, cardId: string) => {
-  const done = await db.query('UPDATE collections SET quantity = quantity - 1 WHERE user_id = $1 AND card_id = $2 AND quantity >= 1 RETURNING quantity', [userId, cardId]);
-  if (done.length === 0) return false;
-  await db.query('DELETE FROM collections WHERE user_id = $1 AND card_id = $2 AND quantity <= 0', [userId, cardId]);
-  return true;
-};
-
-const giveOne = (db: Db, userId: string, cardId: string) =>
-  db.query(
-    `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, 1)
-     ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = collections.quantity + 1`,
-    [userId, cardId],
+async function move(db: Db, from: string, to: string, item: TradeItem, tradeId: string): Promise<void> {
+  const done = await db.query('UPDATE collections SET quantity = quantity - $3 WHERE user_id = $1 AND card_id = $2 AND quantity >= $3 RETURNING quantity', [
+    from,
+    item.cardId,
+    item.quantity,
+  ]);
+  if (done.length === 0) throw new EconomyError('not_owned', 409);
+  await db.query('DELETE FROM collections WHERE user_id = $1 AND card_id = $2 AND quantity <= 0', [from, item.cardId]);
+  await db.query(
+    `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = collections.quantity + EXCLUDED.quantity`,
+    [to, item.cardId, item.quantity],
   );
+  for (const [user, amount] of [
+    [from, -item.quantity],
+    [to, item.quantity],
+  ] as const) {
+    await db.query("INSERT INTO coin_ledger (user_id, currency, amount, reason, ref) VALUES ($1, 'cards', $2, 'trade', $3)", [user, amount, `${tradeId}:${item.cardId}`]);
+  }
+}
 
-/** Acceptation par le destinataire : tout est revérifié, puis les deux cartes changent de main d'un coup. */
-export async function acceptTrade(
-  db: Db,
-  userId: string,
-  tradeId: string,
-  economy: EconomyConfig,
-  catalogs: { mine: CatalogSnapshot; theirs: CatalogSnapshot },
-): Promise<TradeDto> {
+/**
+ * Une carte donnée quitte les decks de son ancien propriétaire : on retire les exemplaires qu'il n'a plus.
+ * Un Leader donné reste en tête du deck, qui ne sera jouable qu'avec un autre Leader.
+ */
+async function trimDecks(db: Db, userId: string, cardIds: string[]): Promise<void> {
+  const decks = await db.query<{ id: string; card_ids: string[] }>('SELECT id, card_ids FROM decks WHERE user_id = $1 AND card_ids && $2::text[]', [userId, cardIds]);
+  for (const deck of decks) {
+    const left = new Map<string, number>();
+    for (const id of new Set(deck.card_ids)) left.set(id, cardIds.includes(id) ? await quantity(db, userId, id) : Infinity);
+    const kept = deck.card_ids.filter((id) => {
+      const n = left.get(id)!;
+      left.set(id, n - 1);
+      return n > 0;
+    });
+    if (kept.length !== deck.card_ids.length) await db.query('UPDATE decks SET card_ids = $2, updated_at = now() WHERE id = $1', [deck.id, kept]);
+  }
+}
+
+/** Acceptation par le destinataire : tout est revérifié, puis les cartes changent de main d'un coup. */
+export async function acceptTrade(db: Db, userId: string, tradeId: string, catalogs: { mine: CatalogSnapshot; theirs: CatalogSnapshot }): Promise<TradeDto> {
   return db.transaction(async (tx) => {
     const t = await pendingTrade(tx, tradeId);
-    if (t.to_user !== userId) throw new EconomyError('not_your_trade', 403);
-    await checkPartners(tx, t.from_user, t.to_user);
-    const both = [catalogs.mine, catalogs.theirs];
-    tradable(t.offered_card_id, both);
-    tradable(t.requested_card_id, both);
-    await checkLimits(tx, t.from_user, t.rarity, economy);
-    await checkLimits(tx, t.to_user, t.rarity, economy);
-    if (!(await takeOne(tx, t.from_user, t.offered_card_id))) throw new EconomyError('not_owned_by_friend', 409);
-    if (!(await takeOne(tx, t.to_user, t.requested_card_id))) throw new EconomyError('not_owned', 409);
-    await giveOne(tx, t.to_user, t.offered_card_id);
-    await giveOne(tx, t.from_user, t.requested_card_id);
-    for (const [user, card, amount] of [
-      [t.from_user, t.offered_card_id, -1],
-      [t.from_user, t.requested_card_id, 1],
-      [t.to_user, t.requested_card_id, -1],
-      [t.to_user, t.offered_card_id, 1],
-    ] as const) {
-      await tx.query("INSERT INTO coin_ledger (user_id, currency, amount, reason, ref) VALUES ($1, 'cards', $2, 'trade', $3)", [user, amount, `${t.id}:${card}`]);
-    }
+    if (t.toUser.id !== userId) throw new EconomyError('not_your_trade', 403);
+    if (!(await areFriends(tx, t.fromUser.id, t.toUser.id))) throw new EconomyError('not_friends', 403);
+    for (const i of [...t.offered, ...t.requested]) checkTradable(i.cardId, [catalogs.mine, catalogs.theirs]);
+    await checkOwnership(tx, t.fromUser.id, t.toUser.id, t.offered, t.requested);
+    for (const i of t.offered) await move(tx, t.fromUser.id, t.toUser.id, i, t.id);
+    for (const i of t.requested) await move(tx, t.toUser.id, t.fromUser.id, i, t.id);
+    await trimDecks(
+      tx,
+      t.fromUser.id,
+      t.offered.map((i) => i.cardId),
+    );
+    await trimDecks(
+      tx,
+      t.toUser.id,
+      t.requested.map((i) => i.cardId),
+    );
     await tx.query("UPDATE trades SET status = 'accepted', resolved_at = now() WHERE id = $1", [t.id]);
-    return tradeDto((await tx.query<TradeRow>(`${TRADE_SELECT} WHERE t.id = $1`, [t.id]))[0]!);
+    return tradeById(tx, t.id);
   });
 }
 
 /** Refus (destinataire) ou annulation (auteur) d'une proposition en attente. */
 export async function closeTrade(db: Db, userId: string, tradeId: string, action: 'decline' | 'cancel'): Promise<void> {
   const t = await pendingTrade(db, tradeId);
-  if ((action === 'decline' ? t.to_user : t.from_user) !== userId) throw new EconomyError('not_your_trade', 403);
+  if ((action === 'decline' ? t.toUser.id : t.fromUser.id) !== userId) throw new EconomyError('not_your_trade', 403);
   await db.query('UPDATE trades SET status = $2, resolved_at = now() WHERE id = $1', [t.id, action === 'decline' ? 'declined' : 'cancelled']);
 }

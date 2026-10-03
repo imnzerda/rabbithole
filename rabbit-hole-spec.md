@@ -328,13 +328,14 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Implémenté** (phase 5) : `GET /api/trade-up` (cartes possibles, toutes équiprobables, et probabilité affichée avant l'échange) et `POST /api/trade-up`. Les doublons sont ceux au-delà des exemplaires jouables (`keepCopies`) ; la seed et les cartes possibles sont enregistrées, donc chaque tirage peut être rejoué pour l'audit. Nombres de doublons en config (`tradeUp`). Panneau dans la Collection.
 
 ### 6.5 Échanges entre joueurs
-- Cartes uniquement, **1 contre 1, même rareté**.
+- **Échange libre entre amis** (décision du 2026-10-03) : cartes uniquement, autant que voulu de chaque côté, raretés libres, et **dons** compris (un côté vide). Aucune limite par jour ni par semaine.
 - Entre amis (demande puis acceptation, **sans délai**, décision du 2026-10-03), et plus tard entre membres d'une même guilde (phase 7). Les pseudos n'étant pas uniques, on ajoute un ami par son **code ami** (8 caractères), ou par pseudo s'il est unique.
-- 5 échanges / jour ; cartes GOAT : 1 échange / semaine.
 - Aucune monnaie, aucun objet dans un échange. Les CGU interdisent la vente de cartes ou de comptes contre de l'argent.
 - Tableau d'échanges de guilde (« je cherche / je propose »).
-- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges (proposition, acceptation qui revérifie tout et échange les deux cartes d'un coup, refus, annulation, expiration après 72 h). Limites en config (`trades` : 5 par jour, 1 GOAT par semaine). Comptes liés refusés. Une carte donnée peut être un exemplaire jouable : elle quitte alors les decks du joueur. Page « Amis et échanges » (`/friends`). Reste : tableau de guilde (phase 7), détection des flux à sens unique.
-- Détection d'abus : comptes liés (même empreinte numérique, cookie d'appareil ou IP, section 14) interdits d'échange entre eux, flux d'échanges à sens unique → blocage et revue.
+- **Decks** : on peut donner un exemplaire qu'on utilise dans un deck ; la carte quitte alors ce deck, et la page le signale. Un Leader donné reste en tête du deck, qui demande alors un autre Leader.
+- **Acceptation** : le serveur revérifie tout (amitié, possession, cartes autorisées dans les deux pays), puis les cartes changent de main d'un coup. Une proposition expire après 72 h (config).
+- Les comptes liés (même empreinte numérique, cookie d'appareil ou IP, section 14) peuvent échanger : ils restent signalés pour revue (décision du 2026-10-03).
+- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges libres (proposition, acceptation, refus, annulation, expiration). Page « Amis et échanges » (`/friends`). Reste : tableau de guilde (phase 7).
 
 ### 6.6 Monétisation
 - **Gemmes** : 6 paliers de prix, prix régionaux (table `price_tiers` par pays).
@@ -517,7 +518,8 @@ booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, ref
 trade_ups(id, user_id, input_card_ids TEXT[], input_rarity, target_category, pool_card_ids TEXT[], output_card_id, seed, created_at)
 users.friend_code (unique)
 friendships(requester_id, addressee_id, created_at, accepted_at)
-trades(id, from_user, to_user, offered_card_id, requested_card_id, rarity, status /*pending|accepted|declined|cancelled|expired*/, created_at, expires_at, resolved_at)
+trades(id, from_user, to_user, status /*pending|accepted|declined|cancelled|expired*/, created_at, expires_at, resolved_at)
+trade_items(trade_id, side /*offered|requested*/, card_id, quantity)
 matches(id, mode, player_a, player_b, leader_a, leader_b, ghost BOOLEAN, seed, actions JSONB,
         result, hype_level, created_at)
 ranked(user_id, season_id, rank, points, country)

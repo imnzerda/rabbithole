@@ -116,7 +116,7 @@ async function flagShared(db: Db, userId: string, table: 'user_devices' | 'user_
   );
 }
 
-/** Comptes liés (même appareil ou même réseau) : interdits d'échanges entre eux (phase 5). */
+/** Comptes liés (même appareil ou même réseau), signalés pour revue. */
 export async function linkedAccounts(db: Db, userId: string): Promise<string[]> {
   const rows = await db.query<{ id: string }>(
     `SELECT DISTINCT other_user_id AS id FROM account_flags WHERE user_id = $1

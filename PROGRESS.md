@@ -22,6 +22,15 @@
 
 ## Journal
 
+### 2026-10-03 — Échanges libres entre amis
+
+- **Décision** : plus de limites dans les échanges. On peut mettre plusieurs cartes de chaque côté, de raretés libres, ou faire un don (un côté vide, ou une demande de don). Il n'y a plus de limite par jour ni de limite pour les GOAT, et les comptes liés peuvent échanger (ils restent signalés pour revue).
+- **Ce qui reste vérifié** : être amis, posséder les cartes, et que les cartes soient autorisées dans les deux pays. Tout est revérifié à l'acceptation, puis les cartes changent de main d'un coup. Une proposition expire après 72 h, et un joueur ne peut pas avoir plus de 20 propositions en attente (anti-spam).
+- **Decks** : une carte donnée quitte les decks de son ancien propriétaire, qui gardent seulement les exemplaires encore possédés. Un Leader donné reste en tête du deck, qui demande alors un autre Leader.
+- **Base** : migration 013 (table `trade_items`, colonnes de carte unique supprimées de `trades`). La config ne garde que `trades.expiryHours`. La route de test `/api/test/unlink` a été retirée.
+- **Interface** : dans la fenêtre de proposition, chaque toucher sur une carte ajoute un exemplaire, et un toucher de plus au maximum la retire. Une recherche par nom et un résumé (« Tu donnes 3 carte(s), tu reçois 1 carte(s). ») complètent la fenêtre. Les échanges affichent toutes les cartes de chaque côté, ou « Rien » pour un don.
+- **Tests** : 9 tests serveur sur les échanges (plusieurs cartes, dons, sans limite, comptes liés, refus, expiration, decks) et le scénario E2E adapté, sur smartphone et PC.
+
 ### 2026-10-03 — Phase 5, étape 2 : amis et échanges
 
 - **Amis** : chaque joueur a un **code ami** unique de 8 caractères, puisque les pseudos ne sont pas uniques. On ajoute quelqu'un par son code, ou par pseudo s'il est unique. Deux demandes croisées valent acceptation. On peut refuser, annuler ou retirer un ami ; retirer un ami annule les échanges en attente entre vous. Il n'y a **pas de délai** avant de pouvoir échanger (décision du 2026-10-03).
@@ -30,7 +39,7 @@
 - **Interface** : page « Amis et échanges » (`/friends`, lien « Amis » sur l'accueil). On y trouve son code ami à copier, l'ajout d'un ami, les demandes, la liste des amis, les échanges reçus (« Tu reçois » ⇄ « Tu donnes ») et envoyés, et l'historique. La proposition se fait en deux étapes : une carte de l'ami, puis une des siennes de même rareté.
 - **Tests** : 8 tests serveur (amis, échanges, refus, expiration, limites, GOAT, comptes liés) et 1 scénario E2E à deux navigateurs, sur smartphone et PC. Route de test `/api/test/unlink`, interdite en production : en test, tous les navigateurs viennent de la même adresse.
 - **À savoir** : en dev, deux comptes sur le même ordinateur ne peuvent pas échanger (même réseau, donc comptes liés). Et l'empreinte d'appareil empêche de toute façon d'en créer deux sur la même machine. Pour tester à la main, il faut un deuxième appareil sur un autre réseau, ou passer par les tests.
-- **Reste** : le tableau d'échanges de guilde (avec les guildes, phase 7) et la détection des flux d'échanges à sens unique.
+- **Reste** : le tableau d'échanges de guilde (avec les guildes, phase 7).
 
 ### 2026-10-03 — Phase 5, étape 1 : trade-up
 
