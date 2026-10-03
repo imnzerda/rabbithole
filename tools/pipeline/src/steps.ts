@@ -1,5 +1,5 @@
 import { CATEGORIES, type CategoryId } from '@rabbithole/engine';
-import { PER_SOURCE_LIMIT, SERIES_RULES, SOURCES } from './config.js';
+import { notorietyRule, PER_SOURCE_LIMIT, SOURCES } from './config.js';
 import { fetchImages } from './commons.js';
 import { mapLimit } from './http.js';
 import { allViews } from './pageviews.js';
@@ -20,14 +20,13 @@ export interface ExtractOptions {
 
 /** Étape 1 : extraction Wikidata, source par source, puis détails des sujets. */
 export async function extract(opts: ExtractOptions, log: Log): Promise<RunFile> {
-  const floor = SERIES_RULES[opts.seriesType].minSitelinks;
   const countryQid = opts.country ? await countryQidOf(opts.country) : null;
   if (opts.country && !countryQid) throw new Error(`Pays inconnu : ${opts.country}`);
   const sources = SOURCES.filter((s) => !opts.categories || opts.categories.includes(s.category));
 
   const found = new Map<string, { sitelinks: number; categories: CategoryId[]; sources: string[]; kind: Candidate['kind'] }>();
   for (const source of sources) {
-    const min = Math.max(floor, source.minSitelinks ?? 0);
+    const min = Math.max(notorietyRule(opts.seriesType, source.category).minSitelinks, source.minSitelinks ?? 0);
     try {
       const rows = await extractSource(source, min, opts.limit, countryQid);
       log(`  ${source.id.padEnd(18)} ${String(rows.length).padStart(4)} sujets (≥ ${min} langues)`);
@@ -67,6 +66,29 @@ export async function extract(opts: ExtractOptions, log: Log): Promise<RunFile> 
   });
   const now = new Date().toISOString();
   return { series: opts.series, seriesType: opts.seriesType, country: opts.country, createdAt: now, updatedAt: now, steps: [], candidates };
+}
+
+/**
+ * Fusionne une nouvelle extraction avec la précédente :
+ * - extraction partielle (`--categories`) : les autres candidats sont gardés ;
+ * - extraction complète : seuls les sujets ajoutés à la main (`pipeline add`) sont gardés en plus.
+ * Un sujet déjà connu reprend ses vues et la vérification de son image (si c'est la même), pour
+ * éviter de retélécharger ; ses catégories sont réunies.
+ */
+export function mergeRuns(previous: RunFile | null, fresh: RunFile, partial: boolean): RunFile {
+  if (!previous) return fresh;
+  const before = new Map(previous.candidates.map((c) => [c.qid, c]));
+  const freshIds = new Set(fresh.candidates.map((c) => c.qid));
+  for (const c of fresh.candidates) {
+    const old = before.get(c.qid);
+    if (!old) continue;
+    if (old.views) c.views = old.views;
+    if (old.image === c.image && old.imageInfo !== undefined) c.imageInfo = old.imageInfo;
+    c.categories = [...new Set([...c.categories, ...old.categories])].sort((a, b) => CATEGORIES.indexOf(a) - CATEGORIES.indexOf(b));
+    c.sources = [...new Set([...c.sources, ...old.sources])];
+  }
+  const kept = previous.candidates.filter((c) => !freshIds.has(c.qid) && (partial || c.sources.includes('manuel')));
+  return { ...fresh, createdAt: previous.createdAt, steps: previous.steps, candidates: [...fresh.candidates, ...kept] };
 }
 
 /** Étape 2a : vues Wikipédia des 60 derniers jours (toutes langues suivies, par lots de 50). */

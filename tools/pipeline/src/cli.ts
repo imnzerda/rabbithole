@@ -1,12 +1,13 @@
 import { CATEGORIES, type CategoryId } from '@rabbithole/engine';
 import { loadRun, saveCsv, saveRun } from './store.js';
-import { addSubjects, extract, images, PER_SOURCE_LIMIT, policy, score, summary, views } from './steps.js';
+import { addSubjects, extract, images, mergeRuns, PER_SOURCE_LIMIT, policy, score, summary, views } from './steps.js';
 import type { Candidate, RunFile } from './types.js';
 
 /**
  * Pipeline de création de cartes (section 11).
  *
  *   pnpm pipeline extract  --series base_01 [--type base|world|country] [--country FR] [--categories musique,sport] [--limit 150]
+ *                                          (fusionne avec l'extraction précédente : --categories ne touche qu'à ces catégories)
  *   pnpm pipeline score    --series base_01 [--refresh]   vues Wikipédia + score de notoriété
  *   pnpm pipeline policy   --series base_01     politique de contenu (exclus / à revoir)
  *   pnpm pipeline images   --series base_01     images Commons, licences vérifiées
@@ -56,10 +57,16 @@ async function main(): Promise<void> {
 
   const runExtract = async () => {
     log(`Extraction Wikidata pour ${series}…`);
-    const run = await extract(
-      { series, seriesType: seriesType(opts.type, country), country, categories: categories(opts.categories), limit: Number(opts.limit ?? PER_SOURCE_LIMIT) },
-      log,
-    );
+    const cats = categories(opts.categories);
+    const fresh = await extract({ series, seriesType: seriesType(opts.type, country), country, categories: cats, limit: Number(opts.limit ?? PER_SOURCE_LIMIT) }, log);
+    // Les candidats déjà connus (autres catégories, ajouts manuels, vues, images) ne sont pas perdus.
+    let previous: RunFile | null = null;
+    try {
+      previous = loadRun(series);
+    } catch {
+      previous = null;
+    }
+    const run = mergeRuns(previous, fresh, cats !== null);
     log(`→ ${saveRun(run, 'extract')} (${run.candidates.length} candidats)`);
     return run;
   };

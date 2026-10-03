@@ -112,6 +112,29 @@ export const SERIES_RULES = {
   country: { minSitelinks: 10, minScore: 0 },
 } as const;
 
+export type SeriesType = keyof typeof SERIES_RULES;
+export interface NotorietyRule {
+  minSitelinks: number;
+  minScore: number;
+}
+
+/**
+ * Seuils abaissés pour les catégories qui ont peu de sujets très connus (décision du 2026-10-03) :
+ * au seuil du set de base, Crimes et Mystères n'avaient que 4 et 5 sujets. Le score est un percentile
+ * dans la catégorie : 50 = la moitié la plus connue. Le plancher de langues vaut aussi pour l'extraction.
+ */
+export const CATEGORY_RULES: Partial<Record<SeriesType, Partial<Record<CategoryId, NotorietyRule>>>> = {
+  base: {
+    crimes_scandales: { minSitelinks: 20, minScore: 50 },
+    mysteres: { minSitelinks: 20, minScore: 50 },
+  },
+};
+
+/** Seuil de notoriété d'une catégorie pour un type de série. */
+export function notorietyRule(type: SeriesType, category: CategoryId | undefined): NotorietyRule {
+  return (category && CATEGORY_RULES[type]?.[category]) || SERIES_RULES[type];
+}
+
 /** Nombre maximal de sujets par source et par extraction. */
 export const PER_SOURCE_LIMIT = 150;
 

@@ -235,7 +235,7 @@ Chaque critère est converti en percentile **dans la catégorie principale du su
 **Seuils par type de série** (config) :
 | Série | Exigence |
 |---|---|
-| Set de base | Score ≥ 90 **et** article dans au moins 40 langues |
+| Set de base | Score ≥ 90 **et** article dans au moins 40 langues ; **Crimes et Mystères** : score ≥ 50 et au moins 20 langues (peu de sujets très connus dans ces catégories, décision du 2026-10-03) |
 | Séries mondiales | Score ≥ 80 **et** au moins 25 langues |
 | Séries pays | Top des vues dans la langue du pays **et** connu de la majorité des joueurs du pays (voir test) ; idéalement 10 langues ou plus pour qu'une partie des cartes parle aussi aux étrangers |
 | Industrie X | Uniquement les noms ayant dépassé le public adulte (présence dans les médias grands public, au moins 20 langues) |
@@ -262,6 +262,8 @@ Chaque critère est converti en percentile **dans la catégorie principale du su
 - à revoir (et contenu sensible) : attaque ou organisation terroriste, condamnation pour terrorisme, libellé ou description évoquant le terrorisme (« terroris… », « attentat ») ou la négation de la Shoah ;
 - à revoir : cité comme victime d'un événement, condamnation, mort violente, overdose, Industrie X, mots sensibles dans la description ;
 - drapeaux : `adult`, `sensitive` (masquable par le joueur), `politicallySensitive` (filtrage par pays).
+
+**Marques** (sites, réseaux sociaux, jeux vidéo, entreprises : Wikipédia, YouTube, Minecraft…) : autorisées comme sujets de cartes, y compris en production (décision du 2026-10-03).
 
 Dans l'outil d'admin, les raisons « à revoir » sont affichées pour information et ne bloquent pas la publication ; un sujet exclu (mineur aujourd'hui) ne peut jamais devenir une carte. Une carte s'enlève à la main : effacée si elle n'a jamais été publiée, retirée du jeu sinon (des joueurs ont pu l'obtenir).
 
@@ -371,7 +373,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 
 - **i18n** : clés partout, fichiers JSON par langue. Lancement : EN, FR, ES, PT-BR, DE. Puis JA, IT, PL, TL.
 - Pays du joueur : pays déclaré à l'inscription + vérification par IP.
-- Table `country_rules` : pour chaque pays, flags autorisés (`adult`, `politicallySensitive`, liste de cartes bloquées).
+- Table `country_rules` : pour chaque pays, flags autorisés (`adult`, `politicallySensitive`, liste de cartes bloquées). Le mécanisme existe ; le contenu des règles pays par pays est reporté à plus tard (décision du 2026-10-03).
 - Dans un pays où le contenu adulte est interdit (ex. Turquie, Corée du Sud, Inde, à confirmer juridiquement) :
   - cartes `adult` masquées dans la collection, absentes des aperçus de boosters, non jouables ;
   - les parties contre un joueur d'un autre pays affichent ces cartes avec un design neutre (« Carte masquée dans ta région ») ;

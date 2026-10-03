@@ -32,6 +32,8 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 
 - **Sources** : une requête par type de sujet (occupation ou nature Wikidata), rattachée à une catégorie. Les identifiants ont été vérifiés via l'API. Les occupations trop ambiguës (pilote, marin, entrepreneur) sont écartées : ces sujets s'ajoutent à la main.
 - **Seuils par série** : set de base ≥ 40 langues, série mondiale ≥ 25, série pays ≥ 10 ; score minimal 90 / 80 / 0.
+- **Seuils par catégorie** (`CATEGORY_RULES`) : dans le set de base, Crimes et Mystères descendent à 20 langues et score ≥ 50 (la moitié la plus connue de la catégorie). Le plancher de langues vaut aussi pour l'extraction.
+- **Extractions fusionnées** : une nouvelle extraction complète le fichier de la série. Avec `--categories`, seules ces catégories sont mises à jour ; sans, les sujets ajoutés à la main sont gardés. Les vues et les vérifications d'images déjà faites sont reprises.
 - **Score de notoriété** : portée (sitelinks, 30 %), popularité (vues des 60 derniers jours extrapolées sur un an, 50 %), pertinence générationnelle (actif depuis 1990, 20 %). Chaque critère devient un percentile **dans la catégorie principale** du sujet, puis le total pondéré est lui-même rangé : 90 = les 10 % les plus connus de la catégorie. Les **iconiques** (candidats GOAT) sont le top 1 % de tout le lot.
 - **Licences** : domaine public, CC0, CC BY, CC BY-SA acceptés ; NC, ND, non libre, GFDL seule ou licence absente refusés.
 

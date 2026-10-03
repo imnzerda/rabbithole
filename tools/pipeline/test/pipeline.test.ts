@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { classifyLicense, parseImagePage, stripHtml } from '../src/commons.js';
-import { SOURCES } from '../src/config.js';
+import { notorietyRule, SERIES_RULES, SOURCES } from '../src/config.js';
 import { sumDaily } from '../src/pageviews.js';
 import { evaluatePolicy } from '../src/policy.js';
 import { activeSince, percentiles, scoreRun } from '../src/score.js';
 import { toCsv } from '../src/store.js';
+import { mergeRuns } from '../src/steps.js';
 import type { Candidate, RunFile } from '../src/types.js';
 import { buildSourceQuery, parseEntity, wdDate, type WdEntity } from '../src/wikidata.js';
 
@@ -122,6 +123,44 @@ describe('notoriété', () => {
     expect(list.filter((c) => c.score!.meetsThreshold).length).toBe(20);
     expect(list.filter((c) => c.score!.iconic).length).toBeLessThanOrEqual(3);
     expect(list.find((c) => c.qid === 'M99')!.score!.iconic).toBe(true);
+  });
+
+  it('seuil abaissé pour Crimes et Mystères (20 langues, moitié la plus connue de la catégorie)', () => {
+    expect(notorietyRule('base', 'crimes_scandales')).toEqual({ minSitelinks: 20, minScore: 50 });
+    expect(notorietyRule('base', 'musique')).toEqual(SERIES_RULES.base);
+    const list: Candidate[] = [];
+    for (let i = 0; i < 10; i++) {
+      list.push(candidate({ qid: `C${i}`, categories: ['crimes_scandales'], sitelinks: 20 + i, views: { last60Days: i + 1, annualEstimate: 6 * (i + 1), byLanguage: {} } }));
+      list.push(candidate({ qid: `S${i}`, categories: ['science'], sitelinks: 20 + i, views: { last60Days: i + 1, annualEstimate: 6 * (i + 1), byLanguage: {} } }));
+    }
+    scoreRun({ series: 't', seriesType: 'base', country: null, createdAt: '', updatedAt: '', steps: [], candidates: list }, NOW);
+    expect(list.filter((c) => c.qid.startsWith('C') && c.score!.meetsThreshold).length).toBe(5);
+    // Science garde le seuil du set de base : 40 langues au moins.
+    expect(list.filter((c) => c.qid.startsWith('S') && c.score!.meetsThreshold).length).toBe(0);
+  });
+});
+
+describe('fusion des extractions', () => {
+  const run = (candidates: Candidate[]): RunFile => ({ series: 't', seriesType: 'base', country: null, createdAt: 'avant', updatedAt: '', steps: ['extract'], candidates });
+  const known = candidate({ qid: 'Q1', categories: ['crimes_scandales'], views: { last60Days: 5, annualEstimate: 30, byLanguage: {} }, imageInfo: null });
+  const manual = candidate({ qid: 'Q2', categories: ['internet'], sources: ['manuel'] });
+  const other = candidate({ qid: 'Q3', categories: ['sport'], sources: ['footballeur'] });
+
+  it('extraction partielle : les autres catégories et les ajouts manuels sont gardés ; vues et image reprises', () => {
+    const fresh = run([candidate({ qid: 'Q1', categories: ['mysteres'], sources: ['complot'] }), candidate({ qid: 'Q4', categories: ['mysteres'] })]);
+    const merged = mergeRuns(run([known, manual, other]), fresh, true);
+    expect(merged.candidates.map((c) => c.qid).sort()).toEqual(['Q1', 'Q2', 'Q3', 'Q4']);
+    const q1 = merged.candidates.find((c) => c.qid === 'Q1')!;
+    expect(q1.views?.annualEstimate).toBe(30);
+    expect(q1.imageInfo).toBeNull();
+    expect(q1.categories).toEqual(['crimes_scandales', 'mysteres']);
+    expect(merged.createdAt).toBe('avant');
+  });
+
+  it('extraction complète : seuls les ajouts manuels absents de la nouvelle extraction sont gardés', () => {
+    const merged = mergeRuns(run([known, manual, other]), run([candidate({ qid: 'Q1' })]), false);
+    expect(merged.candidates.map((c) => c.qid).sort()).toEqual(['Q1', 'Q2']);
+    expect(mergeRuns(null, run([known]), false).candidates).toHaveLength(1);
   });
 });
 

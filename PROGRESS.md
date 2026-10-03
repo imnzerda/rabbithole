@@ -22,6 +22,14 @@
 
 ## Journal
 
+### 2026-10-03 — Décisions : marques, règles par pays, seuils de Crimes et Mystères
+
+- **Marques** (Wikipédia, YouTube, Minecraft…) : autorisées comme cartes, y compris en production (cahier des charges, section 5).
+- **Règles par pays** : le mécanisme est en place (admin, filtrage), mais leur contenu est reporté à plus tard.
+- **Seuils de notoriété par catégorie** (`CATEGORY_RULES` dans `tools/pipeline/src/config.ts`) : dans le set de base, Crimes et Mystères passent à **20 langues et score ≥ 50**, au lieu de 40 langues et 90. Les autres catégories ne changent pas. Le plancher de langues vaut aussi pour l'extraction Wikidata.
+- **Extractions fusionnées** : `pipeline extract --categories …` (et `all`) complète le fichier de candidats au lieu de l'écraser, et garde les ajouts manuels. Les vues et les vérifications d'images déjà faites sont reprises.
+- Nouvelle extraction de Crimes et Mystères : 147 nouveaux candidats (3 889 au total). Les sujets utilisables passent de 4 à **64** en Crimes et de 5 à **52** en Mystères. Ils sont importés dans l'admin de dev, prêts pour les prochaines séries.
+
 ### 2026-10-03 — Set de base complet : 250 cartes + 15 Leaders
 
 - **Décision** : les Leaders ne comptent pas dans les 250 cartes du set de base, ni dans les raretés (cahier des charges, section 4.1). On peut ainsi ajouter des Leaders pour de nouvelles paires de catégories sans retirer de cartes.
@@ -377,6 +385,4 @@ Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recycla
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.
-- **Marques** (Wikipédia, YouTube, Minecraft…) : vérification juridique avant d'en faire des cartes publiées.
-- **Notoriété** : Crimes et Mystères n'ont qu'un sujet au-dessus du seuil (≥ 40 langues, score ≥ 90). Abaisser leurs seuils, ou curation sous le seuil pour ces deux catégories ?
-- Règles par pays (contenu adulte, politique) à valider juridiquement pays par pays.
+- Règles par pays (contenu adulte, politique) : reportées, à définir plus tard.

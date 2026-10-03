@@ -1,5 +1,6 @@
-import { GENERATION_YEAR, ICONIC_PERCENTILE, SCORE_WEIGHTS, SERIES_RULES } from './config.js';
+import { GENERATION_YEAR, ICONIC_PERCENTILE, notorietyRule, SCORE_WEIGHTS } from './config.js';
 import type { Candidate, RunFile } from './types.js';
+import type { CategoryId } from '@rabbithole/engine';
 
 /**
  * Score de notoriété (section 4.6), de 0 à 100 :
@@ -71,9 +72,9 @@ export function scoreRun(run: RunFile, now = new Date()): void {
     const key = c.categories[0] ?? 'autre';
     groups.set(key, [...(groups.get(key) ?? []), c]);
   }
-  const rules = SERIES_RULES[run.seriesType];
   const parts = new Map<Candidate, { reach: number; popularity: number; generation: number }>();
-  for (const group of groups.values()) {
+  for (const [key, group] of groups) {
+    const rules = notorietyRule(run.seriesType, key as CategoryId);
     const reach = percentiles(group.map((c) => c.sitelinks));
     const popularity = percentiles(group.map((c) => c.views?.annualEstimate ?? 0));
     const generation = percentiles(group.map((c) => generationRaw(c, now)));
