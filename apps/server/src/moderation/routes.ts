@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { requireAdmin } from '../admin/routes.js';
 import { audit } from '../admin/admin.js';
+import { retireCard } from '../economy/compensation.js';
 import { requireUser } from '../auth/routes.js';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from './filter.js';
@@ -164,7 +165,7 @@ export function registerModeration(app: FastifyInstance, { db, config, catalog }
     const final = body.data.status !== 'in_progress';
     await db.query(`UPDATE takedown_requests SET status = $2, resolution = $3, resolved_at = ${final ? 'now()' : 'NULL'} WHERE id = $1`, [id, body.data.status, body.data.resolution]);
     if (body.data.retireCard) {
-      await db.query("UPDATE cards SET status = 'retired', updated_at = now() WHERE id = $1", [t.card_id]);
+      await retireCard(db, t.card_id, config.economy.craft);
       await audit(db, request.user!.id, 'card.retired', t.card_id, { takedown: id });
       await catalog.reload();
     }

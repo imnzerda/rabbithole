@@ -3,6 +3,7 @@
   import { CATEGORY_NAMES, type CategoryId } from '@rabbithole/engine';
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
+  import Notices from '$lib/ui/Notices.svelte';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
   import { loadSession, logout, session } from '$lib/session.svelte';
   import { onMount, untrack } from 'svelte';
@@ -43,6 +44,7 @@
       <a class="strong" href="/signup">{t('signup')}</a>
     {/if}
   </nav>
+  {#if session.user}<Notices />{/if}
   <header>
     <div class="logo" aria-hidden="true">
       <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>

@@ -38,7 +38,7 @@ const cardType = z.enum(['leader', 'character', 'event']);
 const id = z.string().min(1).max(80);
 
 /** API de l'outil d'administration (`apps/admin`) : réservée au rôle `admin`, chaque modification est journalisée. */
-export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): void {
+export function registerAdmin(app: FastifyInstance, { db, config, catalog }: AppDeps): void {
   /** Decks connus de l'admin : decks de référence de toutes les séries, puis decks du prototype. */
   const adminDecks = async () => {
     const rows = await db.query<{ id: string; series_id: string; name: LocalizedText; leader_id: string; card_ids: string[] }>('SELECT * FROM series_decks ORDER BY series_id, id');
@@ -199,7 +199,7 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
     const body = z.object({ status: z.enum(['draft', 'review', 'published', 'retired']) }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      await setCardStatus(db, cardId, body.data.status, await workingContext(db));
+      await setCardStatus(db, cardId, body.data.status, await workingContext(db), config.economy.craft);
       await audit(db, me(request), `card.${body.data.status}`, cardId);
       await republish();
       return { ok: true, catalogVersion: catalog.current.version };
@@ -212,7 +212,7 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
   app.delete('/api/admin/cards/:id', admin, async (request, reply) => {
     const cardId = z.object({ id }).parse(request.params).id;
     try {
-      const result = await removeCard(db, cardId);
+      const result = await removeCard(db, cardId, config.economy.craft);
       await audit(db, me(request), result === 'deleted' ? 'card.delete' : 'card.retired', cardId);
       if (result === 'retired') await republish();
       return { result };

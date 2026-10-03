@@ -9,7 +9,7 @@ const EMAIL = 'admin-e2e@example.com';
 
 test.skip(({ isMobile }) => isMobile, 'Outil interne : sur PC uniquement.');
 
-test('admin : import des candidats, carte créée, éditée, publiée, jouable ; suppression manuelle', async ({ page, request }) => {
+test('admin : import des candidats, carte créée, éditée, publiée, jouable ; suppression manuelle et compensation', async ({ page, request, browser, baseURL }) => {
   // Compte admin (listé dans ADMIN_EMAILS du serveur de test) : inscription, ou connexion s'il existe déjà.
   const signup = await page.request.post('/api/auth/signup', {
     data: { email: EMAIL, password: 'motdepasse1', displayName: 'Admin E2E', country: 'FR', locale: 'fr', fp: `admin-fp-${Date.now()}` },
@@ -90,4 +90,23 @@ test('admin : import des candidats, carte créée, éditée, publiée, jouable ;
   await page.getByTestId('remove-card').click();
   await expect(page).toHaveURL(/\/cards$/);
   expect((await page.request.get(`${ADMIN}/api/admin/cards/${encodeURIComponent(draftId)}`)).status()).toBe(404);
+
+  // Une carte publiée est retirée, jamais effacée : son détenteur reçoit des pièces et une notification.
+  const player = await browser.newContext({ baseURL, locale: 'fr-FR' });
+  const playerPage = await player.newPage();
+  const joined = await playerPage.request.post('/api/auth/signup', {
+    data: { email: `joueur-${stamp}@example.com`, password: 'motdepasse1', displayName: 'Joueur E2E', country: 'FR', locale: 'fr', fp: `player-fp-${stamp}` },
+  });
+  expect(joined.status()).toBe(201);
+  await playerPage.request.post('/api/test/set-card', { data: { cardId, quantity: 2 } });
+  await page.goto(`${ADMIN}/cards/${encodeURIComponent(cardId)}`);
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('remove-card').click();
+  await expect(page.getByText('Ses détenteurs ont reçu son prix de fabrication en pièces')).toBeVisible();
+  expect((await (await page.request.get(`${ADMIN}/api/admin/cards/${encodeURIComponent(cardId)}`)).json()).status).toBe('retired');
+  await playerPage.goto('/');
+  await expect(playerPage.getByTestId('notice')).toContainText('a été retirée du jeu : tu as reçu 40 🪙 pour 2 exemplaire(s).');
+  await playerPage.getByTestId('notice').getByRole('button', { name: 'OK' }).click();
+  await expect(playerPage.getByTestId('notice')).toHaveCount(0);
+  await player.close();
 });

@@ -209,3 +209,12 @@ export interface ShopDto {
   spendCap: number | null;
   monthSpent: number;
 }
+
+/** Notification au joueur. `card_retired` : { cardId, name, rarity, quantity, coins }. */
+export interface NoticeDto {
+  id: string;
+  kind: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+  read: boolean;
+}

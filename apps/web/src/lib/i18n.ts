@@ -332,6 +332,8 @@ const fr = {
   sandbox_hint: "Prestataire factice (développement) : aucun argent réel. Le paiement est confirmé au serveur par un webhook signé, comme en production.",
   sandbox_pay: "Payer {price}",
   sandbox_closed: "Ce paiement est déjà terminé.",
+  notice_card_retired: "« {name} » a été retirée du jeu : tu as reçu {coins} 🪙 pour {n} exemplaire(s).",
+  notice_ok: "OK",
 } as const;
 
 type Key = keyof typeof fr;
@@ -667,6 +669,8 @@ const en: Record<Key, string> = {
   sandbox_hint: "Fake provider (development): no real money. The payment is confirmed to the server by a signed webhook, just like in production.",
   sandbox_pay: "Pay {price}",
   sandbox_closed: "This payment is already finished.",
+  notice_card_retired: "“{name}” was removed from the game: you got {coins} 🪙 for {n} copy(ies).",
+  notice_ok: "Got it",
 };
 
 export const locale: GlossaryLocale =

@@ -93,7 +93,7 @@ async function seedPrototype(db: Db): Promise<void> {
          ('prototype_tokens', 'tokens', '{"fr":"Jetons","en":"Tokens"}', 'published')`,
     );
     for (const def of PROTOTYPE_CARDS) {
-      await tx.query(`INSERT INTO cards (id, series_id, wikidata_id, status, def) VALUES ($1, $2, $3, 'published', $4)`, [
+      await tx.query(`INSERT INTO cards (id, series_id, wikidata_id, status, def, published_once) VALUES ($1, $2, $3, 'published', $4, true)`, [
         def.id,
         def.series,
         def.wikidataId ?? null,

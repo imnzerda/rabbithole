@@ -118,13 +118,13 @@
 
   /** Enlever la carte : effacée si elle n'a jamais été publiée, sinon retirée du jeu. */
   async function remove(): Promise<void> {
-    if (!confirm('Enlever cette carte ? Jamais publiée : elle est effacée. Déjà publiée : elle est retirée du jeu.')) return;
+    if (!confirm('Enlever cette carte ? Jamais publiée : elle est effacée. Déjà publiée : elle est retirée du jeu et ses détenteurs reçoivent son prix de fabrication en pièces.')) return;
     error = message = null;
     try {
       const { result } = await api.removeCard(cardId);
       if (result === 'deleted') await goto('/cards');
       else {
-        message = 'Carte retirée du jeu (déjà publiée : elle ne peut pas être effacée).';
+        message = 'Carte retirée du jeu (déjà publiée : elle ne peut pas être effacée). Ses détenteurs ont reçu son prix de fabrication en pièces et une notification.';
         await load();
       }
     } catch (err) {

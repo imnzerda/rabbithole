@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 5 — Économie** : en cours (phase 4 validée le 2026-10-03). Fait : trade-up, amis et échanges, gemmes et paiement sandbox.
+**Phase 5 — Économie** : terminée, en attente de validation. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -11,7 +11,7 @@
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
-| 5. Économie | 🟡 En cours (pièces, aperçus, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes) |
+| 5. Économie | ✅ Terminée, en attente de validation |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
@@ -21,6 +21,18 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 5, étape 4 : compensation des cartes retirées
+
+- **Règle** (cahier des charges, section 5) : quand une carte publiée est retirée du jeu, chaque joueur qui la possédait reçoit **son prix de fabrication en pièces, par exemplaire** (par exemple 20 pour une basique, 1 500 pour une GOAT). Les valeurs viennent de la config (`DEFAULT_ECONOMY.craft`).
+- **Une seule fonction**, `retireCard` (`apps/server/src/economy/compensation.ts`), sert les trois chemins de retrait : statut « retirée » dans l'admin, bouton « Supprimer » sur une carte déjà publiée, demande de retrait acceptée avec « retirer la carte ». Dans la même transaction, elle :
+  - crédite les pièces (journal `card_retired`) ;
+  - retire la carte des collections et des decks ;
+  - annule les échanges en attente qui la contiennent ;
+  - envoie une **notification** au joueur.
+- **Notifications** (migration 016, table `notices`) : `GET /api/notices`, `POST /api/notices/read`. Sur l'accueil, elles s'affichent ainsi : « « Nom » a été retirée du jeu : tu as reçu 40 🪙 pour 2 exemplaire(s). », avec un bouton OK.
+- **Bogue corrigé** : les cartes publiées d'office au premier démarrage (prototype) n'étaient pas marquées « déjà publiées ». « Supprimer » les aurait effacées malgré leurs détenteurs. Elles sont maintenant marquées, les données existantes sont corrigées par la migration, et une carte publiée n'est jamais effacée.
+- **Tests** : 2 tests serveur (les trois chemins, collections, decks, échanges, notifications, journal) et le scénario E2E de l'admin étendu (retrait d'une carte publiée, notification côté joueur).
 
 ### 2026-10-03 — Boutique quotidienne abandonnée
 
@@ -433,7 +445,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)
-Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux). Reste : compensation (carte de même rareté ou pièces) quand une carte possédée est retirée (section 5).
+Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux), compensation des cartes retirées. Reste pour la mise en ligne : brancher le prestataire de paiement réel.
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?

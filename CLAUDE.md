@@ -90,7 +90,8 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `FINGERPRINT_STRICT`, `GHOST_DELAY_MS`, `PAYMENT_PROVIDER`, `SANDBOX_WEBHOOK_SECRET`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
   - `src/db/` : accès base (`pg` / PGlite) et migrations SQL.
   - `src/auth/` : comptes, Argon2, sessions  ; inscription protégée : `antiabuse.ts` (appareils, comptes liés), `guard.ts` (captcha, SMS, VPN, débit, e-mails jetables et alias), `phone.ts` (numéros), `signup.ts` (vérification par SMS). L'empreinte numérique est calculée par `apps/web/src/lib/fingerprint.ts`.
-  - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, Leader de départ, pièces de fin de partie.
+  - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, Leader de départ, pièces de fin de partie ; `compensation.ts` : retrait d'une carte publiée (pièces aux détenteurs, notification).
+  - `src/notices/` : notifications aux joueurs.
   - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
   - `src/decks/` : collection et decks (validation par le moteur et par la possession) ; `reference.ts` : decks de référence des séries (entraînement, fantômes de repli, route `/api/decks/reference`).

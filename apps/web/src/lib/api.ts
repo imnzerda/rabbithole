@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, PublicUser, PurchaseDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, NoticeDto, PublicUser, PurchaseDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -84,6 +84,8 @@ export const api = {
     request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offered, requested }),
   tradeAction: (id: string, action: 'accept' | 'decline' | 'cancel') => request<{ trade?: TradeDto }>('POST', `/trades/${id}/${action}`),
 
+  notices: () => request<{ notices: NoticeDto[] }>('GET', '/notices'),
+  readNotice: (id?: string) => request<{ ok: true }>('POST', '/notices/read', id ? { id } : {}),
   shop: () => request<ShopDto>('GET', '/shop'),
   checkout: (productId: string) => request<{ url: string; transactionId: string }>('POST', '/shop/checkout', { productId }),
   purchases: () => request<{ purchases: PurchaseDto[] }>('GET', '/purchases'),

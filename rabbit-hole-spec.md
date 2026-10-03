@@ -286,7 +286,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 **Procédure de retrait**
 - Formulaire public « Demande de retrait » (page dédiée + lien sur chaque fiche de carte).
 - Traitement prioritaire : retrait ou anonymisation sous 72 h depuis l'outil d'admin (section 12).
-- Une carte retirée : désactivée en jeu, remplacée dans les collections par une carte de même rareté ou compensée en pièces (section 6). Le retrait (catalogue, boosters, decks) est implémenté ; la compensation reste à faire (phase 5).
+- Une carte retirée : désactivée en jeu, compensée en pièces (section 6). **Implémenté** (phase 5) : chaque détenteur reçoit le prix de fabrication de la carte par exemplaire, la carte quitte collections, decks et échanges en attente, et le joueur reçoit une notification.
 
 ---
 
@@ -596,6 +596,7 @@ POST /takedown
 ### Phase 5 — Économie
 - Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges.
 - `PaymentProvider` en sandbox, prix régionaux, webhooks.
+- **État : terminée le 2026-10-03, en attente de validation.** Trade-up, amis et échanges libres, gemmes et paiement sandbox, fusion pièces et essence, compensation des cartes retirées ; boutique quotidienne abandonnée. Reste pour la mise en ligne : le prestataire de paiement réel.
 - **Déjà fait en phase 3** : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting.
 
 ### Phase 6 — Rétention

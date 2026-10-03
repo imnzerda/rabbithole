@@ -1,5 +1,7 @@
 import { CATEGORIES, cardBudget, cardText, createContext, DEFAULT_RULES, referencePower, validateCardDef, type CardDef, type CategoryId, type MatchContext } from '@rabbithole/engine';
+import { DEFAULT_ECONOMY } from '../config.js';
 import type { Db } from '../db/db.js';
+import { retireCard } from '../economy/compensation.js';
 
 /**
  * Outil d'administration (section 12) : candidats du pipeline, cartes, séries, publication.
@@ -345,13 +347,14 @@ export async function saveCard(db: Db, id: string, def: CardDef, ctx: MatchConte
 
 /**
  * Enlever une carte à la main. Jamais publiée : elle est effacée et son candidat redevient disponible.
- * Déjà publiée (des joueurs ont pu l'obtenir) : elle est retirée du jeu, jamais effacée.
+ * Déjà publiée (des joueurs ont pu l'obtenir) : elle est retirée du jeu, jamais effacée, et ses détenteurs
+ * sont compensés en pièces.
  */
-export async function removeCard(db: Db, id: string): Promise<'deleted' | 'retired'> {
+export async function removeCard(db: Db, id: string, craft = DEFAULT_ECONOMY.craft): Promise<'deleted' | 'retired'> {
   const [row] = await db.query<CardRow & { published_once: boolean }>('SELECT * FROM cards WHERE id = $1', [id]);
   if (!row) throw new AdminError('not_found', 404);
-  if (row.published_once) {
-    await db.query("UPDATE cards SET status = 'retired', updated_at = now() WHERE id = $1", [id]);
+  if (row.published_once || row.status === 'published') {
+    await retireCard(db, id, craft);
     return 'retired';
   }
   await db.transaction(async (tx) => {
@@ -382,13 +385,18 @@ export async function publishBlockers(db: Db, row: CardRow, ctx: MatchContext): 
   return blockers;
 }
 
-export async function setCardStatus(db: Db, id: string, status: CardStatus, ctx: MatchContext): Promise<void> {
+/** Changement de statut ; un retrait compense les détenteurs de la carte (prix de fabrication, en pièces). */
+export async function setCardStatus(db: Db, id: string, status: CardStatus, ctx: MatchContext, craft = DEFAULT_ECONOMY.craft): Promise<void> {
   const [row] = await db.query<CardRow>('SELECT * FROM cards WHERE id = $1', [id]);
   if (!row) throw new AdminError('not_found', 404);
   if (!TRANSITIONS[row.status].includes(status)) throw new AdminError('invalid_transition', 409, { from: row.status, to: status });
   if (status === 'published') {
     const blockers = await publishBlockers(db, row, ctx);
     if (blockers.length) throw new AdminError('cannot_publish', 409, blockers);
+  }
+  if (status === 'retired') {
+    await retireCard(db, id, craft);
+    return;
   }
   await db.query(`UPDATE cards SET status = $2, published_once = published_once OR $2 = 'published', updated_at = now() WHERE id = $1`, [id, status]);
 }
