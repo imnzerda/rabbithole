@@ -7,6 +7,8 @@ pnpm --filter @rabbithole/pipeline pipeline all --series base_01                
 pnpm --filter @rabbithole/pipeline pipeline all --series fr_01 --country FR      # série pays
 pnpm --filter @rabbithole/pipeline pipeline extract --series essai --categories musique,sport --limit 30
 pnpm --filter @rabbithole/pipeline pipeline validate --series base_01            # bilan
+pnpm --filter @rabbithole/pipeline pipeline add --series base_01 --category mysteres --kind place --qids Q43708,Q177397
+                                                                                  # ajout manuel de sujets
 ```
 
 Les résultats vont dans `tools/pipeline/out/` (hors dépôt) : `<série>.json` (fichier de travail, importé ensuite dans l'admin) et `<série>.csv` (liste courte, ouvrable dans Excel).
@@ -22,6 +24,7 @@ Les résultats vont dans `tools/pipeline/out/` (hors dépôt) : `<série>.json` 
 | `export` | Liste courte en CSV, triée par catégorie puis score | — |
 | `validate` | Bilan : statuts, seuils, images, sensibles, cartes utilisables par catégorie | — |
 | `all` | Toutes les étapes | — |
+| `add` | Ajout manuel de sujets par identifiant Wikidata (mèmes, lieux, sujets hors des sources), puis vues, score, politique et images | Wikidata, Commons |
 
 Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets dont les vues n'ont pas pu être lues (limite de débit de Wikimedia).
 
@@ -51,3 +54,8 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 - Les vues ne couvrent que 10 langues (`PAGEVIEW_LANGUAGES`).
 - Les images ne sont pas encore recadrées, teintées ni envoyées sur R2 (section 10.3) : à faire quand le stockage sera configuré.
 - Le test de reconnaissance par sondage (section 4.6) se fera en jeu, après la phase 6.
+
+## Lots de cartes et decks de référence
+
+- `drafts/<lot>.json` : cartes en brouillon (`{ series, seriesInfo, cards }`), à importer dans l'admin (Cartes → Importer des brouillons). Le test `test/drafts.test.ts` vérifie chaque carte : valide pour le moteur, dans le budget de puissance, nom et texte d'ambiance en français et en anglais, identifiants uniques entre les lots.
+- `decks/<série>.json` : decks de référence (un par Leader, 10 cartes en 2 exemplaires). Le test `test/balance.test.ts` les fait s'affronter par simulation IA contre IA (déterministe) : chaque deck doit gagner entre 35 % et 65 % de ses parties. Modifier une carte qui déséquilibre la série fait échouer le test.

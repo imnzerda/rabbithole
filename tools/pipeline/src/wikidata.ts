@@ -157,3 +157,13 @@ export async function isoCodes(countryQids: string[]): Promise<Map<string, strin
   }
   return new Map(countryQids.map((q) => [q, isoCache.get(q) ?? null]));
 }
+
+/** Nombre de langues (sitelinks) de sujets donnés. */
+export async function sitelinkCounts(qids: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  for (const part of chunk(qids, 200)) {
+    const rows = await sparql(`SELECT ?item ?sl WHERE { VALUES ?item { ${part.map((q) => `wd:${q}`).join(' ')} } ?item wikibase:sitelinks ?sl . }`);
+    for (const r of rows) out.set(qidOf(r.item!.value), Number(r.sl!.value));
+  }
+  return out;
+}

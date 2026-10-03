@@ -1,7 +1,7 @@
 import { CATEGORIES, type CategoryId } from '@rabbithole/engine';
 import { loadRun, saveCsv, saveRun } from './store.js';
-import { extract, images, PER_SOURCE_LIMIT, policy, score, summary, views } from './steps.js';
-import type { RunFile } from './types.js';
+import { addSubjects, extract, images, PER_SOURCE_LIMIT, policy, score, summary, views } from './steps.js';
+import type { Candidate, RunFile } from './types.js';
 
 /**
  * Pipeline de création de cartes (section 11).
@@ -13,6 +13,8 @@ import type { RunFile } from './types.js';
  *   pnpm pipeline export   --series base_01     liste courte en CSV
  *   pnpm pipeline validate --series base_01     bilan de la série
  *   pnpm pipeline all      --series base_01 …   toutes les étapes
+ *   pnpm pipeline add      --series base_01 --category mysteres --qids Q43708,Q177397 [--kind place]
+ *                          ajout manuel de sujets (puis vues, score, politique, images)
  *
  * Les résultats sont dans `tools/pipeline/out/<série>.json`, importés ensuite dans l'outil d'admin.
  */
@@ -98,6 +100,20 @@ async function main(): Promise<void> {
     case 'validate':
       for (const line of summary(loadRun(series))) console.log(line);
       break;
+    case 'add': {
+      const category = categories(opts.category)?.[0];
+      const qids = (opts.qids ?? '').split(',').map((q) => q.trim().toUpperCase()).filter((q) => /^Q\d+$/.test(q));
+      if (!category || !qids.length) throw new Error('--category et --qids sont obligatoires');
+      const kind = (opts.kind ?? 'concept') as Candidate['kind'];
+      const run = loadRun(series);
+      log(`Ajout de ${qids.length} sujet(s) en ${category}…`);
+      await addSubjects(run, qids, category, kind, log);
+      await runScore(run);
+      runPolicy(run);
+      await runImages(run);
+      log(`→ ${saveCsv(run)}`);
+      break;
+    }
     case 'all': {
       const run = await runExtract();
       await runScore(run);

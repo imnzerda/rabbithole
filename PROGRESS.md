@@ -22,6 +22,15 @@
 
 ## Journal
 
+### 2026-10-03 — Set de base : Leaders réels, deuxième lot, decks équilibrés
+
+- **`pipeline add`** : ajout manuel de sujets par identifiant Wikidata, avec les mêmes contrôles (notoriété, politique, image). 21 sujets ajoutés : D. B. Cooper, Frank Abagnale, Charles Ponzi, train postal Glasgow-Londres ; triangle des Bermudes, zone 51, Stonehenge, Nazca, moaïs, Sasquatch, Voynich, Mothman, cercles de culture ; Doge, Nyan Cat, Grumpy Cat, Gangnam Style, Harlem Shake, Distracted Boyfriend, Trollface ; Cléopâtre, Studio 54. Pepe the Frog écarté (récupéré comme symbole haineux).
+- **5 Leaders réels** (capacités reprises des Leaders du prototype, déjà équilibrées) : Justin Bieber (Internet + Musique), Arnold Schwarzenegger (Guerre + Sport), D. B. Cooper (Crimes + Mystères), Jacques-Yves Cousteau (Science + Exploration), Marilyn Monroe (Séries + Nuits).
+- **Lot 2** (`tools/pipeline/drafts/base_01_lot2.json`) : les 5 Leaders et 50 cartes (5 par catégorie), dont Napoléon en GOAT, Elvis, Lady Gaga, Cléopâtre et Steve Jobs en iconiques. Avec le lot 1 : 80 cartes à collectionner et 5 Leaders, soit 8 cartes par catégorie.
+- **Équilibre** : 5 decks de référence (`tools/pipeline/decks/base_01.json`), un par Leader. Premier essai très déséquilibré (Cousteau 95 %, Bieber 22 %) ; après ajustements (Zidane 3, Jules César 5, Al Capone met KO la carte adverse la plus forte de coût 4 au plus, loch Ness renvoie jusqu'au coût 4, Leaders Bieber et Cooper à 5 Vies) : **42 % à 57 %** de victoires sur 200 parties par confrontation, comme le prototype. Un test permanent garde chaque deck entre 35 % et 65 %.
+- Constat : `add_buzz` (un Buzz de plus pour le reste de la partie) vaut sans doute plus que 1 point dans le budget ; à recalibrer quand il y aura davantage de cartes d'accélération.
+
+
 ### 2026-10-02 — Phase 4, étape 5 : premier lot de cartes réelles
 
 - **Pipeline sur le set de base** : 3 672 candidats, 3 191 avec une image libre ; politique : 9 exclus (terrorisme, négation de la Shoah, mineurs aujourd'hui), 270 à revoir.
@@ -278,14 +287,13 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 ## Prochaines étapes
 
 ### Clore la phase 4 (à faire dans l'admin)
-1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis le lot `tools/pipeline/drafts/base_01.json` (Cartes → Importer des brouillons).
-2. Relire les 30 cartes, valider la politique de contenu d'Al Capone et de Jules César, passer en relecture, publier ; publier la série `base_01`.
+1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis les lots `tools/pipeline/drafts/base_01.json` et `base_01_lot2.json` (Cartes → Importer des brouillons).
+2. Relire les 85 cartes, valider la politique de contenu des cartes « à revoir » (Al Capone, Jules César, Marilyn Monroe, Cléopâtre, Frank Abagnale, Charles Ponzi, Gandhi), passer en relecture, publier ; publier la série `base_01`.
 
 ### Set de base (suite)
-- Les **Leaders réels** (une célébrité par paire de catégories, section 4.1) : ils remplaceront les 5 Leaders fictifs du prototype.
-- Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons.
+- Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons ; davantage de Leaders (plusieurs par paire de catégories).
+- Servir les **decks de référence** en jeu : decks préconstruits de la série, fantômes de repli, entraînement hors ligne avec les cartes réelles.
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
-- Décks préconstruits et fantômes avec les cartes réelles ; nouvel équilibrage par simulations.
 
 ### Phase 5 — Économie (suite)
 Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting. Reste : trade-up, échanges (avec blocage des comptes liés), boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).

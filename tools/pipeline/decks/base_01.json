@@ -1,0 +1,15 @@
+{
+  "series": "base_01",
+  "decks": [
+    { "id": "base_01_d_bieber", "name": { "fr": "Viral Tour", "en": "Viral Tour" }, "leader": "base_01_l_justin_bieber",
+      "cards": ["wikipedia", "doge", "nyan_cat", "grumpy_cat", "mrbeast", "gangnam_style", "rickroll", "taylor_swift", "celine_dion", "elvis_presley"] },
+    { "id": "base_01_d_schwarzenegger", "name": { "fr": "Pouvoir et podiums", "en": "Power and Podiums" }, "leader": "base_01_l_schwarzenegger",
+      "cards": ["usain_bolt", "serena_williams", "zidane", "federer", "mandela", "mbappe", "jules_cesar", "mohamed_ali", "gandhi", "napoleon"] },
+    { "id": "base_01_d_cooper", "name": { "fr": "Affaires non classées", "en": "Cold Cases" }, "leader": "base_01_l_db_cooper",
+      "cards": ["chupacabra", "frank_abagnale", "yeti", "anne_bonny", "barbe_noire", "triangle_bermudes", "zone_51", "loch_ness", "al_capone", "stonehenge"] },
+    { "id": "base_01_d_cousteau", "name": { "fr": "Grandes découvertes", "en": "Great Discoveries" }, "leader": "base_01_l_cousteau",
+      "cards": ["steve_irwin", "marco_polo", "ada_lovelace", "charles_darwin", "edmund_hillary", "marie_curie", "buzz_aldrin", "neil_armstrong", "einstein", "nikola_tesla"] },
+    { "id": "base_01_d_marilyn", "name": { "fr": "Tapis rouge", "en": "Red Carpet" }, "leader": "base_01_l_marilyn_monroe",
+      "cards": ["charlie_chaplin", "natalie_portman", "audrey_hepburn", "kim_kardashian", "jackie_chan", "dua_lipa", "meryl_streep", "spielberg", "elizabeth_taylor", "dicaprio"] }
+  ]
+}

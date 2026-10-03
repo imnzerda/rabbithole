@@ -6,7 +6,7 @@ import { allViews } from './pageviews.js';
 import { evaluatePolicy } from './policy.js';
 import { scoreRun } from './score.js';
 import type { Candidate, RunFile } from './types.js';
-import { countryQidOf, extractSource, fetchEntities, isoCodes, parseEntity, victimsAmong } from './wikidata.js';
+import { countryQidOf, extractSource, fetchEntities, isoCodes, parseEntity, sitelinkCounts, victimsAmong } from './wikidata.js';
 
 export type Log = (msg: string) => void;
 
@@ -116,6 +116,36 @@ export function summary(run: RunFile): string[] {
   for (const x of usable) for (const cat of x.categories) byCat.set(cat, (byCat.get(cat) ?? 0) + 1);
   lines.push(`  utilisables par catégorie : ${[...byCat].map(([k, v]) => `${k} ${v}`).join(', ') || '—'}`);
   return lines;
+}
+
+/**
+ * Ajout manuel de sujets par leur identifiant Wikidata (curation : sujets hors des sources,
+ * comme un mème ou un lieu). Ils passent ensuite par les mêmes étapes que les autres.
+ * Un sujet déjà présent reçoit la catégorie en plus.
+ */
+export async function addSubjects(run: RunFile, qids: string[], category: CategoryId, kind: Candidate['kind'], log: Log): Promise<string[]> {
+  const fresh = qids.filter((q) => !run.candidates.some((c) => c.qid === q));
+  for (const c of run.candidates) if (qids.includes(c.qid) && !c.categories.includes(category)) c.categories.push(category);
+  if (!fresh.length) return [];
+  const [entities, counts, victims] = await Promise.all([fetchEntities(fresh), sitelinkCounts(fresh), victimsAmong(fresh)]);
+  const parsed = fresh.flatMap((qid) => {
+    const e = entities.get(qid);
+    return e ? [{ qid, p: parseEntity(e, counts.get(qid) ?? 0) }] : [];
+  });
+  const iso = await isoCodes([...new Set(parsed.flatMap((x) => x.p.countryQids))]);
+  for (const { qid, p } of parsed) {
+    const { countryQids, ...rest } = p;
+    run.candidates.push({
+      ...rest,
+      kind: rest.instanceOf.includes('Q5') ? 'person' : kind,
+      categories: [category],
+      sources: ['manuel'],
+      countries: [...new Set(countryQids.map((q) => iso.get(q)).filter((x): x is string => !!x))],
+      listedAsVictim: victims.has(qid),
+    });
+    log(`  + ${rest.labels.fr ?? rest.labels.en ?? qid} (${qid}, ${counts.get(qid) ?? 0} langues)`);
+  }
+  return parsed.map((x) => x.qid);
 }
 
 export { PER_SOURCE_LIMIT };

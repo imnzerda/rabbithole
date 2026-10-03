@@ -1,0 +1,1741 @@
+{
+  "series": "base_01",
+  "seriesInfo": {
+    "type": "base",
+    "country": null,
+    "name": {
+      "fr": "Set de base",
+      "en": "Base set"
+    }
+  },
+  "cards": [
+    {
+      "id": "base_01_l_justin_bieber",
+      "wikidataId": "Q34086",
+      "type": "leader",
+      "name": {
+        "fr": "Justin Bieber",
+        "en": "Justin Bieber"
+      },
+      "categories": [
+        "internet",
+        "musique"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "internet"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Découvert sur YouTube. Le reste de la planète a suivi.",
+        "en": "Discovered on YouTube. The rest of the planet followed."
+      }
+    },
+    {
+      "id": "base_01_l_schwarzenegger",
+      "wikidataId": "Q2685",
+      "type": "leader",
+      "name": {
+        "fr": "Arnold Schwarzenegger",
+        "en": "Arnold Schwarzenegger"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "sport"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "action": {
+            "type": "add_power",
+            "target": "strongest_ally",
+            "amount": 2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Monsieur Univers, Terminator, gouverneur. Il reviendra.",
+        "en": "Mr. Universe, Terminator, Governor. He'll be back."
+      }
+    },
+    {
+      "id": "base_01_l_db_cooper",
+      "wikidataId": "Q348970",
+      "type": "leader",
+      "name": {
+        "fr": "D. B. Cooper",
+        "en": "D. B. Cooper"
+      },
+      "categories": [
+        "crimes_scandales",
+        "mysteres"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "strongest_enemy",
+            "amount": -1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "A sauté d'un avion avec 200 000 $. Personne ne l'a jamais revu.",
+        "en": "Jumped out of a plane with $200,000. Never seen again."
+      }
+    },
+    {
+      "id": "base_01_l_cousteau",
+      "wikidataId": "Q83233",
+      "type": "leader",
+      "name": {
+        "fr": "Jacques-Yves Cousteau",
+        "en": "Jacques Cousteau"
+      },
+      "categories": [
+        "science",
+        "exploration"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "action": {
+            "type": "add_power",
+            "target": "weakest_ally",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a fait du monde du silence le plus grand plateau de tournage.",
+        "en": "He turned the silent world into the biggest film set."
+      }
+    },
+    {
+      "id": "base_01_l_marilyn_monroe",
+      "wikidataId": "Q4616",
+      "type": "leader",
+      "name": {
+        "fr": "Marilyn Monroe",
+        "en": "Marilyn Monroe"
+      },
+      "categories": [
+        "series_cinema",
+        "nuits_exces"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "opponent_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une bouche d'aération, une robe blanche : une image pour l'éternité.",
+        "en": "One subway grate, one white dress: an image for eternity."
+      }
+    },
+    {
+      "id": "base_01_kim_kardashian",
+      "wikidataId": "Q186304",
+      "type": "character",
+      "name": {
+        "fr": "Kim Kardashian",
+        "en": "Kim Kardashian"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "A transformé un selfie en empire.",
+        "en": "Turned a selfie into an empire."
+      }
+    },
+    {
+      "id": "base_01_elizabeth_taylor",
+      "wikidataId": "Q34851",
+      "type": "character",
+      "name": {
+        "fr": "Elizabeth Taylor",
+        "en": "Elizabeth Taylor"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 7,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "end_of_turn",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": -1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Huit mariages, dont deux avec le même homme.",
+        "en": "Eight marriages, two of them to the same man."
+      }
+    },
+    {
+      "id": "base_01_hugh_hefner",
+      "wikidataId": "Q194280",
+      "type": "character",
+      "name": {
+        "fr": "Hugh Hefner",
+        "en": "Hugh Hefner"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "A passé sa vie en pyjama de soie. Au bureau aussi.",
+        "en": "Spent his life in silk pajamas. At the office too."
+      }
+    },
+    {
+      "id": "base_01_studio_54",
+      "wikidataId": "Q607212",
+      "type": "event",
+      "name": {
+        "fr": "Studio 54",
+        "en": "Studio 54"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "add_power",
+            "target": "all_mine",
+            "amount": 2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il fallait passer le videur. Même les stars attendaient dehors.",
+        "en": "You had to get past the doorman. Even stars waited outside."
+      }
+    },
+    {
+      "id": "base_01_coachella",
+      "wikidataId": "Q889872",
+      "type": "event",
+      "name": {
+        "fr": "Coachella",
+        "en": "Coachella"
+      },
+      "categories": [
+        "nuits_exces",
+        "musique"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        },
+        {
+          "trigger": "main",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "pick": "lowest_cost"
+          }
+        },
+        {
+          "trigger": "on_trigger",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Deux week-ends, même programme, mêmes tenues.",
+        "en": "Two weekends, same lineup, same outfits."
+      }
+    },
+    {
+      "id": "base_01_frank_abagnale",
+      "wikidataId": "Q116774",
+      "type": "character",
+      "name": {
+        "fr": "Frank Abagnale",
+        "en": "Frank Abagnale"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Pilote, médecin, avocat… sur le papier, du moins.",
+        "en": "Pilot, doctor, lawyer… on paper, at least."
+      }
+    },
+    {
+      "id": "base_01_anne_bonny",
+      "wikidataId": "Q231549",
+      "type": "character",
+      "name": {
+        "fr": "Anne Bonny",
+        "en": "Anne Bonny"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Pirate des Caraïbes avant que ce soit un film.",
+        "en": "A pirate of the Caribbean before it was a movie."
+      }
+    },
+    {
+      "id": "base_01_ching_shih",
+      "wikidataId": "Q266715",
+      "type": "character",
+      "name": {
+        "fr": "Ching Shih",
+        "en": "Ching Shih"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "ko",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 4
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "1 800 navires, et elle a négocié sa propre retraite.",
+        "en": "1,800 ships, and she negotiated her own retirement."
+      }
+    },
+    {
+      "id": "base_01_panama_papers",
+      "wikidataId": "Q23702848",
+      "type": "event",
+      "name": {
+        "fr": "Les Panama Papers",
+        "en": "The Panama Papers"
+      },
+      "categories": [
+        "crimes_scandales",
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "discard",
+            "amount": 2,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "11,5 millions de documents. Quelqu'un a laissé la porte ouverte.",
+        "en": "11.5 million documents. Someone left the door open."
+      }
+    },
+    {
+      "id": "base_01_charles_ponzi",
+      "wikidataId": "Q360145",
+      "type": "character",
+      "name": {
+        "fr": "Charles Ponzi",
+        "en": "Charles Ponzi"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        },
+        {
+          "trigger": "end_of_turn",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "pick": "lowest_cost"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Les premiers investisseurs étaient ravis. Les suivants, beaucoup moins.",
+        "en": "The first investors were thrilled. The next ones, much less so."
+      }
+    },
+    {
+      "id": "base_01_triangle_bermudes",
+      "wikidataId": "Q43708",
+      "type": "event",
+      "name": {
+        "fr": "Le triangle des Bermudes",
+        "en": "The Bermuda Triangle"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "bounce",
+            "target": "random_enemy",
+            "filter": {
+              "maxCost": 4
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Les bateaux y entrent. La suite reste à confirmer.",
+        "en": "Ships go in. The rest is unconfirmed."
+      }
+    },
+    {
+      "id": "base_01_stonehenge",
+      "wikidataId": "Q39671",
+      "type": "character",
+      "name": {
+        "fr": "Stonehenge",
+        "en": "Stonehenge"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 5,
+      "power": 6,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "5 000 ans, et toujours pas de mode d'emploi.",
+        "en": "5,000 years old, and still no instruction manual."
+      }
+    },
+    {
+      "id": "base_01_zone_51",
+      "wikidataId": "Q177397",
+      "type": "character",
+      "name": {
+        "fr": "La zone 51",
+        "en": "Area 51"
+      },
+      "categories": [
+        "mysteres",
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 1
+              },
+              {
+                "type": "bounce",
+                "target": "random_enemy",
+                "filter": {
+                  "maxCost": 2
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Officiellement, il n'y a rien ici. Officiellement.",
+        "en": "Officially, there's nothing here. Officially."
+      }
+    },
+    {
+      "id": "base_01_voynich",
+      "wikidataId": "Q179492",
+      "type": "event",
+      "name": {
+        "fr": "Le manuscrit de Voynich",
+        "en": "The Voynich Manuscript"
+      },
+      "categories": [
+        "mysteres",
+        "science"
+      ],
+      "cost": 1,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "trigger": "on_trigger",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "240 pages que personne n'a jamais su lire. Comme les conditions d'utilisation.",
+        "en": "240 pages nobody has ever managed to read. Like the terms of service."
+      }
+    },
+    {
+      "id": "base_01_sasquatch",
+      "wikidataId": "Q44810",
+      "type": "character",
+      "name": {
+        "fr": "Le Sasquatch",
+        "en": "Bigfoot"
+      },
+      "categories": [
+        "mysteres",
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Pointure : inconnue. Mais grande.",
+        "en": "Shoe size: unknown. But big."
+      }
+    },
+    {
+      "id": "base_01_napoleon",
+      "wikidataId": "Q517",
+      "type": "character",
+      "name": {
+        "fr": "Napoléon Ier",
+        "en": "Napoleon"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 7,
+      "power": 7,
+      "counter": 0,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Petit, mais a quand même ratio toute l'Europe.",
+        "en": "Short, but still ratioed all of Europe."
+      }
+    },
+    {
+      "id": "base_01_cleopatre",
+      "wikidataId": "Q635",
+      "type": "character",
+      "name": {
+        "fr": "Cléopâtre",
+        "en": "Cleopatra"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "nuits_exces"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "A charmé deux maîtres de Rome. Le troisième a moins aimé.",
+        "en": "Charmed two masters of Rome. The third was less impressed."
+      }
+    },
+    {
+      "id": "base_01_alexandre_le_grand",
+      "wikidataId": "Q8409",
+      "type": "character",
+      "name": {
+        "fr": "Alexandre le Grand",
+        "en": "Alexander the Great"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "exploration"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un empire à 30 ans. Et toi, tu fais quoi ?",
+        "en": "An empire by 30. What are you up to?"
+      }
+    },
+    {
+      "id": "base_01_gandhi",
+      "wikidataId": "Q1001",
+      "type": "character",
+      "name": {
+        "fr": "Gandhi",
+        "en": "Gandhi"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 2,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "A fait plier un empire sans lever la main.",
+        "en": "Brought an empire to its knees without raising a hand."
+      }
+    },
+    {
+      "id": "base_01_gorbatchev",
+      "wikidataId": "Q30487",
+      "type": "character",
+      "name": {
+        "fr": "Mikhaïl Gorbatchev",
+        "en": "Mikhail Gorbachev"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "cancel_effects",
+            "target": "strongest_enemy"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a entrouvert une porte. Puis tout un mur est tombé.",
+        "en": "He opened a door. Then a whole wall came down."
+      }
+    },
+    {
+      "id": "base_01_mbappe",
+      "wikidataId": "Q21621995",
+      "type": "character",
+      "name": {
+        "fr": "Kylian Mbappé",
+        "en": "Kylian Mbappé"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Plus rapide que son ombre. Et que ta défense.",
+        "en": "Faster than his own shadow. And your defense."
+      }
+    },
+    {
+      "id": "base_01_federer",
+      "wikidataId": "Q1426",
+      "type": "character",
+      "name": {
+        "fr": "Roger Federer",
+        "en": "Roger Federer"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "20 titres du Grand Chelem sans jamais avoir l'air de transpirer.",
+        "en": "20 Grand Slam titles without ever seeming to sweat."
+      }
+    },
+    {
+      "id": "base_01_mohamed_ali",
+      "wikidataId": "Q36107",
+      "type": "character",
+      "name": {
+        "fr": "Mohamed Ali",
+        "en": "Muhammad Ali"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 2,
+            "duration": "battle"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Vole comme un papillon, pique comme une abeille.",
+        "en": "Float like a butterfly, sting like a bee."
+      }
+    },
+    {
+      "id": "base_01_lebron_james",
+      "wikidataId": "Q36159",
+      "type": "character",
+      "name": {
+        "fr": "LeBron James",
+        "en": "LeBron James"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 6,
+      "power": 7,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le seul joueur à avoir partagé un parquet NBA avec son fils.",
+        "en": "The only player to share an NBA court with his son."
+      }
+    },
+    {
+      "id": "base_01_serena_williams",
+      "wikidataId": "Q11459",
+      "type": "character",
+      "name": {
+        "fr": "Serena Williams",
+        "en": "Serena Williams"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "23 titres du Grand Chelem. Le 24e, elle l'a laissé aux autres.",
+        "en": "23 Grand Slam titles. She left the 24th for everyone else."
+      }
+    },
+    {
+      "id": "base_01_elvis_presley",
+      "wikidataId": "Q303",
+      "type": "character",
+      "name": {
+        "fr": "Elvis Presley",
+        "en": "Elvis Presley"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le King a quitté la salle. Pas les karaokés.",
+        "en": "The King has left the building. Not the karaoke bars."
+      }
+    },
+    {
+      "id": "base_01_lady_gaga",
+      "wikidataId": "Q19848",
+      "type": "character",
+      "name": {
+        "fr": "Lady Gaga",
+        "en": "Lady Gaga"
+      },
+      "categories": [
+        "musique",
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une robe en viande, et la mode ne s'en est jamais remise.",
+        "en": "One meat dress, and fashion never recovered."
+      }
+    },
+    {
+      "id": "base_01_celine_dion",
+      "wikidataId": "Q5105",
+      "type": "character",
+      "name": {
+        "fr": "Céline Dion",
+        "en": "Céline Dion"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Son cœur continuera. Le tien aussi, normalement.",
+        "en": "Her heart will go on. Yours should too."
+      }
+    },
+    {
+      "id": "base_01_beyonce",
+      "wikidataId": "Q36153",
+      "type": "character",
+      "name": {
+        "fr": "Beyoncé",
+        "en": "Beyoncé"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Pas besoin de nom de famille. Ni de deuxième prise.",
+        "en": "No surname needed. No second take either."
+      }
+    },
+    {
+      "id": "base_01_shakira",
+      "wikidataId": "Q34424",
+      "type": "character",
+      "name": {
+        "fr": "Shakira",
+        "en": "Shakira"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Ses hanches ne mentent pas. Elle l'a chanté elle-même.",
+        "en": "Her hips don't lie. She sang it herself."
+      }
+    },
+    {
+      "id": "base_01_dicaprio",
+      "wikidataId": "Q38111",
+      "type": "character",
+      "name": {
+        "fr": "Leonardo DiCaprio",
+        "en": "Leonardo DiCaprio"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a fini par l'avoir, cet Oscar. Internet a pleuré avec lui.",
+        "en": "He finally got that Oscar. The internet cried with him."
+      }
+    },
+    {
+      "id": "base_01_de_niro",
+      "wikidataId": "Q36949",
+      "type": "character",
+      "name": {
+        "fr": "Robert De Niro",
+        "en": "Robert De Niro"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "rickroll"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "C'est à moi que tu parles ?",
+        "en": "You talkin' to me?"
+      }
+    },
+    {
+      "id": "base_01_natalie_portman",
+      "wikidataId": "Q37876",
+      "type": "character",
+      "name": {
+        "fr": "Natalie Portman",
+        "en": "Natalie Portman"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Diplômée de Harvard entre deux tournages.",
+        "en": "Graduated from Harvard between two film shoots."
+      }
+    },
+    {
+      "id": "base_01_charlie_chaplin",
+      "wikidataId": "Q882",
+      "type": "character",
+      "name": {
+        "fr": "Charlie Chaplin",
+        "en": "Charlie Chaplin"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 2,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il a tout dit sans prononcer un mot.",
+        "en": "He said everything without a single word."
+      }
+    },
+    {
+      "id": "base_01_morgan_freeman",
+      "wikidataId": "Q48337",
+      "type": "character",
+      "name": {
+        "fr": "Morgan Freeman",
+        "en": "Morgan Freeman"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Lue avec sa voix, cette carte coûterait le double.",
+        "en": "Read in his voice, this card would cost double."
+      }
+    },
+    {
+      "id": "base_01_doge",
+      "wikidataId": "Q15613810",
+      "type": "character",
+      "name": {
+        "fr": "Doge",
+        "en": "Doge"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Très carte. Beaucoup puissance. Wow.",
+        "en": "Such card. Much power. Wow."
+      }
+    },
+    {
+      "id": "base_01_nyan_cat",
+      "wikidataId": "Q149",
+      "type": "character",
+      "name": {
+        "fr": "Nyan Cat",
+        "en": "Nyan Cat"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "ratio"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un chat, une tartine, un arc-en-ciel. Pendant dix heures.",
+        "en": "A cat, a Pop-Tart, a rainbow. For ten hours."
+      }
+    },
+    {
+      "id": "base_01_grumpy_cat",
+      "wikidataId": "Q7714263",
+      "type": "character",
+      "name": {
+        "fr": "Grumpy Cat",
+        "en": "Grumpy Cat"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Elle n'aime pas cette carte. Elle n'aime rien.",
+        "en": "She doesn't like this card. She doesn't like anything."
+      }
+    },
+    {
+      "id": "base_01_gangnam_style",
+      "wikidataId": "Q890",
+      "type": "character",
+      "name": {
+        "fr": "Gangnam Style",
+        "en": "Gangnam Style"
+      },
+      "categories": [
+        "internet",
+        "musique"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Première vidéo à dépasser le milliard de vues. YouTube a dû agrandir son compteur.",
+        "en": "First video to pass a billion views. YouTube had to upgrade its counter."
+      }
+    },
+    {
+      "id": "base_01_trollface",
+      "wikidataId": "Q12339810",
+      "type": "event",
+      "name": {
+        "fr": "Trollface",
+        "en": "Trollface"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 1,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "add_power",
+            "target": "strongest_enemy",
+            "amount": -2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un problème ?",
+        "en": "Problem?"
+      }
+    },
+    {
+      "id": "base_01_steve_jobs",
+      "wikidataId": "Q19837",
+      "type": "character",
+      "name": {
+        "fr": "Steve Jobs",
+        "en": "Steve Jobs"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Encore une chose…",
+        "en": "One more thing…"
+      }
+    },
+    {
+      "id": "base_01_ada_lovelace",
+      "wikidataId": "Q7259",
+      "type": "character",
+      "name": {
+        "fr": "Ada Lovelace",
+        "en": "Ada Lovelace"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "A écrit un programme un siècle avant le premier ordinateur.",
+        "en": "Wrote a program a century before the first computer."
+      }
+    },
+    {
+      "id": "base_01_nikola_tesla",
+      "wikidataId": "Q9036",
+      "type": "character",
+      "name": {
+        "fr": "Nikola Tesla",
+        "en": "Nikola Tesla"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "rest",
+            "target": "weakest_enemy"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a fait passer le courant. Avec Edison, beaucoup moins.",
+        "en": "He got the current flowing. With Edison, not so much."
+      }
+    },
+    {
+      "id": "base_01_isaac_newton",
+      "wikidataId": "Q935",
+      "type": "character",
+      "name": {
+        "fr": "Isaac Newton",
+        "en": "Isaac Newton"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une pomme, et tout est tombé sous le sens.",
+        "en": "One apple, and everything fell into place."
+      }
+    },
+    {
+      "id": "base_01_leonard_de_vinci",
+      "wikidataId": "Q762",
+      "type": "character",
+      "name": {
+        "fr": "Léonard de Vinci",
+        "en": "Leonardo da Vinci"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 6,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        },
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Peintre, ingénieur, anatomiste… Il a même inventé l'hélicoptère, sur papier.",
+        "en": "Painter, engineer, anatomist… He even invented the helicopter, on paper."
+      }
+    },
+    {
+      "id": "base_01_buzz_aldrin",
+      "wikidataId": "Q2252",
+      "type": "character",
+      "name": {
+        "fr": "Buzz Aldrin",
+        "en": "Buzz Aldrin"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Deuxième sur la Lune, premier sur ton Buzz.",
+        "en": "Second on the Moon, first on your Buzz."
+      }
+    },
+    {
+      "id": "base_01_christophe_colomb",
+      "wikidataId": "Q7322",
+      "type": "character",
+      "name": {
+        "fr": "Christophe Colomb",
+        "en": "Christopher Columbus"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il cherchait les Indes. Il a trouvé autre chose.",
+        "en": "He was looking for India. He found something else."
+      }
+    },
+    {
+      "id": "base_01_charles_darwin",
+      "wikidataId": "Q1035",
+      "type": "character",
+      "name": {
+        "fr": "Charles Darwin",
+        "en": "Charles Darwin"
+      },
+      "categories": [
+        "exploration",
+        "science"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Cette carte a évolué. La tienne aussi, avec le temps.",
+        "en": "This card evolved. Yours will too, eventually."
+      }
+    },
+    {
+      "id": "base_01_steve_irwin",
+      "wikidataId": "Q126513",
+      "type": "character",
+      "name": {
+        "fr": "Steve Irwin",
+        "en": "Steve Irwin"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Crikey !",
+        "en": "Crikey!"
+      }
+    },
+    {
+      "id": "base_01_reinhold_messner",
+      "wikidataId": "Q189307",
+      "type": "character",
+      "name": {
+        "fr": "Reinhold Messner",
+        "en": "Reinhold Messner"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Les 14 sommets de plus de 8 000 mètres. Sans oxygène.",
+        "en": "All 14 peaks over 8,000 metres. Without oxygen."
+      }
+    }
+  ]
+}

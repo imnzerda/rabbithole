@@ -25,3 +25,10 @@ describe.each(files)('brouillons %s', (file) => {
     expect(card.flavor?.fr && card.flavor?.en).toBeTruthy();
   });
 });
+
+describe('tous les lots', () => {
+  it('aucun identifiant de carte en double d’un lot à l’autre', () => {
+    const ids = files.flatMap((f) => (JSON.parse(readFileSync(join(DIR, f), 'utf8')) as { cards: CardDef[] }).cards.map((c) => c.id));
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+});
