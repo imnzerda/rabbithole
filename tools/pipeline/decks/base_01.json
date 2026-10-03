@@ -240,6 +240,126 @@
         "fr": "Stars et nuits de fête : le tapis rouge déroulé pour tes alliés.",
         "en": "Stars and party nights: the red carpet rolled out for your allies."
       }
+    },
+    {
+      "id": "base_01_d_zuckerberg",
+      "name": {
+        "fr": "Bêta permanente",
+        "en": "Perpetual Beta"
+      },
+      "leader": "base_01_l_zuckerberg",
+      "cards": [
+        "leeroy_jenkins",
+        "squeezie",
+        "ksi",
+        "rage_comic",
+        "ninja",
+        "all_your_base",
+        "galilee",
+        "louis_pasteur",
+        "thomas_edison",
+        "edward_snowden"
+      ],
+      "description": {
+        "fr": "Créateurs et inventeurs : chaque attaque de ton Leader fait défausser l’adversaire.",
+        "en": "Creators and inventors: every attack by your Leader makes the opponent discard."
+      }
+    },
+    {
+      "id": "base_01_d_casanova",
+      "name": {
+        "fr": "Mauvaise réputation",
+        "en": "Bad Reputation"
+      },
+      "leader": "base_01_l_casanova",
+      "cards": [
+        "kate_moss",
+        "moulin_rouge",
+        "naomi_campbell",
+        "las_vegas_strip",
+        "coco_chanel",
+        "jesse_james",
+        "lucky_luciano",
+        "john_gotti",
+        "bernard_madoff",
+        "marie_antoinette"
+      ],
+      "description": {
+        "fr": "Charme et coups bas : ton Leader épuise un adversaire avant chaque assaut.",
+        "en": "Charm and dirty tricks: your Leader rests an opponent before every assault."
+      }
+    },
+    {
+      "id": "base_01_d_indiana",
+      "name": {
+        "fr": "Chasseurs de trésors",
+        "en": "Treasure Hunters"
+      },
+      "leader": "base_01_l_indiana_jones",
+      "cards": [
+        "eldorado",
+        "atlantide",
+        "kraken",
+        "mary_celeste",
+        "kheops",
+        "lumieres_phoenix",
+        "leif_ericson",
+        "amerigo_vespucci",
+        "thor_heyerdahl",
+        "james_cook"
+      ],
+      "description": {
+        "fr": "Légendes et explorateurs : chaque attaque de ton Leader rapporte une trouvaille.",
+        "en": "Legends and explorers: every attack by your Leader turns up a find."
+      }
+    },
+    {
+      "id": "base_01_d_van_damme",
+      "name": {
+        "fr": "Action !",
+        "en": "Action!"
+      },
+      "leader": "base_01_l_van_damme",
+      "cards": [
+        "tiger_woods",
+        "mohamed_salah",
+        "max_verstappen",
+        "erling_haaland",
+        "zlatan",
+        "mike_tyson",
+        "tom_cruise",
+        "scarlett_johansson",
+        "jim_carrey",
+        "sean_connery"
+      ],
+      "description": {
+        "fr": "Sportifs et héros d’action : Élan partout, et ton Leader pousse les sportifs.",
+        "en": "Athletes and action heroes: Rush everywhere, and your Leader pumps up the athletes."
+      }
+    },
+    {
+      "id": "base_01_d_lennon",
+      "name": {
+        "fr": "Give Peace a Chance",
+        "en": "Give Peace a Chance"
+      },
+      "leader": "base_01_l_john_lennon",
+      "cards": [
+        "snoop_dogg",
+        "kurt_cobain",
+        "eminem",
+        "daft_punk",
+        "beethoven",
+        "jeanne_darc",
+        "martin_luther_king",
+        "abraham_lincoln",
+        "gengis_khan",
+        "louis_xiv"
+      ],
+      "description": {
+        "fr": "Chansons et grands discours : ton Leader renforce tout ton camp.",
+        "en": "Songs and great speeches: your Leader strengthens your whole side."
+      }
     }
   ]
 }

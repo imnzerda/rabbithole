@@ -22,6 +22,19 @@
 
 ## Journal
 
+### 2026-10-03 — 5 Leaders de plus (15), decks avec les cartes du lot 4
+
+- **5 Leaders** (`tools/pipeline/drafts/base_01_lot5.json`), chacun sur une paire de catégories encore sans Leader ; chaque catégorie apparaît une fois :
+  - Mark Zuckerberg (Science + Internet) : défausse adverse à chaque attaque, 4 Vies ;
+  - Giacomo Casanova (Nuits + Crimes) : 1 Buzz pour épuiser un adversaire de coût 3 ou moins ;
+  - Indiana Jones (Exploration + Mystères) : pioche ou Buzz au hasard à chaque attaque ;
+  - Jean-Claude Van Damme (Sport + Cinéma) : sportifs +1 pendant son tour ;
+  - John Lennon (Musique + Guerre) : alliés +1 pendant son tour, 4 Vies.
+- **5 decks de référence**, surtout avec des cartes du lot 4 (15 decks au total). Équilibre : **41 % à 62 %**.
+- **Leçon de l'équilibrage** : avec 20 cartes, une pioche de plus par tour vide le deck vers le 11e tour. Le premier deck Zuckerberg (Leader qui pioche, Larry Page, Hawking, Markiplier…) perdait 8 parties sur 10 par pioche vide (2 % de victoires). Il faut éviter d'empiler les effets de pioche, et les capacités de Leader répétables qui piochent.
+- Sujets ajoutés au pipeline : Indiana Jones, Casanova, Van Damme, Amelia Earhart (gardée pour une prochaine série).
+- Base de dev : **255 cartes** publiées dans `base_01` (240 cartes et 15 Leaders), 15 decks de référence.
+
 ### 2026-10-03 — Set de base complet : lot 4 (250 cartes)
 
 - **110 cartes** (`tools/pipeline/drafts/base_01_lot4.json`), 10 par catégorie et 10 Légendes. Sujets ajoutés au pipeline avec `pipeline add` : Kate Moss, Coco Chanel, Moulin-Rouge, Oktoberfest, Woodstock, carnaval de Rio, Las Vegas Strip, Ibiza ; Jesse James, Butch Cassidy, Madoff, Enron, Dieselgate ; Atlantide, Eldorado, kraken, Mary Celeste, suaire de Turin, Anticythère, lumières de Phoenix, diable de Jersey, Khéops ; Élisabeth II, Charlemagne, Jeanne d'Arc, Gengis Khan, chute du mur de Berlin ; Tiger Woods, Simone Biles ; Ed Sheeran, Beethoven ; Hawking, Freud ; Leeroy Jenkins, All your base, Lolcat, Keyboard Cat, Numa Numa, rage comics, Ninja, Squeezie, KSI ; Jules Verne, Agatha Christie, Marie-Antoinette.
@@ -342,7 +355,8 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Fait en dev : set de base importé et publié. Relire les cartes en jeu et dans l'admin, enlever celles qui ne conviennent pas.
 
 ### Set de base (suite)
-- Les **250 cartes** sont là (4 lots). Reste à faire : davantage de Leaders (plusieurs par paire de catégories), et des decks de référence qui utilisent les cartes du lot 4.
+- Les **250 cartes** sont là (4 lots) et 15 Leaders couvrent 10 paires de catégories sur 45. Reste à faire : d'autres Leaders, pour que plus de paires forment un deck jouable (section 4.3).
+- Le cahier des charges (section 4.1) prévoit 24 cartes par catégorie et 10 Légendes, soit 250 cartes sans dire si les Leaders en font partie. Le set en dev compte 230 cartes de catégorie, 10 Légendes et 15 Leaders. Si les Leaders sont à part, il manque 10 cartes de catégorie.
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)

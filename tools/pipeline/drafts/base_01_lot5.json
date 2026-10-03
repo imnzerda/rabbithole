@@ -1,0 +1,195 @@
+{
+  "series": "base_01",
+  "cards": [
+    {
+      "id": "base_01_l_zuckerberg",
+      "wikidataId": "Q36215",
+      "type": "leader",
+      "name": {
+        "fr": "Mark Zuckerberg",
+        "en": "Mark Zuckerberg"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 4,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Lancé depuis une chambre d’étudiant à Harvard. Trois milliards d’utilisateurs plus tard…",
+        "en": "Launched from a Harvard dorm room. Three billion users later…"
+      }
+    },
+    {
+      "id": "base_01_l_casanova",
+      "wikidataId": "Q83321",
+      "type": "leader",
+      "name": {
+        "fr": "Giacomo Casanova",
+        "en": "Giacomo Casanova"
+      },
+      "categories": [
+        "nuits_exces",
+        "crimes_scandales"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "rest",
+            "target": "weakest_enemy",
+            "filter": {
+              "maxCost": 3
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Séducteur, espion, évadé des Plombs de Venise. Ses mémoires font 3 700 pages.",
+        "en": "Seducer, spy, escapee from the Leads of Venice. His memoirs run to 3,700 pages."
+      }
+    },
+    {
+      "id": "base_01_l_indiana_jones",
+      "wikidataId": "Q148659",
+      "type": "leader",
+      "name": {
+        "fr": "Indiana Jones",
+        "en": "Indiana Jones"
+      },
+      "categories": [
+        "exploration",
+        "mysteres"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 1
+              },
+              {
+                "type": "add_buzz",
+                "amount": 1
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Professeur d’archéologie à mi-temps. Le reste du temps, il fuit des rochers.",
+        "en": "Part-time archaeology professor. The rest of the time, he outruns boulders."
+      }
+    },
+    {
+      "id": "base_01_l_van_damme",
+      "wikidataId": "Q308840",
+      "type": "leader",
+      "name": {
+        "fr": "Jean-Claude Van Damme",
+        "en": "Jean-Claude Van Damme"
+      },
+      "categories": [
+        "sport",
+        "series_cinema"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "sport"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le grand écart entre deux camions. En marche arrière.",
+        "en": "The splits between two trucks. In reverse."
+      }
+    },
+    {
+      "id": "base_01_l_john_lennon",
+      "wikidataId": "Q1203",
+      "type": "leader",
+      "name": {
+        "fr": "John Lennon",
+        "en": "John Lennon"
+      },
+      "categories": [
+        "musique",
+        "guerre_pouvoir"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 4,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Imagine. Il a passé sa lune de miel au lit, pour la paix.",
+        "en": "Imagine. He spent his honeymoon in bed, for peace."
+      }
+    }
+  ]
+}
