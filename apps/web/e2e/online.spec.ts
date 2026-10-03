@@ -197,6 +197,24 @@ test('boutique : pack de gemmes payé en sandbox, crédité par webhook, histori
   await expect(page.getByTestId('purchase')).toHaveCount(1);
 });
 
+test('missions : 3 du jour et 3 de la semaine, réclamation une fois remplie', async ({ page }, info) => {
+  await signup(page, `missions-${info.project.name}`, '/missions');
+  await expect(page.getByTestId('mission')).toHaveCount(6);
+  await expect(page.getByText(/Renouvellement dans/).first()).toBeVisible();
+  for (const button of await page.getByTestId('claim').all()) await expect(button).toBeDisabled();
+
+  // Les missions sont tirées au hasard : si « ouvrir un booster » est sortie, on la remplit et on la réclame.
+  const missions = (await (await page.request.get('/api/missions')).json()) as { daily: { missions: { kind: string }[] } };
+  if (missions.daily.missions.some((m) => m.kind === 'open_booster')) {
+    await page.request.post('/api/boosters/base/open-free');
+    await page.reload();
+    const row = page.getByTestId('mission').filter({ hasText: 'Ouvre 1 booster' });
+    await row.getByTestId('claim').click();
+    await expect(page.getByTestId('message')).toHaveText('+30 🪙 !');
+    await expect(row).toContainText('Réclamée');
+  }
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

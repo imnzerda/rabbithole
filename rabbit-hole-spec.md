@@ -452,7 +452,7 @@ Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, �
 
 - **Guildes** (30 membres, 40 au niveau 10) : rôles chef / adjoints / membres, niveaux et bonus, demandes de cartes et dons, tableau d'échanges, tournoi de guilde hebdomadaire, amicaux, boutique de guilde en jetons. Chat : réactions et messages prédéfinis traduits ; chat libre optionnel avec filtre et signalement.
 - **Amis** : code ami, amicaux, échanges, comparaison de collections.
-- **Missions** quotidiennes et hebdomadaires (alimentent le pass).
+- **Missions** quotidiennes et hebdomadaires (alimentent le pass). **Implémenté** (phase 6) : 3 par jour et 3 par semaine, tirées par le serveur parmi les modèles de la config, progression comptée côté serveur, récompense en pièces (et points de pass enregistrés), page Missions.
 - **Progression de collection** : chaque carte nouvelle et chaque partie font avancer une barre de récompenses.
 - **Succès et titres**.
 - **Partage** : génération d'un clip vertical (format 9:16) ou d'une image de fin de partie à partager en un tap.
@@ -596,7 +596,7 @@ POST /takedown
 ### Phase 5 — Économie
 - Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges.
 - `PaymentProvider` en sandbox, prix régionaux, webhooks.
-- **État : terminée le 2026-10-03, en attente de validation.** Trade-up, amis et échanges libres, gemmes et paiement sandbox, fusion pièces et essence, compensation des cartes retirées ; boutique quotidienne abandonnée. Reste pour la mise en ligne : le prestataire de paiement réel.
+- **État : validée le 2026-10-03.** Trade-up, amis et échanges libres, gemmes et paiement sandbox, fusion pièces et essence, compensation des cartes retirées ; boutique quotidienne abandonnée. Reste pour la mise en ligne : le prestataire de paiement réel.
 - **Déjà fait en phase 3** : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting.
 
 ### Phase 6 — Rétention

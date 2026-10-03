@@ -63,6 +63,46 @@ export interface PaymentsConfig {
   sandboxSecret: string;
 }
 
+/** Ce que compte une mission (section 13), toujours mesuré côté serveur. */
+export type MissionKind = 'play' | 'win' | 'play_cards' | 'play_category' | 'open_booster' | 'trade_up' | 'trade' | 'craft';
+
+export interface MissionTemplate {
+  kind: MissionKind;
+  target: number;
+  /** Pièces gagnées en réclamant la mission. */
+  coins: number;
+  /** Points de pass (le pass saisonnier viendra ensuite). */
+  xp: number;
+}
+
+/** Missions quotidiennes et hebdomadaires : nombre tiré pour chaque joueur et modèles possibles. */
+export interface MissionsConfig {
+  dailyCount: number;
+  weeklyCount: number;
+  daily: MissionTemplate[];
+  weekly: MissionTemplate[];
+}
+
+export const DEFAULT_MISSIONS: MissionsConfig = {
+  dailyCount: 3,
+  weeklyCount: 3,
+  daily: [
+    { kind: 'play', target: 3, coins: 40, xp: 100 },
+    { kind: 'win', target: 2, coins: 60, xp: 150 },
+    { kind: 'play_cards', target: 15, coins: 40, xp: 100 },
+    { kind: 'play_category', target: 8, coins: 50, xp: 120 },
+    { kind: 'open_booster', target: 1, coins: 30, xp: 80 },
+  ],
+  weekly: [
+    { kind: 'play', target: 15, coins: 200, xp: 500 },
+    { kind: 'win', target: 10, coins: 300, xp: 700 },
+    { kind: 'play_category', target: 40, coins: 250, xp: 600 },
+    { kind: 'trade_up', target: 1, coins: 150, xp: 400 },
+    { kind: 'trade', target: 1, coins: 150, xp: 400 },
+    { kind: 'craft', target: 1, coins: 100, xp: 300 },
+  ],
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -97,6 +137,7 @@ export interface ServerConfig {
   /** Route de données de test (`/api/test/*`). Jamais en production. */
   testFixtures: boolean;
   economy: EconomyConfig;
+  missions: MissionsConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -174,6 +215,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     authRateLimit: int(env.AUTH_RATE_LIMIT, 20),
     testFixtures: !production && env.TEST_FIXTURES === '1',
     economy: DEFAULT_ECONOMY,
+    missions: DEFAULT_MISSIONS,
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };

@@ -55,7 +55,7 @@ export class MatchRoom {
   readonly actions: { player: PlayerIndex; action: GameAction }[] = [];
   state: MatchState;
   deadline: number | null = null;
-  private readonly ctx: MatchContext;
+  readonly ctx: MatchContext;
   private readonly contentVersion: string;
   private readonly timers: RoomTimers;
   private readonly onEnd: (room: MatchRoom) => void;

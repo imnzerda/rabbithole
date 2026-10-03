@@ -4,7 +4,9 @@ import type { QueueMode } from '@rabbithole/shared';
 import type { User } from '../auth/accounts.js';
 import { referenceDecks } from '../decks/reference.js';
 import { checkDeck, getDeck } from '../decks/decks.js';
+import type { CategoryId } from '@rabbithole/engine';
 import { awardMatchCoins } from '../economy/economy.js';
+import { recordMissionSafe } from '../retention/missions.js';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
@@ -174,6 +176,7 @@ export class MatchService {
       if (!userId) continue;
       const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
       rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
+      await this.recordMissions(room, p, userId);
     }
     await this.deps.db.query(`UPDATE matches SET actions = $1, result = $2, rewards = $3, ended_at = now() WHERE id = $4`, [
       JSON.stringify(room.actions),
@@ -184,6 +187,25 @@ export class MatchService {
     room.announceEnd(rewards);
     this.rooms.delete(room.id);
     for (const s of room.seats) if (s.userId && this.roomOfUser.get(s.userId) === room.id) this.roomOfUser.delete(s.userId);
+  }
+
+  /** Missions (section 13) : partie jouée, victoire, cartes jouées et leurs catégories. */
+  private async recordMissions(room: MatchRoom, p: 0 | 1, userId: string): Promise<void> {
+    const { db, config } = this.deps;
+    const result = room.state.result!;
+    await recordMissionSafe(db, userId, 'play', 1, config.missions);
+    if (result.winner === p) await recordMissionSafe(db, userId, 'win', 1, config.missions);
+    const byCategory = new Map<CategoryId, number>();
+    let played = 0;
+    for (const { player, action } of room.actions) {
+      if (player !== p || action.type !== 'play') continue;
+      const def = room.ctx.cards[room.state.cards[action.uid]?.defId ?? ''];
+      if (!def) continue;
+      played++;
+      for (const c of def.categories) byCategory.set(c, (byCategory.get(c) ?? 0) + 1);
+    }
+    await recordMissionSafe(db, userId, 'play_cards', played, config.missions);
+    for (const [category, n] of byCategory) await recordMissionSafe(db, userId, 'play_category', n, config.missions, category);
   }
 
   private track(p: Promise<unknown>): void {

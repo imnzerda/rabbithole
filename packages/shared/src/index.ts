@@ -218,3 +218,20 @@ export interface NoticeDto {
   createdAt: string;
   read: boolean;
 }
+
+/** Mission quotidienne ou hebdomadaire (section 13). `category` : pour les missions « jouer des cartes d'une catégorie ». */
+export interface MissionDto {
+  id: string;
+  kind: 'play' | 'win' | 'play_cards' | 'play_category' | 'open_booster' | 'trade_up' | 'trade' | 'craft';
+  category: string | null;
+  target: number;
+  progress: number;
+  coins: number;
+  xp: number;
+  claimed: boolean;
+}
+
+export interface MissionsDto {
+  daily: { endsAt: string; missions: MissionDto[] };
+  weekly: { endsAt: string; missions: MissionDto[] };
+}

@@ -20,6 +20,7 @@ import {
   tradeUp,
   tradeUpOffer,
 } from './economy.js';
+import { recordMissionSafe } from '../retention/missions.js';
 
 const cardId = z.string().min(1).max(80);
 
@@ -67,6 +68,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     if (!type || !body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
       const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy, await catFor(request));
+      await recordMissionSafe(db, request.user!.id, 'open_booster', 1, config.missions);
       return { cards, preview: next, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -78,6 +80,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     if (!type) return reply.code(400).send({ error: 'invalid_input' });
     try {
       const cards = await openFreeBooster(db, request.user!.id, type, economy, await catFor(request));
+      await recordMissionSafe(db, request.user!.id, 'open_booster', 1, config.missions);
       return { cards, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);
@@ -98,7 +101,9 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     const body = z.object({ cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
-      return { wallet: await craft(db, request.user!.id, body.data.cardId, economy, await catFor(request)) };
+      const wallet = await craft(db, request.user!.id, body.data.cardId, economy, await catFor(request));
+      await recordMissionSafe(db, request.user!.id, 'craft', 1, config.missions);
+      return { wallet };
     } catch (error) {
       return fail(reply, error);
     }
@@ -124,6 +129,7 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
       const r = await tradeUp(db, request.user!.id, body.data.cards, body.data.category ?? null, economy, await catFor(request));
+      await recordMissionSafe(db, request.user!.id, 'trade_up', 1, config.missions);
       return { card: r.cardId, offer: r.offer };
     } catch (error) {
       return fail(reply, error);

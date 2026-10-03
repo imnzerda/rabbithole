@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 5 — Économie** : terminée, en attente de validation. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -11,8 +11,8 @@
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
-| 5. Économie | ✅ Terminée, en attente de validation |
-| 6. Rétention | — |
+| 5. Économie | ✅ Validée (2026-10-03) |
+| 6. Rétention | 🟡 En cours |
 | 7. Social | — |
 | 8. International et lancement | — |
 
@@ -21,6 +21,17 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 6, étape 1 : missions quotidiennes et hebdomadaires
+
+- **Plan de la phase 6** : 1. missions, 2. pass saisonnier (premier usage des gemmes), 3. classé et saisons, 4. succès, titres et progression de collection, 5. défi du jour et Tendance du jour, 6. draft, tournois, partage de fin de partie.
+- **Missions** (cahier des charges, section 13) : **3 par jour et 3 par semaine** pour chaque joueur, tirées par le serveur (RNG `crypto`, seed enregistrée) parmi les modèles de la config (`DEFAULT_MISSIONS` : objectif, pièces, points de pass). Une mission « catégorie » tire aussi sa catégorie. Les missions se renouvellent à minuit UTC, et le lundi pour la semaine.
+- **Types de missions** : jouer ou gagner des parties en ligne (y compris contre un fantôme), jouer des cartes ou des cartes d'une catégorie, ouvrir des boosters, faire un trade-up, terminer un échange, fabriquer une carte.
+- **Progression** comptée côté serveur : en fin de partie (cartes jouées relues dans les actions de la partie), à l'achat ou l'ouverture d'un booster, au trade-up, à la fabrication, et à l'échange accepté (pour les deux joueurs). Une erreur de mission ne fait jamais échouer l'action du joueur.
+- **Récompense** : pièces créditées une seule fois en réclamant la mission (journal `mission`). Les points de pass sont déjà enregistrés, pour le pass à venir.
+- **Base** : migration 017 (`user_missions`). **API** : `GET /api/missions`, `POST /api/missions/:id/claim`.
+- **Interface** : page **Missions** (lien sur l'accueil), avec les missions du jour et de la semaine, barres de progression, délai avant renouvellement et bouton « Réclamer ». Les textes ont un vrai singulier et un vrai pluriel.
+- **Tests** : 5 tests serveur (périodes, tirage, progression, filtre de catégorie, réclamation unique, fin de partie en ligne) et 1 scénario E2E sur smartphone et PC.
 
 ### 2026-10-03 — Trade-up : le joueur choisit ses doublons
 

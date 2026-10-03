@@ -5,6 +5,7 @@ import type { AppDeps } from '../deps.js';
 import { EconomyError } from '../economy/economy.js';
 import { catalogForUser } from '../moderation/filter.js';
 import { acceptFriend, acceptTrade, closeTrade, friendCollection, listFriends, listTrades, proposeTrade, removeFriend, requestFriend } from './social.js';
+import { recordMissionSafe } from '../retention/missions.js';
 
 const uuid = z.string().uuid();
 const cardId = z.string().min(1).max(80);
@@ -92,7 +93,9 @@ export function registerSocial(app: FastifyInstance, { db, config, catalog }: Ap
       if (action.data === 'accept') {
         const [t] = await db.query<{ from_user: string }>('SELECT from_user FROM trades WHERE id = $1', [id.data]);
         if (!t) return reply.code(404).send({ error: 'unknown_trade' });
-        return { trade: await acceptTrade(db, request.user!.id, id.data, await catalogsFor(request.user!, t.from_user)) };
+        const trade = await acceptTrade(db, request.user!.id, id.data, await catalogsFor(request.user!, t.from_user));
+        for (const user of [trade.fromUser.id, trade.toUser.id]) await recordMissionSafe(db, user, 'trade', 1, config.missions);
+        return { trade };
       }
       await closeTrade(db, request.user!.id, id.data, action.data);
       return { ok: true };

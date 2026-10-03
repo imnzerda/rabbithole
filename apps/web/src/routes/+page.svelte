@@ -31,6 +31,7 @@
   <nav class="account" aria-label="Compte">
     {#if session.user}
       <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
+      <a href="/missions" data-testid="nav-missions">{t('missions')}</a>
       <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
       <a href="/decks">{t('decks')}</a>
       <a href="/friends" data-testid="nav-friends">{t('friends')}</a>
