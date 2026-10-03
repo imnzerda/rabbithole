@@ -295,7 +295,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 ### 6.1 Monnaies
 | Monnaie | Gagnée en jeu | Achetable | Usage |
 |---|---|---|---|
-| Pièces | Oui (parties, recyclage des doublons) | Non | Boosters standards, crafting de cartes au choix, boutique quotidienne |
+| Pièces | Oui (parties, recyclage des doublons) | Non | Boosters standards, crafting de cartes au choix |
 | Gemmes | Un peu (succès, pass) | Oui | Boosters premium, cosmétiques, pass |
 | Jetons de guilde | Activité de guilde | **Non** | Boutique de guilde |
 
@@ -343,9 +343,9 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Pass saisonnier** (28 jours) : piste gratuite, piste premium, piste deluxe (variantes exclusives).
 - **Variantes cosmétiques** de cartes (même carte, même stats) : holographique, cadre animé, filtre « glitch », pixel, doré, négatif, VHS.
 - **Cosmétiques** : dos de cartes, plateaux, avatars, titres, emotes.
-- **Boutique quotidienne** : quelques cartes précises (contenu connu) en pièces ou gemmes.
+- ~~Boutique quotidienne~~ : abandonnée (décision du 2026-10-03).
 - **Aucune carte sous licence officielle** et aucun avantage de jeu achetable hors boosters prévisualisés.
-- **Implémenté** (phase 5) : 6 packs de gemmes (80 à 5 200 gemmes, 0,99 € à 49,99 €), prix régionaux pour les pays de lancement (table `price_tiers`, pays « * » par défaut), boutique (`/shop`), historique d'achats et plafond de dépense mensuel facultatif. Les gemmes n'ont pas encore d'usage (boutique quotidienne, cosmétiques et pass à venir).
+- **Implémenté** (phase 5) : 6 packs de gemmes (80 à 5 200 gemmes, 0,99 € à 49,99 €), prix régionaux pour les pays de lancement (table `price_tiers`, pays « * » par défaut), boutique (`/shop`), historique d'achats et plafond de dépense mensuel facultatif. Les gemmes n'ont pas encore d'usage (cosmétiques et pass à venir).
 
 ---
 
@@ -594,7 +594,7 @@ POST /takedown
 - **État : validée le 2026-10-03.** Code terminé (catalogue en base, pipeline, admin, signalements, contenu sensible, retraits, crédits, règles par pays). Set de base complet en dev : 250 cartes (24 par catégorie, 10 Légendes) et 15 Leaders, 15 decks de référence équilibrés. Reste : illustrations en jeu (R2).
 
 ### Phase 5 — Économie
-- Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges, boutique quotidienne.
+- Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges.
 - `PaymentProvider` en sandbox, prix régionaux, webhooks.
 - **Déjà fait en phase 3** : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting.
 

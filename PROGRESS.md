@@ -22,9 +22,13 @@
 
 ## Journal
 
+### 2026-10-03 — Boutique quotidienne abandonnée
+
+- **Décision** : pas de boutique quotidienne. Les gemmes serviront aux cosmétiques et au pass (phase 6). Le texte de la Boutique est corrigé en conséquence.
+
 ### 2026-10-03 — Pièces et essence fusionnées
 
-- **Décision** : une seule monnaie gagnée en jeu, les **pièces**. Elles viennent des parties et du recyclage des doublons, et servent aux boosters, au crafting et bientôt à la boutique quotidienne. L'essence existante est convertie en pièces à 1 pour 1 (migration 015).
+- **Décision** : une seule monnaie gagnée en jeu, les **pièces**. Elles viennent des parties et du recyclage des doublons, et servent aux boosters et au crafting. L'essence existante est convertie en pièces à 1 pour 1 (migration 015).
 - **Équilibrage** : avec les anciennes valeurs, recycler un booster rapportait en moyenne environ 104, plus que son prix de 100 pièces, ce qui aurait donné des pièces infinies. Le recyclage passe à **1 / 3 / 10 / 30 / 100** (basique → GOAT), soit environ 25 pièces par booster recyclé. Le crafting ne change pas (20 / 50 / 150 / 500 / 1 500). Un test vérifie qu'un booster recyclé rapporte moins de la moitié de son prix.
 - **Correction** : la colonne `gems` interdisait un solde négatif, donc un remboursement après dépense des gemmes aurait fait échouer le webhook. La contrainte est levée (les achats en gemmes exigent toujours un solde suffisant) et le cas est testé.
 - **Interface** : le compteur ✨ disparaît, et le recyclage et la fabrication s'affichent en 🪙.
@@ -429,7 +433,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)
-Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux). Reste : boutique quotidienne (premier usage des gemmes). À faire aussi : compensation (carte de même rareté ou pièces) quand une carte possédée est retirée (section 5).
+Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux). Reste : compensation (carte de même rareté ou pièces) quand une carte possédée est retirée (section 5).
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
