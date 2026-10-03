@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,25 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 6, étape 2 : pass saisonnier et premiers cosmétiques
+
+- **Décisions** :
+  - les pistes payantes donnent des cosmétiques et des boosters ;
+  - le pass s'achète directement en argent réel (premium 9,99 €, deluxe 14,99 €, passage de premium à deluxe 5 €), pas en gemmes : les gemmes serviront à d'autres achats.
+  - Les boosters des pistes payantes sont des **boosters à aperçu** (contenu exact affiché avant ouverture), conformément à la règle « pas de booster à contenu caché en vente ». Un test le vérifie.
+- **Saisons** de 28 jours (depuis le 2026-10-01), **30 niveaux** de 1 000 points. Points gagnés en partie en ligne (120 / 60 / 80 pour victoire, défaite, nul) et en réclamant les missions. Tout est dans la config (`DEFAULT_PASS`).
+- **Pistes** :
+  - **gratuite** : 30 pièces par niveau, un booster gratuit (aléatoire) tous les 5 niveaux ;
+  - **premium** : titre de saison, variantes holo, dorée et pixel, booster à aperçu tous les 3 niveaux ;
+  - **deluxe** (inclut premium) : variantes exclusives glitch, négatif et VHS, titre de légende au niveau 30, boosters à aperçu en plus.
+  - Les récompenses de chaque saison sont générées à partir du catalogue, puis figées en base (`pass_seasons`).
+- **Achat** : produits `pass_premium`, `pass_deluxe` et `pass_upgrade`, avec prix régionaux, achetés par le même circuit que les gemmes (webhook vérifié). Le passage en caisse vérifie quel achat est permis. Un remboursement recalcule la piste à partir des achats encore valables.
+- **Cosmétiques** : six variantes de cartes (holo, doré, glitch, négatif, VHS, pixel) et des titres. Les variantes sont visibles dans la Collection (choix de l'apparence dans la fiche de la carte), sur la page Pass et **en partie** (rendu PixiJS, effets limités à la carte). L'adversaire voit tes variantes et ton titre, transmis dans `match_start` ; un fantôme montre ceux du joueur dont il joue le deck.
+- **Boosters à aperçu offerts** : compteur 📦 dans le portefeuille, et bouton « Ouvrir avec un booster offert » dans la Collection, qui ouvre exactement l'aperçu affiché.
+- **Base** : migration 018 (`user_pass`, `pass_seasons`, `user_titles`, `user_card_variants`, `users.active_title`, `wallets.preview_boosters`, produits du pass). **API** : `/api/pass`, `/api/pass/claim`, `/api/boosters/:type/redeem`, `/api/cosmetics` (+ `/variant`, `/title`). Routes de test `/api/test/pass-xp` et `/api/test/variant`, interdites en production.
+- **Tests** : 7 tests serveur sur le pass (saisons, contenu des pistes, verrous, achat direct, passage au deluxe, boosters à aperçu, cosmétiques, remboursement, points, `match_start`) et 1 scénario E2E (achat du premium, récompenses, booster offert ouvert) sur smartphone et PC.
+- **E2E** : la limite d'authentification du serveur de test passe à 1 000 par minute (`AUTH_RATE_LIMIT`), car la suite dépassait 20 inscriptions par minute. Le test d'animation « glisser une carte » reste instable sous la charge de la suite complète (il passe seul).
 
 ### 2026-10-03 — Phase 6, étape 1 : missions quotidiennes et hebdomadaires
 

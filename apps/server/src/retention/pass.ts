@@ -206,3 +206,13 @@ export async function assertPassPurchasable(db: Db, userId: string, productId: s
   if (!allowed.includes(productId)) throw new EconomyError('pass_not_available', 409);
   return season;
 }
+
+/** Cosmétiques visibles en partie : variante affichée de chaque carte et titre actif. */
+export async function playerCosmetics(db: Db, userId: string): Promise<{ variants: Record<string, string>; title: Record<string, string> | null }> {
+  const variants = await db.query<{ card_id: string; variant: string }>('SELECT card_id, variant FROM user_card_variants WHERE user_id = $1 AND equipped', [userId]);
+  const [title] = await db.query<{ name: Record<string, string> }>(
+    'SELECT t.name FROM users u JOIN user_titles t ON t.user_id = u.id AND t.title_id = u.active_title WHERE u.id = $1',
+    [userId],
+  );
+  return { variants: Object.fromEntries(variants.map((v) => [v.card_id, v.variant])), title: title?.name ?? null };
+}

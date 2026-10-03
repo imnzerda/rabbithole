@@ -1,5 +1,5 @@
 import { KEYWORD_NAMES, type MatchContext } from '@rabbithole/engine';
-import { Container, Graphics, Text, type TextStyleOptions } from 'pixi.js';
+import { ColorMatrixFilter, Container, Graphics, Text, type TextStyleOptions } from 'pixi.js';
 import { loc, locale, t } from '../i18n';
 import { CATEGORY_STYLE, COLORS, FONT, RARITY_STYLE, shade } from './theme';
 
@@ -21,6 +21,8 @@ export interface CardFace {
   buzz?: number;
   cancelled?: boolean;
   trending?: boolean;
+  /** Variante cosmétique (holo, gold, glitch, negative, vhs, pixel) : même carte, autre apparence. */
+  variant?: string | null;
 }
 
 const text = (value: string, style: TextStyleOptions) =>
@@ -91,6 +93,7 @@ export class CardSprite extends Container {
 
   redraw(): void {
     for (const child of this.body.removeChildren()) child.destroy({ children: true });
+    this.body.filters = [];
     if (this.face.defId === null) this.drawBack();
     else this.drawFront(this.face.defId);
     this.drawOverlay();
@@ -183,6 +186,7 @@ export class CardSprite extends Container {
     }
     if (rarity.ornament === 'crown') frame.star(w / 2, 2, 5, 9, 4).fill(rarity.color);
     this.body.addChild(frame);
+    if (this.face.variant) this.drawVariant(this.face.variant, rarity.radius);
 
     if (hand && def.type !== 'leader' && this.face.cost !== undefined) {
       const cost = new Graphics().circle(19, 21, 17).fill(COLORS.mana).stroke({ width: 2, color: 0x0d2a40 });
@@ -226,6 +230,62 @@ export class CardSprite extends Container {
     this.powerBadge = new Container();
     this.body.addChild(this.powerBadge);
     this.drawPower();
+  }
+
+  /** Variantes cosmétiques (section 6.6) : effets dessinés par-dessus la carte, sans toucher à ses valeurs. */
+  private drawVariant(variant: string, radius: number): void {
+    const { w, h } = this;
+    const fx = new Graphics();
+    switch (variant) {
+      case 'gold':
+        fx.roundRect(0, 0, w, h, radius).fill({ color: 0xffc94a, alpha: 0.16 });
+        fx.roundRect(1, 1, w - 2, h - 2, radius).stroke({ width: 4, color: 0xffc94a });
+        fx.poly([w * 0.35, 0, w * 0.55, 0, w * 0.15, h, -w * 0.05, h]).fill({ color: 0xfff0be, alpha: 0.2 });
+        break;
+      case 'holo': {
+        const colors = [0xff4fd8, 0x4fb8ff, 0x6dff9e, 0xffe34f];
+        colors.forEach((color, i) => {
+          const x = (i / colors.length) * w * 1.6 - w * 0.3;
+          fx.poly([x, 0, x + w * 0.25, 0, x + w * 0.05, h, x - w * 0.2, h]).fill({ color, alpha: 0.16 });
+        });
+        fx.blendMode = 'add';
+        break;
+      }
+      case 'glitch':
+        for (const [y, color] of [
+          [0.18, 0x2be0ff],
+          [0.41, 0xff2b6d],
+          [0.57, 0x2be0ff],
+          [0.83, 0xff2b6d],
+        ] as const) {
+          fx.rect(y * 12, h * y, w, 3).fill({ color, alpha: 0.45 });
+        }
+        break;
+      case 'negative': {
+        const invert = new ColorMatrixFilter();
+        invert.negative(false);
+        this.body.filters = [invert];
+        return;
+      }
+      case 'vhs': {
+        const tint = new ColorMatrixFilter();
+        tint.sepia(false);
+        tint.alpha = 0.35;
+        this.body.filters = [tint];
+        for (let y = 0; y < h; y += 3) fx.rect(0, y, w, 1).fill({ color: 0x000000, alpha: 0.22 });
+        break;
+      }
+      case 'pixel':
+        for (let y = 0; y < h; y += 6) for (let x = (y / 6) % 2 ? 6 : 0; x < w; x += 12) fx.rect(x, y, 6, 6).fill({ color: 0xffffff, alpha: 0.06 });
+        fx.roundRect(1, 1, w - 2, h - 2, 0).stroke({ width: 3, color: 0xffffff, alpha: 0.5 });
+        break;
+      default:
+        return;
+    }
+    // Les effets restent dans la forme de la carte.
+    const mask = new Graphics().roundRect(0, 0, w, h, radius).fill(0xffffff);
+    fx.mask = mask;
+    this.body.addChild(mask, fx);
   }
 
   private drawPower(): void {

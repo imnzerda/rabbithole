@@ -150,3 +150,21 @@ describe('pass saisonnier', () => {
     expect((await pass(token)).xp).toBe(DEFAULT_PASS.matchXp.loss + 80);
   });
 });
+
+describe('cosmétiques en partie', () => {
+  it('début de partie : variantes affichées et titre actif des deux joueurs', async () => {
+    t = await startApp();
+    const { token, id } = await signupWithKit(t.app);
+    const deck = (await get('/api/decks', token)).json().decks[0] as { id: string; leaderId: string };
+    await t.db.query("INSERT INTO user_card_variants (user_id, card_id, variant, equipped) VALUES ($1, $2, 'gold', true)", [id, deck.leaderId]);
+    await t.db.query(`INSERT INTO user_titles (user_id, title_id, name) VALUES ($1, 's1_premium', '{"fr":"Saison 1 · Premium"}')`, [id]);
+    await post('/api/cosmetics/title', token, { titleId: 's1_premium' });
+    const client = await TestClient.connect(t.url, token);
+    clients.push(client);
+    await client.wait('hello');
+    client.send({ t: 'queue', deckId: deck.id, mode: 'ghost' });
+    const start = await client.wait('match_start');
+    if (start.t !== 'match_start') throw new Error('match_start attendu');
+    expect(start.cosmetics[start.you]).toEqual({ variants: { [deck.leaderId]: 'gold' }, title: { fr: 'Saison 1 · Premium' } });
+  });
+});

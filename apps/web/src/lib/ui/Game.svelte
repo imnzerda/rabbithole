@@ -2,7 +2,7 @@
   import type { GameAction, PlayerView } from '@rabbithole/engine';
   import { onMount, untrack } from 'svelte';
   import { GameRenderer, type RenderOptions } from '../game/renderer';
-  import { t } from '../i18n';
+  import { loc, t } from '../i18n';
   import type { MatchClient, MatchStep } from '../match/client';
   import CardDetail from './CardDetail.svelte';
   import CardInfo from './CardInfo.svelte';
@@ -122,6 +122,8 @@
     const syncWide = () => (wide = media.matches);
     syncWide();
     media.addEventListener('change', syncWide);
+    // Variantes cosmétiques des deux joueurs (parties en ligne).
+    if (match.cosmetics) r.cosmetics = { mine: match.cosmetics.mine.variants, theirs: match.cosmetics.theirs.variants };
     renderer = r;
     const clock = setInterval(() => (now = Date.now()), 250);
     const unsubscribe: (() => void)[] = [];
@@ -175,7 +177,7 @@
         {t('turn')} {view?.turn ?? 0} · {view ? (view.active === view.you ? t('your_turn') : t('their_turn')) : ''}
       </span>
       <span class="sub">
-        {t('versus', { name: match.opponentName })}{view ? ' · ' + t('opp_info', { hand: view.opponent.handCount, deck: view.opponent.deckCount }) : ''}
+        {t('versus', { name: match.opponentName })}{match.cosmetics?.theirs.title ? ` « ${loc(match.cosmetics.theirs.title)} »` : ''}{view ? ' · ' + t('opp_info', { hand: view.opponent.handCount, deck: view.opponent.deckCount }) : ''}
       </span>
     </div>
     <div class="stake" class:hot={(view?.stake ?? 1) > 1} title={t('stake')}>×{view?.stake ?? 1}</div>

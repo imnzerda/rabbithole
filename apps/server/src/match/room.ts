@@ -14,9 +14,11 @@ import {
   type MatchState,
   type PlayerIndex,
 } from '@rabbithole/engine';
-import type { QueueMode, ServerMessage } from '@rabbithole/shared';
+import type { PlayerCosmetics, QueueMode, ServerMessage } from '@rabbithole/shared';
 
 export type Send = (message: ServerMessage) => void;
+
+const NO_COSMETICS: PlayerCosmetics = { variants: {}, title: null };
 
 export interface SeatInfo {
   /** `null` pour un fantôme (IA). */
@@ -24,6 +26,8 @@ export interface SeatInfo {
   name: string;
   leader: string;
   deck: string[];
+  /** Variantes et titre affichés (fantôme : ceux du joueur dont il joue le deck). */
+  cosmetics?: PlayerCosmetics;
 }
 
 export interface RoomTimers {
@@ -115,6 +119,7 @@ export class MatchRoom {
       you: p,
       opponent: { name: opponent.name, ghost: opponent.userId === null, leader: opponent.leader },
       contentVersion: this.contentVersion,
+      cosmetics: [this.seats[0].cosmetics ?? NO_COSMETICS, this.seats[1].cosmetics ?? NO_COSMETICS],
     });
     const events = this.initialEvents.length ? eventsFor(this.initialEvents, p) : [];
     send({ t: 'step', matchId: this.id, events, view: getPlayerView(this.ctx, this.state, p), deadline: this.deadline });

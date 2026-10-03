@@ -7,7 +7,7 @@ import { checkDeck, getDeck } from '../decks/decks.js';
 import type { CategoryId } from '@rabbithole/engine';
 import { awardMatchCoins } from '../economy/economy.js';
 import { recordMissionSafe } from '../retention/missions.js';
-import { addPassXpSafe } from '../retention/pass.js';
+import { addPassXpSafe, playerCosmetics } from '../retention/pass.js';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
@@ -82,7 +82,7 @@ export class MatchService {
     if (!deck) throw new ServiceError('deck_not_found', 'Deck introuvable.');
     const errors = await checkDeck(this.deps.db, this.ctx, user.id, deck.leaderId, deck.cardIds, (await contentFilterFor(this.deps.db, user, this.deps.catalog.current)).blocked);
     if (errors.length) throw new ServiceError('invalid_deck', errors.join(' '));
-    const seat: SeatInfo = { userId: user.id, name: user.displayName, leader: deck.leaderId, deck: deck.cardIds };
+    const seat: SeatInfo = { userId: user.id, name: user.displayName, leader: deck.leaderId, deck: deck.cardIds, cosmetics: await playerCosmetics(this.deps.db, user.id) };
 
     if (mode === 'ghost') {
       await this.startGhostMatch(seat, mode);
@@ -125,8 +125,8 @@ export class MatchService {
 
   /** Fantôme : le deck enregistré d'un autre joueur, piloté par l'IA (repli : un deck de référence de la série, puis du prototype). */
   private async startGhostMatch(seat: SeatInfo, mode: QueueMode): Promise<void> {
-    const candidates = await this.deps.db.query<{ leader_id: string; card_ids: string[]; display_name: string }>(
-      `SELECT d.leader_id, d.card_ids, u.display_name FROM decks d JOIN users u ON u.id = d.user_id
+    const candidates = await this.deps.db.query<{ user_id: string; leader_id: string; card_ids: string[]; display_name: string }>(
+      `SELECT d.user_id, d.leader_id, d.card_ids, u.display_name FROM decks d JOIN users u ON u.id = d.user_id
        WHERE d.user_id <> $1 ORDER BY d.updated_at DESC LIMIT 50`,
       [seat.userId],
     );
@@ -134,7 +134,7 @@ export class MatchService {
     let ghost: SeatInfo;
     if (valid.length) {
       const pick = valid[randomInt(valid.length)]!;
-      ghost = { userId: null, name: pick.display_name, leader: pick.leader_id, deck: pick.card_ids };
+      ghost = { userId: null, name: pick.display_name, leader: pick.leader_id, deck: pick.card_ids, cosmetics: await playerCosmetics(this.deps.db, pick.user_id) };
     } else {
       const refs = await referenceDecks(this.deps.db, this.ctx);
       const series = refs.filter((d) => d.series !== 'prototype');

@@ -281,8 +281,12 @@ export class GameRenderer {
     return s;
   }
 
-  private faceOf(c: VisibleCard, inHand: boolean): CardFace {
+  /** Variantes affichées (parties en ligne) : mes cartes, celles de l'adversaire. */
+  cosmetics: { mine: Record<string, string>; theirs: Record<string, string> } | null = null;
+
+  private faceOf(c: VisibleCard, inHand: boolean, mine = true): CardFace {
     return {
+      variant: (mine ? this.cosmetics?.mine : this.cosmetics?.theirs)?.[c.defId] ?? null,
       defId: c.defId,
       power: c.type === 'event' ? null : c.power,
       cost: inHand ? c.cost : undefined,
@@ -341,7 +345,7 @@ export class GameRenderer {
 
       const leader = this.sprite(side.leader.uid, 'board', { x: this.L.leaderX, y: leaderY });
       leader.setMode('board');
-      leader.setFace(this.faceOf(side.leader, false));
+      leader.setFace(this.faceOf(side.leader, false, mine));
       this.place(leader, this.L.leaderX, leaderY, side.leader.rested, this.boardLayer);
       keep.add(side.leader.uid);
       boardSet.add(side.leader.uid);
@@ -349,7 +353,7 @@ export class GameRenderer {
       side.characters.forEach((c, slot) => {
         const s = this.sprite(c.uid, 'board', { x: this.L.leaderX, y: mine ? this.L.h + 100 : -120 });
         s.setMode('board');
-        s.setFace(this.faceOf(c, false));
+        s.setFace(this.faceOf(c, false, mine));
         this.place(s, this.L.slotX(slot), charsY, c.rested, this.boardLayer);
         keep.add(c.uid);
         boardSet.add(c.uid);

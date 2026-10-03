@@ -340,7 +340,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 
 ### 6.6 Monétisation
 - **Gemmes** : 6 paliers de prix, prix régionaux (table `price_tiers` par pays).
-- **Pass saisonnier** (28 jours) : piste gratuite, piste premium, piste deluxe (variantes exclusives).
+- **Pass saisonnier** (28 jours) : piste gratuite, piste premium, piste deluxe (variantes exclusives). **Implémenté** (phase 6) : 30 niveaux, pistes payantes achetées directement en argent réel (premium 9,99 €, deluxe 14,99 €, passage au deluxe 5 € ; décision du 2026-10-03), récompenses payantes limitées aux cosmétiques (titres, variantes) et aux boosters à aperçu, variantes visibles en collection et en partie.
 - **Variantes cosmétiques** de cartes (même carte, même stats) : holographique, cadre animé, filtre « glitch », pixel, doré, négatif, VHS.
 - **Cosmétiques** : dos de cartes, plateaux, avatars, titres, emotes.
 - ~~Boutique quotidienne~~ : abandonnée (décision du 2026-10-03).

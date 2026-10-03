@@ -1,4 +1,5 @@
 import type { GameAction, MatchContext, MatchEvent, PlayerView } from '@rabbithole/engine';
+import type { PlayerCosmetics } from '@rabbithole/shared';
 
 /** Une étape de jeu : les événements à animer, puis la vue qui fait foi. */
 export interface MatchStep {
@@ -24,6 +25,8 @@ export interface MatchClient {
   readonly ctx: MatchContext;
   /** Nom de l'adversaire, à afficher. */
   readonly opponentName: string;
+  /** Cosmétiques visibles (parties en ligne) : variantes de cartes et titres, les miens et ceux de l'adversaire. */
+  readonly cosmetics?: { mine: PlayerCosmetics; theirs: PlayerCosmetics };
   /** Lecture seule (replay) : aucune action possible. */
   readonly spectator: boolean;
   onStep(listener: (step: MatchStep) => void): () => void;

@@ -1,5 +1,5 @@
 import type { GameAction, MatchContext, PlayerIndex } from '@rabbithole/engine';
-import type { ClientMessage, OpponentInfo, QueueMode, ServerMessage } from '@rabbithole/shared';
+import type { ClientMessage, OpponentInfo, PlayerCosmetics, QueueMode, ServerMessage } from '@rabbithole/shared';
 import { BaseMatchClient, type MatchClient, type MatchStep } from './client';
 
 /** Partie en ligne : le serveur fait foi, ce client ne fait qu'envoyer des actions et relayer les étapes. */
@@ -14,9 +14,16 @@ export class OnlineMatch extends BaseMatchClient implements MatchClient {
     readonly you: PlayerIndex,
     readonly opponent: OpponentInfo,
     private readonly send: (m: ClientMessage) => void,
+    all: [PlayerCosmetics, PlayerCosmetics] = [
+      { variants: {}, title: null },
+      { variants: {}, title: null },
+    ],
   ) {
     super();
+    this.cosmetics = { mine: all[you], theirs: all[you === 0 ? 1 : 0] };
   }
+
+  readonly cosmetics: { mine: PlayerCosmetics; theirs: PlayerCosmetics };
 
   get opponentName(): string {
     return this.opponent.name;
@@ -117,7 +124,7 @@ export class Lobby {
           return;
         }
         if (this.match?.matchId !== m.matchId) {
-          this.match = new OnlineMatch(this.ctx, m.matchId, m.you, m.opponent, (msg) => this.send(msg));
+          this.match = new OnlineMatch(this.ctx, m.matchId, m.you, m.opponent, (msg) => this.send(msg), m.cosmetics);
           this.set({ kind: 'playing', match: this.match });
         }
         break;

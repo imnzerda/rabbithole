@@ -14,6 +14,12 @@ export type ClientMessage =
   | { t: 'action'; action: GameAction }
   | { t: 'resume' };
 
+/** Cosmétiques d'un joueur visibles en partie : variante affichée par carte, titre actif. */
+export interface PlayerCosmetics {
+  variants: Record<string, string>;
+  title: Record<string, string> | null;
+}
+
 export interface OpponentInfo {
   name: string;
   /** Adversaire fantôme : deck enregistré d'un vrai joueur, joué par l'IA. */
@@ -27,7 +33,7 @@ export type ServerMessage =
   | { t: 'queued'; mode: QueueMode; ghostInMs: number | null }
   | { t: 'cancelled' }
   /** `contentVersion` : version du catalogue de la partie (le client recharge s'il n'a pas la même). */
-  | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo; contentVersion: string }
+  | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo; contentVersion: string; cosmetics: [PlayerCosmetics, PlayerCosmetics] }
   | { t: 'step'; matchId: string; events: MatchEvent[]; view: PlayerView; deadline: number | null }
   /** `reward` : pièces gagnées (plafonnées par jour) ; null pour un spectateur ou une reprise. */
   | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null }

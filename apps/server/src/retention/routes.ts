@@ -54,6 +54,17 @@ export function registerRetention(app: FastifyInstance, { db, config, catalog }:
       await addPassXp(db, request.user!.id, body.data.xp, config.pass);
       return { ok: true };
     });
+    app.post('/api/test/variant', { preHandler: requireUser }, async (request, reply) => {
+      const body = z.object({ cardId: z.string().min(1).max(80), variant: z.enum(CARD_VARIANTS) }).safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+      await db.query('UPDATE user_card_variants SET equipped = false WHERE user_id = $1 AND card_id = $2', [request.user!.id, body.data.cardId]);
+      await db.query(
+        `INSERT INTO user_card_variants (user_id, card_id, variant, equipped) VALUES ($1, $2, $3, true)
+         ON CONFLICT (user_id, card_id, variant) DO UPDATE SET equipped = true`,
+        [request.user!.id, body.data.cardId, body.data.variant],
+      );
+      return { ok: true };
+    });
   }
 
   /** Cosmétiques possédés : variantes de cartes (une affichée par carte) et titres (un actif). */
