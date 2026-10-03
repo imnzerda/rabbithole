@@ -1,16 +1,18 @@
+import type { PassConfig } from '../config.js';
 import type { Db } from '../db/db.js';
 import { EconomyError } from '../economy/economy.js';
 import type { OfferDto as Offer, PurchaseDto as Purchase } from '@rabbithole/shared';
+import { assertPassPurchasable, recomputeTrack, setTrack } from '../retention/pass.js';
 import type { PaymentEvent, PaymentProvider } from './provider.js';
 
 /**
- * Boutique en argent réel (sections 6.6 et 14) : packs de gemmes au prix du pays du joueur. Le passage
+ * Boutique en argent réel (sections 6.6 et 14) : packs de gemmes et pistes du pass, au prix du pays du joueur. Le passage
  * en caisse crée une transaction « pending » ; seul un webhook vérifié du prestataire la complète et
  * crédite les gemmes, une seule fois (événements et identifiants de transaction uniques).
  */
 
-/** Offres actives, au prix du pays (sinon le prix par défaut « * »). */
-export async function listOffers(db: Db, country: string): Promise<Offer[]> {
+/** Offres actives d'un type (`gems`, `pass`), au prix du pays (sinon le prix par défaut « * »). */
+export async function listOffers(db: Db, country: string, type: string | null = 'gems'): Promise<Offer[]> {
   const rows = await db.query<{ id: string; name: Record<string, string>; contents: { gems?: number }; currency: string; amount: number }>(
     `SELECT p.id, p.name, p.contents, pt.currency, pt.amount
      FROM products p
@@ -18,8 +20,8 @@ export async function listOffers(db: Db, country: string): Promise<Offer[]> {
        SELECT currency, amount FROM price_tiers WHERE product_id = p.id AND country IN ($1, '*')
        ORDER BY (country = '*') LIMIT 1
      ) pt ON true
-     WHERE p.active ORDER BY p.sort`,
-    [country],
+     WHERE p.active AND ($2::text IS NULL OR p.type = $2) ORDER BY p.sort`,
+    [country, type],
   );
   return rows.map((r) => ({ id: r.id, name: r.name, gems: r.contents.gems ?? 0, amount: r.amount, currency: r.currency }));
 }
@@ -43,17 +45,29 @@ export async function setSpendCap(db: Db, userId: string, cap: number | null): P
   await db.query('UPDATE users SET monthly_spend_cap = $2 WHERE id = $1', [userId, cap]);
 }
 
-/** Passage en caisse : transaction en attente, puis page de paiement du prestataire. */
-export async function checkout(db: Db, provider: PaymentProvider, user: { id: string; country: string }, productId: string): Promise<{ url: string; transactionId: string }> {
-  const offer = (await listOffers(db, user.country)).find((o) => o.id === productId);
+/**
+ * Passage en caisse : transaction en attente, puis page de paiement du prestataire. Une piste de pass est
+ * liée à la saison en cours, et seulement si le joueur peut l'acheter (pas deux fois, passage au deluxe).
+ */
+export async function checkout(
+  db: Db,
+  provider: PaymentProvider,
+  user: { id: string; country: string },
+  productId: string,
+  pass: PassConfig,
+  returnPath = '/shop',
+): Promise<{ url: string; transactionId: string }> {
+  const offer = (await listOffers(db, user.country, null)).find((o) => o.id === productId);
   if (!offer) throw new EconomyError('unknown_product', 404);
+  const [product] = await db.query<{ type: string; contents: Record<string, unknown> }>('SELECT type, contents FROM products WHERE id = $1', [productId]);
+  const contents = product!.type === 'pass' ? { ...product!.contents, season: await assertPassPurchasable(db, user.id, productId, pass) } : { gems: offer.gems };
   const cap = await spendCap(db, user.id);
   // Les achats en attente comptent aussi : on ne dépasse pas le plafond en ouvrant plusieurs paiements.
   if (cap !== null && (await monthSpent(db, user.id, offer.currency)) + offer.amount > cap) throw new EconomyError('spend_cap_reached', 403);
 
   const [tx] = await db.query<{ id: string }>(
     `INSERT INTO transactions (user_id, product_id, contents, provider, amount, currency) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-    [user.id, offer.id, JSON.stringify({ gems: offer.gems }), provider.name, offer.amount, offer.currency],
+    [user.id, offer.id, JSON.stringify(contents), provider.name, offer.amount, offer.currency],
   );
   const session = await provider.createCheckout({
     transactionId: tx!.id,
@@ -62,6 +76,7 @@ export async function checkout(db: Db, provider: PaymentProvider, user: { id: st
     label: offer.name.en ?? offer.id,
     amount: offer.amount,
     currency: offer.currency,
+    returnPath,
   });
   await db.query('UPDATE transactions SET provider_session_id = $2 WHERE id = $1', [tx!.id, session.sessionId]);
   return { url: session.url, transactionId: tx!.id };
@@ -77,6 +92,10 @@ export async function cancelPending(db: Db, userId: string, provider: string, se
 }
 
 const gemsOf = (contents: unknown) => Number((contents as { gems?: number }).gems ?? 0);
+const passOf = (contents: unknown) => {
+  const c = contents as { pass?: 'premium' | 'deluxe'; season?: number };
+  return c.pass && c.season ? { track: c.pass, season: c.season } : null;
+};
 
 /**
  * Traitement d'un webhook vérifié, idempotent : un événement déjà reçu ne fait rien ; un paiement n'est
@@ -100,6 +119,11 @@ export async function applyEvent(db: Db, provider: string, event: PaymentEvent):
         return 'ignored';
       }
       await tx.query("UPDATE transactions SET status = 'completed', provider_transaction_id = $2, completed_at = now() WHERE id = $1", [t.id, event.providerTransactionId]);
+      const pass = passOf(t.contents);
+      if (pass) {
+        await setTrack(tx, t.user_id, pass.season, pass.track);
+        return 'applied';
+      }
       const gems = gemsOf(t.contents);
       await tx.query('UPDATE wallets SET gems = gems + $2 WHERE user_id = $1', [t.user_id, gems]);
       await tx.query("INSERT INTO coin_ledger (user_id, currency, amount, reason, ref) VALUES ($1, 'gems', $2, 'purchase', $3)", [t.user_id, gems, t.id]);
@@ -111,10 +135,16 @@ export async function applyEvent(db: Db, provider: string, event: PaymentEvent):
       [provider, event.providerTransactionId],
     );
     if (!t) return 'ignored';
-    const gems = gemsOf(t.contents);
     await tx.query('UPDATE transactions SET status = $2, refunded_at = now() WHERE id = $1', [t.id, event.type]);
-    await tx.query('UPDATE wallets SET gems = gems - $2 WHERE user_id = $1', [t.user_id, gems]);
-    await tx.query("INSERT INTO coin_ledger (user_id, currency, amount, reason, ref) VALUES ($1, 'gems', $2, $3, $4)", [t.user_id, -gems, event.type, t.id]);
+    const pass = passOf(t.contents);
+    if (pass) {
+      // Piste retirée : elle redevient celle des achats encore valables de la saison.
+      await recomputeTrack(tx, t.user_id, pass.season);
+    } else {
+      const gems = gemsOf(t.contents);
+      await tx.query('UPDATE wallets SET gems = gems - $2 WHERE user_id = $1', [t.user_id, gems]);
+      await tx.query("INSERT INTO coin_ledger (user_id, currency, amount, reason, ref) VALUES ($1, 'gems', $2, $3, $4)", [t.user_id, -gems, event.type, t.id]);
+    }
     // Une rétrofacturation est signalée pour revue (fraude possible).
     if (event.type === 'chargeback') await tx.query("INSERT INTO admin_audit (admin_id, action, target, payload) VALUES (NULL, 'payment.chargeback', $1, $2)", [t.user_id, JSON.stringify({ transaction: t.id })]);
     return 'applied';

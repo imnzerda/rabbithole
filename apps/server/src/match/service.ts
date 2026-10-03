@@ -7,6 +7,7 @@ import { checkDeck, getDeck } from '../decks/decks.js';
 import type { CategoryId } from '@rabbithole/engine';
 import { awardMatchCoins } from '../economy/economy.js';
 import { recordMissionSafe } from '../retention/missions.js';
+import { addPassXpSafe } from '../retention/pass.js';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
@@ -194,6 +195,8 @@ export class MatchService {
     const { db, config } = this.deps;
     const result = room.state.result!;
     await recordMissionSafe(db, userId, 'play', 1, config.missions);
+    const xp = config.pass.matchXp;
+    await addPassXpSafe(db, userId, result.winner === null ? xp.draw : result.winner === p ? xp.win : xp.loss, config.pass);
     if (result.winner === p) await recordMissionSafe(db, userId, 'win', 1, config.missions);
     const byCategory = new Map<CategoryId, number>();
     let played = 0;

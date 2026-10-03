@@ -37,11 +37,11 @@ export function registerPayments(app: FastifyInstance, { db, config }: AppDeps):
   });
 
   app.post('/api/shop/checkout', { preHandler: requireUser }, async (request, reply) => {
-    const body = z.object({ productId: z.string().min(1).max(40) }).safeParse(request.body);
+    const body = z.object({ productId: z.string().min(1).max(40), returnPath: z.enum(['/shop', '/pass']).default('/shop') }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     if (!active) return reply.code(503).send({ error: 'shop_closed' });
     try {
-      return await checkout(db, active, request.user!, body.data.productId);
+      return await checkout(db, active, request.user!, body.data.productId, config.pass, body.data.returnPath);
     } catch (error) {
       return fail(reply, error);
     }

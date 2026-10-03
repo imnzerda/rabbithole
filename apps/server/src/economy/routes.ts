@@ -75,6 +75,20 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     }
   });
 
+  /** Booster à aperçu offert (pass) : ouvre exactement l'aperçu affiché, sans pièces. */
+  app.post('/api/boosters/:type/redeem', { preHandler: requireUser }, async (request, reply) => {
+    const type = typeOf(request.params);
+    const body = z.object({ cardIds: z.array(cardId).max(20) }).safeParse(request.body);
+    if (!type || !body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const { cards, next } = await purchasePreview(db, request.user!.id, type, body.data.cardIds, economy, await catFor(request), 'credit');
+      await recordMissionSafe(db, request.user!.id, 'open_booster', 1, config.missions);
+      return { cards, preview: next, wallet: await getWallet(db, request.user!.id) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
   app.post('/api/boosters/:type/open-free', { preHandler: requireUser }, async (request, reply) => {
     const type = typeOf(request.params);
     if (!type) return reply.code(400).send({ error: 'invalid_input' });

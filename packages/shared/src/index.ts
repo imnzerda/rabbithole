@@ -70,6 +70,8 @@ export interface WalletDto {
   coins: number;
   gems: number;
   freeBoosters: number;
+  /** Boosters à aperçu offerts (pass). */
+  previewBoosters: number;
 }
 
 export interface BoosterTypeDto {
@@ -234,4 +236,36 @@ export interface MissionDto {
 export interface MissionsDto {
   daily: { endsAt: string; missions: MissionDto[] };
   weekly: { endsAt: string; missions: MissionDto[] };
+}
+
+// --- Pass saisonnier et cosmétiques (section 6.6) ---
+
+export type PassTrack = 'free' | 'premium' | 'deluxe';
+
+/** Récompense d'un niveau du pass. Les pistes payantes ne donnent que des cosmétiques et des boosters à aperçu. */
+export type PassReward =
+  | { type: 'coins'; amount: number }
+  | { type: 'free_booster'; count: number }
+  | { type: 'preview_booster'; count: number }
+  | { type: 'title'; id: string; name: Record<string, string> }
+  | { type: 'variant'; cardId: string; variant: string };
+
+export interface PassTierDto {
+  tier: number;
+  free: PassReward | null;
+  premium: PassReward | null;
+  deluxe: PassReward | null;
+}
+
+export interface PassDto {
+  season: number;
+  startsAt: string;
+  endsAt: string;
+  xp: number;
+  level: number;
+  xpPerTier: number;
+  track: PassTrack;
+  /** Niveaux déjà réclamés, par piste. */
+  claimed: Record<PassTrack, number[]>;
+  tiers: PassTierDto[];
 }

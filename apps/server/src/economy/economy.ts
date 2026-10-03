@@ -53,14 +53,16 @@ export interface Wallet {
   coins: number;
   gems: number;
   freeBoosters: number;
+  /** Boosters à aperçu offerts (pass) : ouvrent exactement l'aperçu affiché. */
+  previewBoosters: number;
 }
 
 export async function getWallet(db: Db, userId: string): Promise<Wallet> {
-  const [w] = await db.query<{ coins: number; gems: number; free_boosters: number }>(
-    'SELECT coins, gems, free_boosters FROM wallets WHERE user_id = $1',
+  const [w] = await db.query<{ coins: number; gems: number; free_boosters: number; preview_boosters: number }>(
+    'SELECT coins, gems, free_boosters, preview_boosters FROM wallets WHERE user_id = $1',
     [userId],
   );
-  return { coins: w?.coins ?? 0, gems: w?.gems ?? 0, freeBoosters: w?.free_boosters ?? 0 };
+  return { coins: w?.coins ?? 0, gems: w?.gems ?? 0, freeBoosters: w?.free_boosters ?? 0, previewBoosters: w?.preview_boosters ?? 0 };
 }
 
 async function ledger(db: Db, userId: string, currency: string, amount: number, reason: string, ref: string | null = null): Promise<void> {
@@ -114,8 +116,8 @@ async function regeneratePreview(db: Db, userId: string, type: BoosterType, econ
 }
 
 /**
- * Achat de l'aperçu en pièces. Le client envoie les cartes qu'il a vues : si l'aperçu a changé
- * entre-temps (expiration), l'achat est refusé — on ne vend jamais un contenu non montré.
+ * Achat de l'aperçu en pièces, ou avec un booster à aperçu offert (pass). Le client envoie les cartes qu'il a
+ * vues : si l'aperçu a changé entre-temps (expiration), l'achat est refusé — on ne vend jamais un contenu non montré.
  */
 export async function purchasePreview(
   db: Db,
@@ -124,23 +126,30 @@ export async function purchasePreview(
   expected: string[],
   economy: EconomyConfig,
   catalog: CatalogSnapshot,
+  pay: 'coins' | 'credit' = 'coins',
 ): Promise<{ cards: string[]; next: Preview }> {
   return db.transaction(async (tx) => {
     const current = await ensurePreview(tx, userId, type, economy, catalog);
     if (current.cardIds.length !== expected.length || current.cardIds.some((id, i) => id !== expected[i])) {
       throw new EconomyError('preview_changed', 409);
     }
-    const paid = await tx.query('UPDATE wallets SET coins = coins - $2 WHERE user_id = $1 AND coins >= $2 RETURNING coins', [userId, economy.boosterPrice]);
-    if (paid.length === 0) throw new EconomyError('not_enough_coins', 402);
+    const price = pay === 'coins' ? economy.boosterPrice : 0;
+    const paid =
+      pay === 'coins'
+        ? await tx.query('UPDATE wallets SET coins = coins - $2 WHERE user_id = $1 AND coins >= $2 RETURNING coins', [userId, price])
+        : await tx.query('UPDATE wallets SET preview_boosters = preview_boosters - 1 WHERE user_id = $1 AND preview_boosters > 0 RETURNING preview_boosters', [userId]);
+    if (paid.length === 0) throw new EconomyError(pay === 'coins' ? 'not_enough_coins' : 'no_preview_booster', 402);
     const [seed] = await tx.query<{ seed: string }>('SELECT seed FROM booster_previews WHERE user_id = $1 AND booster_type = $2', [userId, type]);
     await addCards(tx, userId, current.cardIds);
-    await ledger(tx, userId, 'coins', -economy.boosterPrice, 'booster_purchase', type);
-    await tx.query(`INSERT INTO booster_openings (user_id, booster_type, source, price, card_ids, seed) VALUES ($1, $2, 'purchase', $3, $4, $5)`, [
+    if (pay === 'coins') await ledger(tx, userId, 'coins', -price, 'booster_purchase', type);
+    else await ledger(tx, userId, 'preview_boosters', -1, 'booster_redeem', type);
+    await tx.query(`INSERT INTO booster_openings (user_id, booster_type, source, price, card_ids, seed) VALUES ($1, $2, $6, $3, $4, $5)`, [
       userId,
       type,
-      economy.boosterPrice,
+      price,
       current.cardIds,
       seed?.seed ?? '',
+      pay === 'coins' ? 'purchase' : 'pass',
     ]);
     // Après un achat, un nouvel aperçu est généré immédiatement.
     const next = await regeneratePreview(tx, userId, type, economy, catalog);

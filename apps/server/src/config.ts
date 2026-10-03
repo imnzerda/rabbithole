@@ -103,6 +103,47 @@ export const DEFAULT_MISSIONS: MissionsConfig = {
   ],
 };
 
+/** Variantes cosmétiques de cartes (section 6.6) : même carte, mêmes stats, autre apparence. */
+export const CARD_VARIANTS = ['holo', 'gold', 'glitch', 'negative', 'vhs', 'pixel'] as const;
+export type CardVariant = (typeof CARD_VARIANTS)[number];
+
+/**
+ * Pass saisonnier (section 6.6) : saisons de 28 jours comptées depuis `epoch`, niveaux par points de pass.
+ * Piste gratuite pour tous ; pistes premium et deluxe achetées en argent réel (produits `pass_*`).
+ * Les récompenses des pistes payantes ne sont jamais aléatoires ni un avantage de jeu : cosmétiques et
+ * boosters à aperçu (contenu exact affiché avant l'ouverture).
+ */
+export interface PassConfig {
+  /** Début de la saison 1 (minuit UTC). */
+  epoch: string;
+  seasonDays: number;
+  tiers: number;
+  xpPerTier: number;
+  /** Points de pass en fin de partie en ligne. */
+  matchXp: { win: number; loss: number; draw: number };
+  /** Piste gratuite : pièces à chaque niveau, booster gratuit (aléatoire) tous les `freeBoosterEvery` niveaux. */
+  freeCoins: number;
+  freeBoosterEvery: number;
+  /** Piste premium : booster à aperçu tous les `premiumBoosterEvery` niveaux, variantes sinon. */
+  premiumBoosterEvery: number;
+  /** Variantes de la piste premium ; la piste deluxe donne les autres (exclusives). */
+  premiumVariants: CardVariant[];
+  deluxeVariants: CardVariant[];
+}
+
+export const DEFAULT_PASS: PassConfig = {
+  epoch: '2026-10-01',
+  seasonDays: 28,
+  tiers: 30,
+  xpPerTier: 1000,
+  matchXp: { win: 120, loss: 60, draw: 80 },
+  freeCoins: 30,
+  freeBoosterEvery: 5,
+  premiumBoosterEvery: 3,
+  premiumVariants: ['holo', 'gold', 'pixel'],
+  deluxeVariants: ['glitch', 'negative', 'vhs'],
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -138,6 +179,7 @@ export interface ServerConfig {
   testFixtures: boolean;
   economy: EconomyConfig;
   missions: MissionsConfig;
+  pass: PassConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -216,6 +258,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     testFixtures: !production && env.TEST_FIXTURES === '1',
     economy: DEFAULT_ECONOMY,
     missions: DEFAULT_MISSIONS,
+    pass: DEFAULT_PASS,
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };

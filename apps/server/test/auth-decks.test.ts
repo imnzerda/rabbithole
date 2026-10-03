@@ -23,7 +23,7 @@ describe('comptes', () => {
     expect((await t.app.inject({ method: 'GET', url: '/api/collection', headers })).json().cards).toEqual([]);
     expect((await t.app.inject({ method: 'GET', url: '/api/decks', headers })).json().decks).toEqual([]);
     const wallet = (await t.app.inject({ method: 'GET', url: '/api/wallet', headers })).json().wallet;
-    expect(wallet).toEqual({ coins: 0, gems: 0, freeBoosters: 6 });
+    expect(wallet).toEqual({ coins: 0, gems: 0, freeBoosters: 6, previewBoosters: 0 });
   });
 
   it("aucune condition d'âge : ni date de naissance, ni case à cocher", async () => {

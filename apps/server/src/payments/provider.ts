@@ -14,6 +14,8 @@ export interface CheckoutRequest {
   /** Montant en unité mineure de la devise (centimes ; le yen n'en a pas). */
   amount: number;
   currency: string;
+  /** Page du site où revenir après le paiement (ou son abandon). */
+  returnPath: string;
 }
 
 export interface Checkout {
@@ -54,7 +56,7 @@ export class SandboxProvider implements PaymentProvider {
 
   async createCheckout(request: CheckoutRequest): Promise<Checkout> {
     const sessionId = `sbx_${randomBytes(12).toString('hex')}`;
-    return { sessionId, url: `/shop/sandbox?session=${sessionId}&tx=${request.transactionId}` };
+    return { sessionId, url: `/shop/sandbox?session=${sessionId}&next=${encodeURIComponent(request.returnPath)}` };
   }
 
   sign(rawBody: string): string {
