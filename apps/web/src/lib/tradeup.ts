@@ -20,15 +20,27 @@ export function sparesOf(rarity: Rarity, defs: readonly CardDef[], owned: Readon
     .sort((a, b) => b.spare - a.spare || a.cardId.localeCompare(b.cardId));
 }
 
-/** Doublons donnés pour un trade-up : les plus nombreux d'abord ; null s'il n'y en a pas assez. */
-export function pickSpares(spares: readonly Spare[], required: number): { cardId: string; count: number }[] | null {
-  const out: { cardId: string; count: number }[] = [];
-  let left = required;
+/** Un toucher sur un doublon : un exemplaire de plus ; au maximum, le suivant le retire de la sélection. */
+export function toggleSpare(picked: ReadonlyMap<string, number>, spare: Spare): Map<string, number> {
+  const next = new Map(picked);
+  const n = (next.get(spare.cardId) ?? 0) + 1;
+  if (n > spare.spare) next.delete(spare.cardId);
+  else next.set(spare.cardId, n);
+  return next;
+}
+
+/** Complète la sélection jusqu'au nombre demandé, avec les doublons les plus nombreux d'abord. */
+export function completeSpares(spares: readonly Spare[], picked: ReadonlyMap<string, number>, required: number): Map<string, number> {
+  const next = new Map(picked);
+  let left = required - [...next.values()].reduce((a, b) => a + b, 0);
   for (const s of spares) {
-    if (left === 0) break;
-    const n = Math.min(s.spare, left);
-    out.push({ cardId: s.cardId, count: n });
-    left -= n;
+    if (left <= 0) break;
+    const room = s.spare - (next.get(s.cardId) ?? 0);
+    const n = Math.min(room, left);
+    if (n > 0) {
+      next.set(s.cardId, (next.get(s.cardId) ?? 0) + n);
+      left -= n;
+    }
   }
-  return left === 0 ? out : null;
+  return next;
 }

@@ -7,7 +7,7 @@
   import { CATEGORY_STYLE } from '$lib/game/theme';
   import { loc, locale, t } from '$lib/i18n';
   import { loadSession, session } from '$lib/session.svelte';
-  import { pickSpares, sparesOf } from '$lib/tradeup';
+  import { completeSpares, sparesOf, toggleSpare } from '$lib/tradeup';
   import CardInfo from '$lib/ui/CardInfo.svelte';
   import MiniCard from '$lib/ui/MiniCard.svelte';
 
@@ -34,7 +34,15 @@
   const spares = $derived(sparesOf(rarity, defs, owned, keepFor));
   const spareCount = (r: Rarity) => sparesOf(r, defs, owned, keepFor).reduce((a, s) => a + s.spare, 0);
   const required = $derived(shop ? (category ? shop.economy.tradeUp.targetedCount : shop.economy.tradeUp.count) : 0);
-  const give = $derived(required ? pickSpares(spares, required) : null);
+  // Doublons choisis par le joueur (vidés au changement de rareté) ; le bouton exige le nombre exact.
+  let picked = $state.raw(new Map<string, number>());
+  const pickedCount = $derived([...picked.values()].reduce((a, b) => a + b, 0));
+  const give = $derived(required && pickedCount === required ? [...picked].map(([cardId, count]) => ({ cardId, count })) : null);
+  const spareTotal = $derived(spares.reduce((a, s) => a + s.spare, 0));
+  const chooseRarity = (r: Rarity) => {
+    rarity = r;
+    picked = new Map();
+  };
 
   $effect(() => {
     const [r, c, ready] = [rarity, category, !!shop];
@@ -67,6 +75,7 @@
       const before = owned;
       const { card } = await api.tradeUp(items, category);
       opened = { card, fresh: !before.get(card) };
+      picked = new Map();
     } catch (e) {
       const known = ['not_enough_duplicates', 'wrong_count', 'mixed_rarities'] as const;
       const code = e instanceof ApiError ? known.find((k) => k === e.code) : undefined;
@@ -93,7 +102,7 @@
       <h2>1. {t('tradeup_pick_rarity')}</h2>
       <div class="filters" role="tablist">
         {#each TRADE_RARITIES as r (r)}
-          <button class:on={rarity === r} data-testid="tu-{r}" onclick={() => (rarity = r)}>
+          <button class:on={rarity === r} data-testid="tu-{r}" onclick={() => chooseRarity(r)}>
             {t(`rarity_${r}`)} · {t('tradeup_spares', { n: spareCount(r) })}
           </button>
         {/each}
@@ -130,14 +139,27 @@
     {/if}
 
     <section class="panel highlight">
-      <h2>{t('tradeup_give')}</h2>
-      {#if give}
-        <div class="grid">
-          {#each give as g (g.cardId)}<MiniCard {ctx} defId={g.cardId} count={g.count} onclick={() => (detail = g.cardId)} />{/each}
-        </div>
+      <div class="give-head">
+        <h2>{t('tradeup_give')}</h2>
+        <span class="count" class:ok={pickedCount === required} class:over={pickedCount > required} data-testid="tu-count">{pickedCount} / {required}</span>
+      </div>
+      {#if spareTotal < required}
+        <p class="muted">{t('tradeup_missing', { n: required - spareTotal, r: t(`rarity_${rarity}`) })}</p>
       {:else}
-        <p class="muted">{t('tradeup_missing', { n: required - spares.reduce((a, s) => a + s.spare, 0), r: t(`rarity_${rarity}`) })}</p>
+        <p class="muted">{t('tradeup_pick_hint')}</p>
+        <div class="tools">
+          <button class="btn" disabled={pickedCount >= required} data-testid="tu-complete" onclick={() => (picked = completeSpares(spares, picked, required))}>{t('tradeup_complete')}</button>
+          <button class="btn" disabled={pickedCount === 0} onclick={() => (picked = new Map())}>{t('tradeup_clear')}</button>
+        </div>
       {/if}
+      <div class="grid" data-testid="tu-spares">
+        {#each spares as s (s.cardId)}
+          <div class="pick" class:on={picked.has(s.cardId)}>
+            <MiniCard {ctx} defId={s.cardId} count={s.spare} onclick={() => (picked = toggleSpare(picked, s))} />
+            {#if picked.has(s.cardId)}<span class="picked">+{picked.get(s.cardId)}</span>{/if}
+          </div>
+        {/each}
+      </div>
       <div class="actions">
         <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid="tu-go" onclick={() => give && tradeUp(give)}>
           {t('tradeup_btn', { n: required })}
@@ -250,6 +272,55 @@
     gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     margin-top: 8px;
+  }
+  .give-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .give-head h2 {
+    margin: 0 0 6px;
+  }
+  .count {
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+  }
+  .count.ok {
+    color: var(--win);
+    border-color: var(--win);
+  }
+  .count.over {
+    color: var(--lose);
+    border-color: var(--lose);
+  }
+  .tools {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pick {
+    position: relative;
+    border-radius: 12px;
+    outline: 3px solid transparent;
+  }
+  .pick.on {
+    outline-color: var(--accent);
+  }
+  .picked {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 2px 8px;
+    pointer-events: none;
   }
   details summary {
     cursor: pointer;

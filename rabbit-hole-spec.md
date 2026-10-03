@@ -326,7 +326,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Trade-up ciblé** : 8 doublons → le joueur choisit la catégorie de la carte obtenue.
 - Probabilités affichées. Aucun coût en monnaie : le trade-up n'est **jamais** alimenté par de l'argent réel ou des gemmes.
 - Tirage côté serveur, enregistré (`trade_ups`).
-- **Implémenté** (phase 5) : `GET /api/trade-up` (cartes possibles, toutes équiprobables, et probabilité affichée avant l'échange) et `POST /api/trade-up`. Les doublons sont ceux au-delà des exemplaires jouables (`keepCopies`) ; la seed et les cartes possibles sont enregistrées, donc chaque tirage peut être rejoué pour l'audit. Nombres de doublons en config (`tradeUp`). Rubrique dédiée « Trade-up » (`/trade-up`).
+- **Implémenté** (phase 5) : `GET /api/trade-up` (cartes possibles, toutes équiprobables, et probabilité affichée avant l'échange) et `POST /api/trade-up`. Les doublons sont ceux au-delà des exemplaires jouables (`keepCopies`) ; la seed et les cartes possibles sont enregistrées, donc chaque tirage peut être rejoué pour l'audit. Nombres de doublons en config (`tradeUp`). Rubrique dédiée « Trade-up » (`/trade-up`) : le joueur choisit lui-même les doublons qu'il donne (ou « Compléter » automatiquement).
 
 ### 6.5 Échanges entre joueurs
 - **Échange libre entre amis** (décision du 2026-10-03) : cartes uniquement, autant que voulu de chaque côté, raretés libres, et **dons** compris (un côté vide). Aucune limite par jour ni par semaine.

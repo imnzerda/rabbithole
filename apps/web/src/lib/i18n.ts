@@ -337,6 +337,9 @@ const fr = {
   tradeup_pick_rarity: "Rareté à échanger",
   tradeup_pick_mode: "Tirage",
   tradeup_odds_title: "Cartes possibles",
+  tradeup_pick_hint: "Touche un doublon pour ajouter un exemplaire ; au maximum, touche encore pour le retirer.",
+  tradeup_complete: "Compléter",
+  tradeup_clear: "Vider",
 } as const;
 
 type Key = keyof typeof fr;
@@ -677,6 +680,9 @@ const en: Record<Key, string> = {
   tradeup_pick_rarity: "Rarity to trade",
   tradeup_pick_mode: "Draw",
   tradeup_odds_title: "Possible cards",
+  tradeup_pick_hint: "Tap a duplicate to add a copy; at the maximum, tap again to remove it.",
+  tradeup_complete: "Fill up",
+  tradeup_clear: "Clear",
 };
 
 export const locale: GlossaryLocale =
