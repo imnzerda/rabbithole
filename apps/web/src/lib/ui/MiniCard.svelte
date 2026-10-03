@@ -12,9 +12,11 @@
     /** Badge « Nouveau ! » (ouverture de booster). */
     fresh?: boolean;
     selected?: boolean;
+    /** Variante cosmétique affichée (holo, gold, glitch, negative, vhs, pixel) : même carte, autre apparence. */
+    variant?: string | null;
     onclick?: () => void;
   }
-  let { ctx, defId, count, fresh = false, selected = false, onclick }: Props = $props();
+  let { ctx, defId, count, fresh = false, selected = false, variant = null, onclick }: Props = $props();
 
   const def = $derived(ctx.cards[defId]);
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
@@ -31,7 +33,7 @@
 {#if def && frame}
   <button
     type="button"
-    class="card"
+    class="card variant-{variant ?? 'none'}"
     class:missing={count === 0}
     class:selected
     style:--cat={hex(cat.color)}
@@ -43,6 +45,7 @@
     title={loc(def.name)}
     {onclick}
   >
+    {#if variant}<span class="fx" aria-hidden="true"></span>{/if}
     <span class="band"></span>
     <span class="glyph" aria-hidden="true">{cat.glyph}</span>
     {#if def.type !== 'leader'}<span class="cost">{def.cost}</span>{/if}
@@ -176,6 +179,103 @@
     padding: 1px 6px;
     font-weight: 700;
     font-size: 11cqi;
+  }
+  /* Variantes cosmétiques (section 6.6). */
+  .fx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .variant-holo .fx {
+    background: linear-gradient(115deg, #ff4fd8, #4fb8ff, #6dff9e, #ffe34f, #ff4fd8);
+    background-size: 300% 300%;
+    mix-blend-mode: color-dodge;
+    opacity: 0.45;
+    animation: holo 4s linear infinite;
+  }
+  @keyframes holo {
+    to {
+      background-position: 300% 0;
+    }
+  }
+  .variant-gold {
+    border-color: #ffc94a;
+    background: color-mix(in srgb, #ffc94a 30%, #1b1206);
+  }
+  .variant-gold .name {
+    color: #ffe39a;
+  }
+  .variant-gold .fx {
+    background: linear-gradient(120deg, transparent 35%, rgb(255 240 190 / 0.55) 50%, transparent 65%);
+    background-size: 250% 100%;
+    animation: shine 3s ease-in-out infinite;
+  }
+  @keyframes shine {
+    from {
+      background-position: 150% 0;
+    }
+    to {
+      background-position: -50% 0;
+    }
+  }
+  .variant-glitch .name {
+    text-shadow:
+      0.12em 0 #ff2b6d,
+      -0.12em 0 #2be0ff;
+  }
+  .variant-glitch .fx {
+    background: repeating-linear-gradient(0deg, transparent 0 6%, rgb(43 224 255 / 0.18) 6% 7%, transparent 7% 13%, rgb(255 43 109 / 0.18) 13% 14%);
+    animation: glitch 1.6s steps(2) infinite;
+  }
+  @keyframes glitch {
+    0%,
+    80% {
+      transform: none;
+    }
+    85% {
+      transform: translateX(3%);
+    }
+    90% {
+      transform: translateX(-3%) translateY(2%);
+    }
+  }
+  .variant-negative {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  .variant-vhs {
+    filter: saturate(0.6) contrast(1.15) sepia(0.25);
+  }
+  .variant-vhs .fx {
+    background:
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.25) 0 1px, transparent 1px 3px),
+      linear-gradient(transparent 45%, rgb(255 255 255 / 0.18) 50%, transparent 55%);
+    background-size:
+      100% 100%,
+      100% 300%;
+    animation: vhs 3.5s linear infinite;
+  }
+  @keyframes vhs {
+    from {
+      background-position:
+        0 0,
+        0 -100%;
+    }
+    to {
+      background-position:
+        0 0,
+        0 200%;
+    }
+  }
+  .variant-pixel {
+    font-family: 'Courier New', monospace;
+    border-style: solid;
+    border-radius: 0;
+  }
+  .variant-pixel .fx {
+    background:
+      linear-gradient(90deg, rgb(255 255 255 / 0.07) 50%, transparent 50%) 0 0 / 6px 6px,
+      linear-gradient(rgb(255 255 255 / 0.07) 50%, transparent 50%) 0 0 / 6px 6px;
   }
   .fresh {
     position: absolute;

@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, MissionsDto, NoticeDto, PublicUser, PurchaseDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -89,7 +89,14 @@ export const api = {
   notices: () => request<{ notices: NoticeDto[] }>('GET', '/notices'),
   readNotice: (id?: string) => request<{ ok: true }>('POST', '/notices/read', id ? { id } : {}),
   shop: () => request<ShopDto>('GET', '/shop'),
-  checkout: (productId: string) => request<{ url: string; transactionId: string }>('POST', '/shop/checkout', { productId }),
+  checkout: (productId: string, returnPath: '/shop' | '/pass' = '/shop') => request<{ url: string; transactionId: string }>('POST', '/shop/checkout', { productId, returnPath }),
+  pass: () => request<{ pass: PassDto; offers: OfferDto[] }>('GET', '/pass'),
+  claimPass: (tier: number, track: PassTrack) => request<{ reward: PassReward; wallet: WalletDto }>('POST', '/pass/claim', { tier, track }),
+  redeemBooster: (type: string, cardIds: string[]) =>
+    request<{ cards: string[]; preview: { cardIds: string[]; refreshAt: string }; wallet: WalletDto }>('POST', `/boosters/${type}/redeem`, { cardIds }),
+  cosmetics: () => request<CosmeticsDto>('GET', '/cosmetics'),
+  equipVariant: (cardId: string, variant: string | null) => request<{ ok: true }>('POST', '/cosmetics/variant', { cardId, variant }),
+  setTitle: (titleId: string | null) => request<{ ok: true }>('POST', '/cosmetics/title', { titleId }),
   purchases: () => request<{ purchases: PurchaseDto[] }>('GET', '/purchases'),
   setSpendCap: (cap: number | null) => request<{ spendCap: number | null }>('POST', '/me/spend-cap', { cap }),
   sandboxSession: (session: string) =>

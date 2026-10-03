@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { CATEGORIES, CATEGORY_NAMES, type CardDef, type CategoryId } from '@rabbithole/engine';
-  import type { BoostersResponse } from '@rabbithole/shared';
+  import type { BoostersResponse, CosmeticsDto } from '@rabbithole/shared';
   import { onMount, untrack } from 'svelte';
   import { api, ApiError } from '$lib/api';
   import { CATEGORY_STYLE } from '$lib/game/theme';
@@ -21,6 +21,10 @@
     .sort((a, b) => CATEGORIES.indexOf(a.categories[0]!) - CATEGORIES.indexOf(b.categories[0]!) || a.cost - b.cost);
 
   let shop = $state.raw<BoostersResponse | null>(null);
+  // Variantes cosmétiques possédées (pass) : celle affichée pour chaque carte.
+  let cosmetics = $state.raw<CosmeticsDto | null>(null);
+  const equipped = $derived(new Map((cosmetics?.variants ?? []).filter((v) => v.equipped).map((v) => [v.cardId, v.variant])));
+  const variantsOf = (cardId: string) => (cosmetics?.variants ?? []).filter((v) => v.cardId === cardId).map((v) => v.variant);
   let owned = $state.raw(new Map<string, number>());
   let filter = $state<'all' | 'owned' | CategoryId>('all');
   let opened = $state.raw<{ title: string; cards: string[]; fresh: Set<string> } | null>(null);
@@ -38,8 +42,9 @@
   const ownedTotal = $derived([...owned.values()].reduce((a, b) => a + b, 0));
 
   async function refresh(): Promise<void> {
-    const [b, c] = await Promise.all([api.boosters(), api.collection()]);
+    const [b, c, k] = await Promise.all([api.boosters(), api.collection(), api.cosmetics()]);
     shop = b;
+    cosmetics = k;
     owned = new Map(c.cards.map((x) => [x.cardId, x.quantity]));
   }
 
@@ -55,7 +60,7 @@
 
   function errorText(e: unknown): string {
     if (!(e instanceof ApiError)) return t('err_generic');
-    const known = ['not_enough_coins', 'preview_changed', 'not_enough_duplicates'] as const;
+    const known = ['not_enough_coins', 'preview_changed', 'not_enough_duplicates', 'no_preview_booster'] as const;
     const code = known.find((k) => k === e.code);
     return code ? t(`err_${code}`) : t('err_generic');
   }
@@ -88,6 +93,20 @@
     run(async () => {
       const before = owned;
       reveal((await api.purchase(type, cardIds)).cards, before);
+      await refresh();
+    });
+
+  /** Booster à aperçu offert (pass) : ouvre exactement l'aperçu affiché, sans pièces. */
+  const redeem = (type: string, cardIds: string[]) =>
+    run(async () => {
+      const before = owned;
+      reveal((await api.redeemBooster(type, cardIds)).cards, before);
+      await refresh();
+    });
+
+  const equip = (cardId: string, variant: string | null) =>
+    run(async () => {
+      await api.equipVariant(cardId, variant);
       await refresh();
     });
 
@@ -128,6 +147,7 @@
         <span title={t('coins')}>🪙 {wallet.coins}</span>
         <span title={t('gems')}>💎 {wallet.gems}</span>
         <span title={t('free_boosters')}>🎁 {wallet.freeBoosters}</span>
+        {#if wallet.previewBoosters}<span title={t('preview_boosters')} data-testid="preview-boosters">📦 {wallet.previewBoosters}</span>{/if}
       </div>
     {/if}
   </header>
@@ -173,6 +193,11 @@
           <button class="btn gift" disabled={busy || !wallet?.freeBoosters} data-testid="open-free" onclick={() => openFree(booster.type)}>
             🎁 {t('open_free', { n: wallet?.freeBoosters ?? 0 })}
           </button>
+          {#if wallet?.previewBoosters}
+            <button class="btn gift" disabled={busy} data-testid="redeem" onclick={() => redeem(booster.type, booster.preview.cardIds)}>
+              📦 {t('redeem_preview', { n: wallet.previewBoosters })}
+            </button>
+          {/if}
         </div>
         <p class="muted small">{t('earn_hint')}</p>
         <details>
@@ -196,7 +221,7 @@
       </div>
       <div class="grid" data-testid="collection">
         {#each visible as card (card.id)}
-          <MiniCard {ctx} defId={card.id} count={owned.get(card.id) ?? 0} onclick={() => (detail = card.id)} />
+          <MiniCard {ctx} defId={card.id} count={owned.get(card.id) ?? 0} variant={equipped.get(card.id) ?? null} onclick={() => (detail = card.id)} />
         {/each}
       </div>
     </section>
@@ -224,6 +249,18 @@
     <div class="sheet-backdrop" role="presentation" onclick={() => (detail = null)}>
       <div class="sheet" role="dialog" aria-modal="true" aria-label={loc(def.name)} tabindex="-1" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.key === 'Escape' && (detail = null)}>
         <CardInfo {ctx} defId={detail} />
+        {#if variantsOf(def.id).length}
+          <div class="variants" data-testid="variants">
+            <p class="owned">{t('appearance')}</p>
+            <div class="variant-row">
+              <button class="chip-btn" class:on={!equipped.get(def.id)} disabled={busy} onclick={() => equip(def.id, null)}>{t('variant_none')}</button>
+              {#each variantsOf(def.id) as v (v)}
+                <button class="chip-btn" class:on={equipped.get(def.id) === v} disabled={busy} data-testid="variant-{v}" onclick={() => equip(def.id, v)}>✨ {t(`variant_${v as 'holo'}`)}</button>
+              {/each}
+            </div>
+            <div class="variant-preview"><MiniCard {ctx} defId={def.id} variant={equipped.get(def.id) ?? null} /></div>
+          </div>
+        {/if}
         <p class="owned">{t('owned_count', { n: count })}</p>
         <div class="actions">
           <button class="btn" disabled={busy || count <= keepFor(def)} onclick={() => recycle(def.id)}>{t('recycle_btn', { n: shop.economy.recycle[def.rarity] ?? 0 })}</button>
@@ -412,6 +449,31 @@
       transform: none;
       opacity: 1;
     }
+  }
+  .variants {
+    margin-top: 14px;
+  }
+  .variant-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .chip-btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .chip-btn.on {
+    background: color-mix(in srgb, var(--accent) 30%, var(--panel));
+    border-color: var(--accent);
+  }
+  .variant-preview {
+    width: 120px;
   }
   .owned {
     font-weight: 700;

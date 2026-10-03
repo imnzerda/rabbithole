@@ -139,7 +139,7 @@
       {#if purchases.length === 0}<p class="muted">{t('no_purchases')}</p>{/if}
       {#each purchases as p (p.id)}
         <div class="row" data-testid="purchase">
-          <span class="name">💎 {p.gems}</span>
+          <span class="name">{p.gems ? `💎 ${p.gems}` : loc(p.name)}</span>
           <span>{price(p.amount, p.currency)}</span>
           <span class="muted date">{new Date(p.createdAt).toLocaleDateString(locale)}</span>
           <span class="status status-{p.status}">{t(`purchase_status_${p.status as 'completed'}`)}</span>

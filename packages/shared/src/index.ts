@@ -269,3 +269,10 @@ export interface PassDto {
   claimed: Record<PassTrack, number[]>;
   tiers: PassTierDto[];
 }
+
+/** Cosmétiques possédés : variantes de cartes (une affichée par carte) et titres. */
+export interface CosmeticsDto {
+  variants: { cardId: string; variant: string; equipped: boolean }[];
+  titles: { id: string; name: Record<string, string> }[];
+  activeTitle: string | null;
+}

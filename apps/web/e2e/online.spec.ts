@@ -215,6 +215,41 @@ test('missions : 3 du jour et 3 de la semaine, réclamation une fois remplie', a
   }
 });
 
+test('pass : achat direct du premium, récompenses réclamées, booster à aperçu offert ouvert dans la Collection', async ({ page }, info) => {
+  await signup(page, `pass-${info.project.name}`, '/pass');
+  await expect(page.getByTestId('pass-level')).toContainText('Niveau 0 / 30 · Gratuit');
+  await expect(page.getByTestId('tier')).toHaveCount(30);
+
+  // Achat direct (pas en gemmes) : page de paiement du prestataire, retour sur le pass.
+  await page.getByTestId('buy-pass_premium').click();
+  await expect(page).toHaveURL(/\/shop\/sandbox\?session=sbx_/);
+  await page.getByTestId('sandbox-pay').click();
+  await expect(page).toHaveURL(/\/pass\?status=success$/);
+  await expect(page.getByTestId('message')).toHaveText('Merci ! Ta piste est débloquée.');
+  await expect(page.getByTestId('pass-level')).toContainText('Premium');
+  await expect(page.getByTestId('buy-pass_upgrade')).toBeVisible();
+
+  // Trois niveaux de points (route de test), puis les récompenses premium des niveaux 1 et 3.
+  await page.request.post('/api/test/pass-xp', { data: { xp: 3000 } });
+  await page.reload();
+  await page.getByTestId('reward-premium-1').getByRole('button').click();
+  await expect(page.getByTestId('message')).toContainText('Titre');
+  await page.getByTestId('reward-premium-3').getByRole('button').click();
+  await expect(page.getByTestId('message')).toContainText('Booster à aperçu');
+
+  // Le booster offert ouvre exactement l'aperçu affiché dans la Collection.
+  await page.goto('/collection');
+  await expect(page.getByTestId('preview-boosters')).toHaveText('📦 1');
+  const preview = await page.getByTestId('preview').getByRole('button').allTextContents();
+  await page.getByTestId('redeem').click();
+  const opened = page.getByTestId('opened');
+  await expect(opened.getByRole('button')).toHaveCount(6);
+  expect((await opened.getByRole('button').allTextContents()).slice(0, 5).map((s) => s.replace('Nouveau', ''))).toEqual(preview.map((s) => s.replace('Nouveau', '')));
+  await opened.getByRole('button', { name: 'Fermer' }).click();
+  await expect(page.getByTestId('preview-boosters')).toHaveCount(0);
+  await expect(page.getByTestId('wallet')).toContainText('🪙 0');
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

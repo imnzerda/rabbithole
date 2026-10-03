@@ -6,7 +6,7 @@ import type { AppDeps } from '../deps.js';
 import { EconomyError, getWallet } from '../economy/economy.js';
 import { listOffers } from '../payments/payments.js';
 import { claimMission, listMissions } from './missions.js';
-import { addPassXpSafe, claimTier, getPass } from './pass.js';
+import { addPassXp, addPassXpSafe, claimTier, getPass } from './pass.js';
 
 /** Rétention (phase 6) : missions, pass saisonnier, cosmétiques (titres, variantes de cartes). */
 export function registerRetention(app: FastifyInstance, { db, config, catalog }: AppDeps): void {
@@ -45,6 +45,16 @@ export function registerRetention(app: FastifyInstance, { db, config, catalog }:
       return fail(reply, error);
     }
   });
+
+  // Données de test (tests automatisés uniquement, interdit en production par la config).
+  if (config.testFixtures) {
+    app.post('/api/test/pass-xp', { preHandler: requireUser }, async (request, reply) => {
+      const body = z.object({ xp: z.number().int().min(1).max(100_000) }).safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+      await addPassXp(db, request.user!.id, body.data.xp, config.pass);
+      return { ok: true };
+    });
+  }
 
   /** Cosmétiques possédés : variantes de cartes (une affichée par carte) et titres (un actif). */
   app.get('/api/cosmetics', { preHandler: requireUser }, async (request) => {

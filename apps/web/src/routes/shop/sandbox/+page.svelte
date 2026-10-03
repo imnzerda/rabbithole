@@ -13,6 +13,8 @@
    */
   type Session = Awaited<ReturnType<typeof api.sandboxSession>>['session'];
   const sessionId = page.url.searchParams.get('session') ?? '';
+  // Page d'où vient le paiement (boutique ou pass) : on y revient après.
+  const next = page.url.searchParams.get('next') === '/pass' ? '/pass' : '/shop';
   let info = $state.raw<Session | null>(null);
   let failed = $state(false);
   let busy = $state(false);
@@ -30,7 +32,7 @@
     busy = true;
     try {
       await api.sandboxAction(sessionId, action);
-      await goto(`/shop?status=${action === 'pay' ? 'success' : 'cancel'}`);
+      await goto(`${next}?status=${action === 'pay' ? 'success' : 'cancel'}`);
     } catch {
       failed = true;
     } finally {
