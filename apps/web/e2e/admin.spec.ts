@@ -9,7 +9,7 @@ const EMAIL = 'admin-e2e@example.com';
 
 test.skip(({ isMobile }) => isMobile, 'Outil interne : sur PC uniquement.');
 
-test('admin : import des candidats, carte créée, éditée, validée, publiée, jouable', async ({ page, request }) => {
+test('admin : import des candidats, carte créée, éditée, publiée, jouable ; suppression manuelle', async ({ page, request }) => {
   // Compte admin (listé dans ADMIN_EMAILS du serveur de test) : inscription, ou connexion s'il existe déjà.
   const signup = await page.request.post('/api/auth/signup', {
     data: { email: EMAIL, password: 'motdepasse1', displayName: 'Admin E2E', country: 'FR', locale: 'fr', fp: `admin-fp-${Date.now()}` },
@@ -65,13 +65,9 @@ test('admin : import des candidats, carte créée, éditée, validée, publiée,
   await page.getByTestId('save').click();
   await expect(page.getByRole('status')).toContainText('Enregistré (version 2)');
 
-  // Publication bloquée tant que la politique de contenu n'est pas validée.
+  // Carte « à revoir » : l'information est affichée, la publication n'est pas bloquée.
+  await expect(page.getByText('career_start_unknown')).toBeVisible();
   await page.getByRole('button', { name: 'Passer en relecture' }).click();
-  await page.getByRole('button', { name: 'Publier' }).click();
-  await expect(page.getByRole('alert')).toContainText('validation humaine requise');
-  await page.getByPlaceholder('Note de validation (obligatoire)').fill('Adulte au début de carrière (vérifié), faits publics.');
-  await page.getByRole('button', { name: 'Valider la politique de contenu' }).click();
-  await expect(page.getByRole('status')).toContainText('Politique de contenu validée.');
   await page.getByRole('button', { name: 'Publier' }).click();
   await expect(page.getByRole('status')).toContainText('Statut : Publiée.');
 
@@ -85,4 +81,13 @@ test('admin : import des candidats, carte créée, éditée, validée, publiée,
 
   await page.goto(`${ADMIN}/audit`);
   await expect(page.getByText('card.published').first()).toBeVisible();
+
+  // Enlever une carte à la main : un brouillon jamais publié est effacé.
+  const draft = await page.request.post(`${ADMIN}/api/admin/cards`, { data: { series, type: 'character', name: `Brouillon ${stamp}` } });
+  const draftId = (await draft.json()).card.id as string;
+  await page.goto(`${ADMIN}/cards/${encodeURIComponent(draftId)}`);
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('remove-card').click();
+  await expect(page).toHaveURL(/\/cards$/);
+  expect((await page.request.get(`${ADMIN}/api/admin/cards/${encodeURIComponent(draftId)}`)).status()).toBe(404);
 });

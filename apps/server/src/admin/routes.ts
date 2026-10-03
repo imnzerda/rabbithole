@@ -8,7 +8,6 @@ import {
   AdminError,
   audit,
   cardFromCandidate,
-  clearPolicy,
   createBlankCard,
   createSeries,
   getCard,
@@ -17,6 +16,7 @@ import {
   listCandidates,
   listCards,
   listSeries,
+  removeCard,
   preview,
   saveCard,
   setCandidateStatus,
@@ -56,7 +56,6 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
          (SELECT count(*)::int FROM cards WHERE status = 'draft') AS drafts,
          (SELECT count(*)::int FROM cards WHERE status = 'review') AS in_review,
          (SELECT count(*)::int FROM cards WHERE status = 'published') AS published,
-         (SELECT count(*)::int FROM cards WHERE policy_status = 'needs_review' AND policy_cleared_by IS NULL AND status <> 'retired') AS policy_pending,
          (SELECT count(*)::int FROM reports WHERE status = 'open') AS reports_open,
          (SELECT count(*)::int FROM takedown_requests WHERE status IN ('open', 'in_progress')) AS takedowns_open,
          (SELECT count(*)::int FROM takedown_requests WHERE status IN ('open', 'in_progress') AND due_at < now()) AS takedowns_overdue`,
@@ -200,14 +199,14 @@ export function registerAdmin(app: FastifyInstance, { db, catalog }: AppDeps): v
     }
   });
 
-  app.post('/api/admin/cards/:id/clear-policy', admin, async (request, reply) => {
+  /** Enlever une carte : effacée si elle n'a jamais été publiée, sinon retirée du jeu. */
+  app.delete('/api/admin/cards/:id', admin, async (request, reply) => {
     const cardId = z.object({ id }).parse(request.params).id;
-    const body = z.object({ note: z.string().trim().min(5).max(1000) }).safeParse(request.body);
-    if (!body.success) return reply.code(400).send({ error: 'note_required' });
     try {
-      await clearPolicy(db, cardId, me(request), body.data.note);
-      await audit(db, me(request), 'card.clear_policy', cardId, { note: body.data.note });
-      return { ok: true };
+      const result = await removeCard(db, cardId);
+      await audit(db, me(request), result === 'deleted' ? 'card.delete' : 'card.retired', cardId);
+      if (result === 'retired') await republish();
+      return { result };
     } catch (err) {
       return fail(reply, err);
     }

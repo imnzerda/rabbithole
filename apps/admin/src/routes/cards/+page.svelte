@@ -17,6 +17,19 @@
   let newName = $state('');
   let importReport = $state<string | null>(null);
 
+  /** Enlever une carte : effacée si elle n'a jamais été publiée, sinon retirée du jeu. */
+  async function remove(c: CardRow): Promise<void> {
+    if (!confirm(`Enlever « ${c.name} » ? Jamais publiée : elle est effacée. Déjà publiée : elle est retirée du jeu.`)) return;
+    error = importReport = null;
+    try {
+      const { result } = await api.removeCard(c.id);
+      importReport = result === 'deleted' ? `« ${c.name} » effacée.` : `« ${c.name} » retirée du jeu.`;
+      await load();
+    } catch (err) {
+      error = errorMessage(err);
+    }
+  }
+
   /** Lot de brouillons : fichier JSON { series, cards } (ex. tools/pipeline/drafts/base_01.json). */
   async function importFile(e: Event): Promise<void> {
     const input = e.currentTarget as HTMLInputElement;
@@ -100,7 +113,7 @@
 
 <table>
   <thead>
-    <tr><th>Carte</th><th>Type</th><th>Rareté</th><th>Catégories</th><th>Coût / Puiss.</th><th>Budget</th><th>Politique</th><th>Statut</th></tr>
+    <tr><th>Carte</th><th>Type</th><th>Rareté</th><th>Catégories</th><th>Coût / Puiss.</th><th>Budget</th><th>Politique</th><th>Statut</th><th></th></tr>
   </thead>
   <tbody>
     {#each rows as c (c.id)}
@@ -112,11 +125,10 @@
         <td>{c.cost} / {c.power}</td>
         <td><span class="tag {verdictClass(c.budget?.verdict)}">{c.budget ? `${c.budget.delta > 0 ? '+' : ''}${c.budget.delta} ${c.budget.verdict}` : 'invalide'}</span></td>
         <td>
-          <span class="tag {c.policy === 'ok' || c.policyCleared ? 'ok' : c.policy === 'excluded' ? 'bad' : 'warn'}">
-            {c.policy === 'needs_review' ? (c.policyCleared ? 'validée' : 'à valider') : c.policy}
-          </span>
+          <span class="tag {c.policy === 'ok' ? 'ok' : c.policy === 'excluded' ? 'bad' : 'warn'}">{c.policy === 'needs_review' ? 'à revoir' : c.policy}</span>
         </td>
         <td>{STATUS[c.status] ?? c.status}</td>
+        <td>{#if c.status !== 'retired'}<button class="danger" onclick={() => remove(c)}>Supprimer</button>{/if}</td>
       </tr>
     {/each}
   </tbody>

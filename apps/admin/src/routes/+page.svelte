@@ -11,7 +11,6 @@
     ['candidates_to_review', 'Candidats à revoir (politique)', '/candidates?policy=needs_review'],
     ['drafts', 'Cartes en brouillon', '/cards?status=draft'],
     ['in_review', 'Cartes en relecture', '/cards?status=review'],
-    ['policy_pending', 'Cartes en attente de validation (politique)', '/cards'],
     ['published', 'Cartes publiées', '/cards?status=published'],
     ['takedowns_open', 'Demandes de retrait en cours', '/moderation'],
     ['takedowns_overdue', 'Demandes de retrait en retard (72 h)', '/moderation'],

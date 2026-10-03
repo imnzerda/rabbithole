@@ -261,12 +261,12 @@ Chaque critère est converti en percentile **dans la catégorie principale du su
 - à revoir : cité comme victime d'un événement, condamnation, mort violente, overdose, Industrie X, mots sensibles dans la description ;
 - drapeaux : `adult`, `sensitive` (masquable par le joueur), `politicallySensitive` (filtrage par pays).
 
-Dans l'outil d'admin, une carte « à revoir » ne se publie qu'avec une note de validation ; un sujet exclu (mineur aujourd'hui) ne peut jamais devenir une carte.
+Dans l'outil d'admin, les raisons « à revoir » sont affichées pour information et ne bloquent pas la publication ; un sujet exclu (mineur aujourd'hui) ne peut jamais devenir une carte. Une carte s'enlève à la main : effacée si elle n'a jamais été publiée, retirée du jeu sinon (des joueurs ont pu l'obtenir).
 
 **Exclusion automatique**
 - Toute personne **encore mineure aujourd'hui** → exclue. Une carrière commencée avant 18 ans n'exclut pas (décision du 2026-10-02).
 
-**Revue humaine obligatoire** (décision du 2026-10-03 : plus d'exclusion automatique, l'admin décide, avec une note) :
+**Signalés pour information** (décision du 2026-10-03 : ni exclusion automatique ni validation humaine obligatoire ; l'admin publie ou enlève la carte) :
 - **victimes** de crimes, d'attentats, de catastrophes ;
 - attentats, figures terroristes, organisations terroristes ;
 - négation de crimes contre l'humanité (ex. négation de la Shoah) ;
@@ -435,7 +435,7 @@ Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, �
 - Gestion de la boutique, des prix régionaux, du pass, des événements.
 - Journal d'audit de toutes les actions admin.
 
-**Implémenté** (phase 4) : accès par rôle (`ADMIN_EMAILS`) ; import des candidats du pipeline (filtres, retenir / rejeter, carte créée en brouillon prérempli) ; import de lots de brouillons ; éditeur avec aperçu en direct (validation du moteur, budget, texte de la carte), statuts brouillon → relecture → publiée → retirée ; validation de la politique de contenu avec note ; images et crédits, retrait en un clic ; séries ; file des signalements ; file des demandes de retrait (échéance 72 h, retrait de la carte en un clic) ; règles par pays ; budget du catalogue et simulations IA contre IA ; journal d'audit. **À venir** : éditeur dédié des Leaders et des mots-clés, statistiques de victoire réelles par carte (section 15), boutique, prix régionaux, pass, événements.
+**Implémenté** (phase 4) : accès par rôle (`ADMIN_EMAILS`) ; import des candidats du pipeline (filtres, retenir / rejeter, carte créée en brouillon prérempli) ; import de lots de brouillons ; éditeur avec aperçu en direct (validation du moteur, budget, texte de la carte), statuts brouillon → relecture → publiée → retirée, suppression manuelle ; raisons de la politique de contenu affichées pour information ; images et crédits, retrait en un clic ; séries ; file des signalements ; file des demandes de retrait (échéance 72 h, retrait de la carte en un clic) ; règles par pays ; budget du catalogue et simulations IA contre IA ; journal d'audit. **À venir** : éditeur dédié des Leaders et des mots-clés, statistiques de victoire réelles par carte (section 15), boutique, prix régionaux, pass, événements.
 
 ---
 

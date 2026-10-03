@@ -22,6 +22,13 @@
 
 ## Journal
 
+### 2026-10-03 — Plus de validation humaine ; suppression manuelle des cartes
+
+- La politique de contenu ne bloque plus la publication, sauf pour un sujet exclu (personne mineure aujourd'hui). Les raisons « à revoir » restent affichées dans l'admin, pour information ; l'étape « Valider la politique de contenu » est supprimée.
+- **Supprimer une carte** (éditeur et liste des cartes) : effacée si elle n'a jamais été publiée (son candidat redevient disponible), retirée du jeu sinon. Migration `009` : indicateur « déjà publiée ».
+- Tests : 63 serveur → 64 (dont la suppression), 24 E2E (parcours admin avec suppression).
+
+
 ### 2026-10-03 — Exclusions automatiques remplacées par la revue humaine
 
 - Décision : plus d'exclusion automatique pour le terrorisme, les attentats, la négation de la Shoah ; ces sujets passent « à revoir » (note obligatoire pour publier) et sont marqués « sensibles ». Base `base_01` : 0 exclu, 282 à revoir.
@@ -295,7 +302,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 
 ### Clore la phase 4 (à faire dans l'admin)
 1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis les lots `tools/pipeline/drafts/base_01.json` et `base_01_lot2.json` (Cartes → Importer des brouillons).
-2. Relire les 85 cartes, valider la politique de contenu des cartes « à revoir » (Al Capone, Jules César, Marilyn Monroe, Cléopâtre, Frank Abagnale, Charles Ponzi, Gandhi), passer en relecture, publier ; publier la série `base_01`.
+2. Relire les 85 cartes (enlever celles qui ne conviennent pas), passer en relecture, publier ; publier la série `base_01`.
 
 ### Set de base (suite)
 - Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons ; davantage de Leaders (plusieurs par paire de catégories).

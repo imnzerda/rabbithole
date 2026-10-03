@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { CATEGORIES, CATEGORY_NAMES, KEYWORDS, KEYWORD_NAMES, RARITIES, type CardDef, type CategoryId, type KeywordId } from '@rabbithole/engine';
   import { api, errorMessage, type CardDetail, type CardStatus, type Preview } from '$lib/api';
@@ -27,7 +28,6 @@
   let effectsJson = $state('[]');
   let jsonError = $state<string | null>(null);
   let live = $state.raw<Preview | null>(null);
-  let note = $state('');
   let message = $state<string | null>(null);
   let error = $state<string | null>(null);
   let dirty = $state(false);
@@ -116,13 +116,17 @@
     }
   }
 
-  async function clear(): Promise<void> {
+  /** Enlever la carte : effacée si elle n'a jamais été publiée, sinon retirée du jeu. */
+  async function remove(): Promise<void> {
+    if (!confirm('Enlever cette carte ? Jamais publiée : elle est effacée. Déjà publiée : elle est retirée du jeu.')) return;
     error = message = null;
     try {
-      await api.clearPolicy(cardId, note);
-      note = '';
-      message = 'Politique de contenu validée.';
-      await load();
+      const { result } = await api.removeCard(cardId);
+      if (result === 'deleted') await goto('/cards');
+      else {
+        message = 'Carte retirée du jeu (déjà publiée : elle ne peut pas être effacée).';
+        await load();
+      }
     } catch (err) {
       error = errorMessage(err);
     }
@@ -229,6 +233,7 @@
           {#each TRANSITIONS[detail.status] as t (t.to)}
             <button class:primary={t.to === 'published'} class:danger={t.danger} onclick={() => setStatus(t.to)}>{t.label}</button>
           {/each}
+          {#if detail.status !== 'retired'}<button class="danger" onclick={remove} data-testid="remove-card">Supprimer</button>{/if}
         </div>
       </section>
 
@@ -257,20 +262,10 @@
       <section class="panel">
         <h2>Politique de contenu</h2>
         <p>
-          <span class="tag {detail.policy.status === 'ok' || detail.policy.cleared ? 'ok' : detail.policy.status === 'excluded' ? 'bad' : 'warn'}">
-            {detail.policy.status}{detail.policy.cleared ? ' · validée' : ''}
-          </span>
+          <span class="tag {detail.policy.status === 'ok' ? 'ok' : detail.policy.status === 'excluded' ? 'bad' : 'warn'}">{detail.policy.status}</span>
           {#each detail.policy.reasons as r, i (i)}<span class="tag">{r}</span>{/each}
         </p>
-        {#if detail.policy.note}<p class="muted">Note : {detail.policy.note}</p>{/if}
-        {#if detail.policy.status === 'needs_review' && !detail.policy.cleared}
-          <p class="muted">
-            Vérifie : personne majeure pendant les faits de la carte, pas une victime, pas de terrorisme, faits publics et sourcés,
-            texte jamais dégradant ni diffamatoire. En cas de doute, retirer la carte.
-          </p>
-          <textarea rows="3" placeholder="Note de validation (obligatoire)" bind:value={note}></textarea>
-          <button onclick={clear} disabled={note.trim().length < 5}>Valider la politique de contenu</button>
-        {/if}
+        <p class="muted">Pour information : seul un sujet exclu (personne mineure aujourd'hui) bloque la publication.</p>
       </section>
 
       <section class="panel">

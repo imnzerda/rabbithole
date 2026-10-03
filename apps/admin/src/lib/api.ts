@@ -65,7 +65,6 @@ export interface CardRow {
   cost: number;
   power: number;
   policy: PolicyStatus;
-  policyCleared: boolean;
   budget: { delta: number; verdict: BudgetReport['verdict'] } | null;
 }
 
@@ -92,7 +91,7 @@ export interface CardDetail extends Preview {
   status: CardStatus;
   version: number;
   def: CardDef;
-  policy: { status: PolicyStatus; reasons: string[]; cleared: boolean; note: string | null };
+  policy: { status: PolicyStatus; reasons: string[] };
   images: CardImage[];
 }
 
@@ -182,7 +181,8 @@ export const api = {
   preview: (def: CardDef) => request<Preview>('POST', '/admin/cards/preview', { def }),
   saveCard: (id: string, def: CardDef) => request<{ status: CardStatus; version: number }>('PUT', `/admin/cards/${encodeURIComponent(id)}`, { def }),
   cardStatus: (id: string, status: CardStatus) => request<{ ok: true; catalogVersion: string }>('POST', `/admin/cards/${encodeURIComponent(id)}/status`, { status }),
-  clearPolicy: (id: string, note: string) => request<{ ok: true }>('POST', `/admin/cards/${encodeURIComponent(id)}/clear-policy`, { note }),
+  /** Effacée si jamais publiée, sinon retirée du jeu. */
+  removeCard: (id: string) => request<{ result: 'deleted' | 'retired' }>('DELETE', `/admin/cards/${encodeURIComponent(id)}`),
   imageActive: (id: string, imageId: string, active: boolean) => request<{ ok: true }>('POST', `/admin/cards/${encodeURIComponent(id)}/images/${imageId}`, { active }),
 
   series: () => request<{ series: SeriesRow[] }>('GET', '/admin/series'),

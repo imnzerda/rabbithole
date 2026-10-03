@@ -53,11 +53,11 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
 - Aucun avantage de jeu achetable en dehors des boosters prévisualisés.
 
 ### Contenu
-- Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Seule exclusion automatique : **toute personne encore mineure aujourd'hui** (une carrière commencée avant 18 ans n'exclut pas). Tout le reste est décidé en revue humaine dans l'admin (décision du 2026-10-03) : victimes, terrorisme, négation de crimes contre l'humanité, condamnations, personnes privées, performeurs X ayant dénoncé une exploitation. Ces sujets sont marqués « sensibles ».
+- Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Seule exclusion : **toute personne encore mineure aujourd'hui** (une carrière commencée avant 18 ans n'exclut pas). Plus de validation humaine obligatoire (décision du 2026-10-03) : les raisons du pipeline (victimes, terrorisme, négation de crimes contre l'humanité, condamnations, morts violentes…) restent affichées dans l'admin pour information et ces sujets sont marqués « sensibles ». Une carte s'enlève à la main dans l'admin (effacée si jamais publiée, retirée du jeu sinon).
 - Les textes sont décalés mais **jamais dégradants ni diffamatoires**, et aucune image n'est explicite.
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
 - Le contenu `adult` (et `politicallySensitive`) est filtré par pays (`country_rules`).
-- Aucune carte n'est publiée sans passer par l'outil d'admin : politique de contenu validée (note obligatoire si « à revoir »), image créditée ou carte typographique.
+- Aucune carte n'est publiée sans passer par l'outil d'admin : définition valide, sujet non exclu, image créditée ou carte typographique.
 - **Aucune condition d'âge** à l'inscription (ni date de naissance, ni case 21+). À la place : **signalements** (cartes, joueurs) et **interrupteur « contenu sensible »** (masqué par défaut, affichage seulement).
 - **Inscription protégée** : captcha invisible (Turnstile), pot de miel, débit limité par IP et sous-réseau, e-mails jetables et alias refusés, un compte par appareil (empreinte numérique, cookie d'appareil), SMS demandé en cas de risque (VPN, appareil vu ailleurs) avec un compte par numéro. Comptes partageant un appareil ou une IP signalés. IP, appareils et numéros stockés uniquement en empreinte salée.
 - **Pas de kit de départ** : les joueurs construisent leur deck en ouvrant des boosters.

@@ -285,7 +285,6 @@ export async function listCards(db: Db, f: { series?: string; status?: string; q
       cost: r.def.cost,
       power: r.def.power,
       policy: r.policy_status,
-      policyCleared: !!r.policy_cleared_by,
       budget: budget ? { delta: budget.delta, verdict: budget.verdict } : null,
     };
   });
@@ -301,7 +300,7 @@ export async function getCard(db: Db, id: string, ctx: MatchContext) {
     status: row.status,
     version: row.version,
     def: row.def,
-    policy: { status: row.policy_status, reasons: row.policy_reasons, cleared: !!row.policy_cleared_by, note: row.policy_note },
+    policy: { status: row.policy_status, reasons: row.policy_reasons },
     images,
     ...preview(row.def, ctx),
   };
@@ -344,12 +343,22 @@ export async function saveCard(db: Db, id: string, def: CardDef, ctx: MatchConte
   return { status: row.status, version: saved!.version };
 }
 
-/** Validation humaine d'une carte « à revoir » (section 5) ; une carte exclue ne peut jamais être validée. */
-export async function clearPolicy(db: Db, id: string, adminId: string, note: string): Promise<void> {
-  const [row] = await db.query<CardRow>('SELECT * FROM cards WHERE id = $1', [id]);
+/**
+ * Enlever une carte à la main. Jamais publiée : elle est effacée et son candidat redevient disponible.
+ * Déjà publiée (des joueurs ont pu l'obtenir) : elle est retirée du jeu, jamais effacée.
+ */
+export async function removeCard(db: Db, id: string): Promise<'deleted' | 'retired'> {
+  const [row] = await db.query<CardRow & { published_once: boolean }>('SELECT * FROM cards WHERE id = $1', [id]);
   if (!row) throw new AdminError('not_found', 404);
-  if (row.policy_status === 'excluded') throw new AdminError('policy_excluded', 409, row.policy_reasons);
-  await db.query('UPDATE cards SET policy_cleared_by = $2, policy_note = $3, updated_at = now() WHERE id = $1', [id, adminId, note]);
+  if (row.published_once) {
+    await db.query("UPDATE cards SET status = 'retired', updated_at = now() WHERE id = $1", [id]);
+    return 'retired';
+  }
+  await db.transaction(async (tx) => {
+    await tx.query("UPDATE candidates SET status = 'new', card_id = NULL, updated_at = now() WHERE card_id = $1", [id]);
+    await tx.query('DELETE FROM cards WHERE id = $1', [id]);
+  });
+  return 'deleted';
 }
 
 const TRANSITIONS: Record<CardStatus, CardStatus[]> = {
@@ -359,11 +368,13 @@ const TRANSITIONS: Record<CardStatus, CardStatus[]> = {
   retired: ['draft'],
 };
 
-/** Conditions de publication : définition valide, politique de contenu passée, image créditée ou carte typographique. */
+/**
+ * Conditions de publication : définition valide, sujet non exclu (mineur aujourd'hui), image créditée ou carte
+ * typographique. Les raisons « à revoir » du pipeline sont affichées à titre d'information, sans bloquer.
+ */
 export async function publishBlockers(db: Db, row: CardRow, ctx: MatchContext): Promise<string[]> {
   const blockers = checkDef(row.def, ctx);
-  if (row.policy_status === 'excluded') blockers.push('politique de contenu : sujet exclu');
-  if (row.policy_status === 'needs_review' && !row.policy_cleared_by) blockers.push('politique de contenu : validation humaine requise');
+  if (row.policy_status === 'excluded') blockers.push('politique de contenu : sujet exclu (personne mineure aujourd\'hui)');
   if (!row.def.image?.fallback) {
     const [img] = await db.query("SELECT 1 FROM card_images WHERE card_id = $1 AND active AND author <> '' AND license <> ''", [row.id]);
     if (!img) blockers.push('image : aucune image créditée (ou cocher la carte typographique)');
@@ -379,7 +390,7 @@ export async function setCardStatus(db: Db, id: string, status: CardStatus, ctx:
     const blockers = await publishBlockers(db, row, ctx);
     if (blockers.length) throw new AdminError('cannot_publish', 409, blockers);
   }
-  await db.query('UPDATE cards SET status = $2, updated_at = now() WHERE id = $1', [id, status]);
+  await db.query(`UPDATE cards SET status = $2, published_once = published_once OR $2 = 'published', updated_at = now() WHERE id = $1`, [id, status]);
 }
 
 /** Image : retrait en un clic (section 12) ; la carte passe en typographique si plus aucune image active. */

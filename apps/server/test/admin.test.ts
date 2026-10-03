@@ -15,7 +15,7 @@ async function setup() {
   const res = await t.app.inject({ method: 'POST', url: '/api/auth/signup', payload: signupPayload('chef', { email: ADMIN }) });
   expect(res.json().user.role).toBe('admin');
   const token = res.cookies.find((c) => c.name === 'rh_session')!.value;
-  const call = (method: 'GET' | 'POST' | 'PUT', url: string, payload?: unknown) => t!.app.inject({ method, url, headers: auth(token), payload: payload as object });
+  const call = (method: 'GET' | 'POST' | 'PUT' | 'DELETE', url: string, payload?: unknown) => t!.app.inject({ method, url, headers: auth(token), payload: payload as object });
   return { call };
 }
 
@@ -135,12 +135,8 @@ describe('outil d’administration', () => {
 
     expect((await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'published' })).json().error).toBe('invalid_transition');
     await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'review' });
-    const blocked = await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'published' });
-    expect(blocked.statusCode).toBe(409);
-    expect(blocked.json().details).toContain('politique de contenu : validation humaine requise');
-
-    expect((await call('POST', `/api/admin/cards/${card.id}/clear-policy`, { note: '' })).statusCode).toBe(400);
-    await call('POST', `/api/admin/cards/${card.id}/clear-policy`, { note: 'Faits publics, carte sur la carrière, sans victime.' });
+    // Carte « à revoir » (condamné) : l'information reste affichée, mais ne bloque plus la publication.
+    expect((await call('GET', `/api/admin/cards/${card.id}`)).json().policy).toEqual({ status: 'needs_review', reasons: ['convicted'] });
     const before = t!.catalog.current.version;
     expect((await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'published' })).statusCode).toBe(200);
     // Série encore en brouillon : la carte n'est pas jouable.
@@ -154,7 +150,28 @@ describe('outil d’administration', () => {
     expect(t!.catalog.current.ctx.cards[card.id]).toBeUndefined();
 
     const actions = (await call('GET', '/api/admin/audit')).json().entries.map((e: { action: string }) => e.action);
-    expect(actions).toEqual(expect.arrayContaining(['candidates.import', 'card.create_from_candidate', 'card.save', 'card.clear_policy', 'card.published', 'series.published', 'card.retired']));
+    expect(actions).toEqual(expect.arrayContaining(['candidates.import', 'card.create_from_candidate', 'card.save', 'card.published', 'series.published', 'card.retired']));
+  });
+
+  it('enlever une carte : effacée si jamais publiée (candidat de nouveau disponible), retirée du jeu sinon', async () => {
+    const { call } = await setup();
+    await call('POST', '/api/admin/candidates/import', run);
+    await call('POST', '/api/admin/series', { id: 'base_01', type: 'base', name: { fr: 'Set de base', en: 'Base set' } });
+    await call('POST', '/api/admin/series/base_01/status', { status: 'published' });
+    const draft = (await call('POST', '/api/admin/candidates/Q100/card', { series: 'base_01' })).json().card;
+    expect((await call('DELETE', `/api/admin/cards/${draft.id}`)).json()).toEqual({ result: 'deleted' });
+    expect((await call('GET', `/api/admin/cards/${draft.id}`)).statusCode).toBe(404);
+    expect((await call('GET', '/api/admin/candidates?q=Q100')).json().candidates[0]).toMatchObject({ status: 'new', cardId: null });
+
+    // Publiée puis remise en brouillon : des joueurs ont pu l'obtenir, elle n'est jamais effacée.
+    const card = (await call('POST', '/api/admin/candidates/Q100/card', { series: 'base_01' })).json().card;
+    await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'review' });
+    await call('POST', `/api/admin/cards/${card.id}/status`, { status: 'published' });
+    expect(t!.catalog.current.ctx.cards[card.id]).toBeDefined();
+    const removed = await call('DELETE', `/api/admin/cards/${card.id}`);
+    expect(removed.json()).toEqual({ result: 'retired' });
+    expect(t!.catalog.current.ctx.cards[card.id]).toBeUndefined();
+    expect((await call('GET', `/api/admin/cards/${card.id}`)).json().status).toBe('retired');
   });
 
   it('image retirée en un clic : la carte passe en typographique', async () => {
