@@ -1,3 +1,4 @@
+import { Rng } from '@rabbithole/engine';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { App } from '../src/app.js';
 import { DEFAULT_ECONOMY } from '../src/config.js';
@@ -125,5 +126,93 @@ describe('collection', () => {
     expect(crafted.json().wallet.essence).toBe(4 * DEFAULT_ECONOMY.recycle.basique - DEFAULT_ECONOMY.craft.basique);
     expect((await owned(token)).get('proto_figurant')).toBe(1);
     expect((await post('/api/collection/craft', token, { cardId: 'proto_ovni' })).statusCode).toBe(404);
+  });
+});
+
+describe('trade-up', () => {
+  const setQty = (id: string, cardId: string, quantity: number) =>
+    t.db.query(
+      `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = EXCLUDED.quantity`,
+      [id, cardId, quantity],
+    );
+  const tendance = () => [...t.catalog.current.collectibles, ...t.catalog.current.leaders].filter((c) => c.rarity === 'tendance').map((c) => c.id).sort();
+
+  it('offre affichée : rareté supérieure, cartes possibles et probabilité ; catégorie au choix pour 8 doublons', async () => {
+    const { token } = await signup(t.app);
+    const offer = (await get('/api/trade-up?rarity=basique', token)).json().offer;
+    expect(offer).toMatchObject({ rarity: 'basique', outputRarity: 'tendance', category: null, required: 5, unownedOnly: true });
+    expect(offer.pool).toEqual(tendance());
+    expect(offer.chance).toBeCloseTo(100 / tendance().length, 1);
+
+    const sport = (await get('/api/trade-up?rarity=basique&category=sport', token)).json().offer;
+    expect(sport.required).toBe(8);
+    expect(sport.pool.length).toBeGreaterThan(0);
+    for (const id of sport.pool) expect(t.catalog.current.ctx.cards[id]!.categories).toContain('sport');
+
+    expect((await get('/api/trade-up?rarity=goat', token)).json().error).toBe('no_higher_rarity');
+    expect((await get('/api/trade-up?rarity=basique&category=inconnue', token)).statusCode).toBe(400);
+  });
+
+  it('5 doublons → 1 carte tirée dans l’offre ; exemplaires jouables gardés ; tirage enregistré et rejouable', async () => {
+    const { token, id } = await signup(t.app);
+    await setQty(id, 'proto_chevalier', 4);
+    await setQty(id, 'proto_garde', 3);
+    const wallet = (await get('/api/wallet', token)).json().wallet;
+    const res = await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 2 }, { cardId: 'proto_garde', count: 1 }, { cardId: 'proto_chevalier', count: 2 }] });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe('not_enough_duplicates');
+
+    await setQty(id, 'proto_chevalier', 6);
+    const ok = await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 4 }, { cardId: 'proto_garde', count: 1 }] });
+    expect(ok.statusCode).toBe(200);
+    const card = ok.json().card as string;
+    expect(tendance()).toContain(card);
+    const collection = await owned(token);
+    expect(collection.get('proto_chevalier')).toBe(2);
+    expect(collection.get('proto_garde')).toBe(2);
+    expect(collection.get(card)).toBe(1);
+    // Aucune monnaie en jeu.
+    expect((await get('/api/wallet', token)).json().wallet).toEqual(wallet);
+
+    const [row] = await t.db.query<{ seed: string; pool_card_ids: string[]; output_card_id: string; input_card_ids: string[] }>(
+      'SELECT seed, pool_card_ids, output_card_id, input_card_ids FROM trade_ups WHERE user_id = $1',
+      [id],
+    );
+    expect(Rng.fromSeed(row!.seed).pick(row!.pool_card_ids)).toBe(row!.output_card_id);
+    expect(row!.input_card_ids.sort()).toEqual(['proto_chevalier', 'proto_chevalier', 'proto_chevalier', 'proto_chevalier', 'proto_garde']);
+  });
+
+  it('de préférence une carte non possédée ; refus : mauvais nombre, raretés mélangées', async () => {
+    const { token, id } = await signup(t.app);
+    const [missing, ...rest] = tendance();
+    for (const cardId of rest) await setQty(id, cardId, 1);
+    await setQty(id, 'proto_chevalier', 12);
+    expect((await get('/api/trade-up?rarity=basique', token)).json().offer.pool).toEqual([missing]);
+    const ok = await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 5 }] });
+    expect(ok.json().card).toBe(missing);
+    // Tout est possédé : le tirage se fait parmi toutes les cartes de la rareté.
+    const full = (await get('/api/trade-up?rarity=basique', token)).json().offer;
+    expect(full.unownedOnly).toBe(false);
+    expect(full.pool).toEqual(tendance());
+
+    expect((await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 4 }] })).json().error).toBe('wrong_count');
+    await setQty(id, 'proto_buteur', 5);
+    const mixed = await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 3 }, { cardId: 'proto_buteur', count: 2 }] });
+    expect(mixed.json().error).toBe('mixed_rarities');
+  });
+
+  it('trade-up ciblé : 8 doublons, la carte obtenue est de la catégorie choisie', async () => {
+    const { token, id } = await signup(t.app);
+    await setQty(id, 'proto_chevalier', 6);
+    await setQty(id, 'proto_garde', 6);
+    expect((await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 4 }, { cardId: 'proto_garde', count: 1 }], category: 'sport' })).json().error).toBe(
+      'wrong_count',
+    );
+    const ok = await post('/api/trade-up', token, { cards: [{ cardId: 'proto_chevalier', count: 4 }, { cardId: 'proto_garde', count: 4 }], category: 'sport' });
+    expect(ok.statusCode).toBe(200);
+    expect(t.catalog.current.ctx.cards[ok.json().card]!.categories).toContain('sport');
+    const [row] = await t.db.query<{ target_category: string }>('SELECT target_category FROM trade_ups WHERE user_id = $1', [id]);
+    expect(row!.target_category).toBe('sport');
   });
 });

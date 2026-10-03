@@ -325,6 +325,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Trade-up ciblé** : 8 doublons → le joueur choisit la catégorie de la carte obtenue.
 - Probabilités affichées. Aucun coût en monnaie : le trade-up n'est **jamais** alimenté par de l'argent réel ou des gemmes.
 - Tirage côté serveur, enregistré (`trade_ups`).
+- **Implémenté** (phase 5) : `GET /api/trade-up` (cartes possibles, toutes équiprobables, et probabilité affichée avant l'échange) et `POST /api/trade-up`. Les doublons sont ceux au-delà des exemplaires jouables (`keepCopies`) ; la seed et les cartes possibles sont enregistrées, donc chaque tirage peut être rejoué pour l'audit. Nombres de doublons en config (`tradeUp`). Panneau dans la Collection.
 
 ### 6.5 Échanges entre joueurs
 - Cartes uniquement, **1 contre 1, même rareté**.
@@ -512,7 +513,7 @@ wallets(user_id, coins, gems, essence, guild_tokens, free_boosters)
 coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
 booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
-trade_ups(id, user_id, input_card_ids TEXT[], target_category, output_card_id, seed, created_at)
+trade_ups(id, user_id, input_card_ids TEXT[], input_rarity, target_category, pool_card_ids TEXT[], output_card_id, seed, created_at)
 trades(id, from_user, to_user, offered_card, requested_card, status, created_at, completed_at)
 matches(id, mode, player_a, player_b, leader_a, leader_b, ghost BOOLEAN, seed, actions JSONB,
         result, hype_level, created_at)

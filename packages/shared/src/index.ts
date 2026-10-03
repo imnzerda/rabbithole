@@ -88,7 +88,26 @@ export interface BoosterTypeDto {
 export interface BoostersResponse {
   types: BoosterTypeDto[];
   wallet: WalletDto;
-  economy: { recycle: Record<string, number>; craft: Record<string, number>; keepCopies: number };
+  economy: {
+    recycle: Record<string, number>;
+    craft: Record<string, number>;
+    keepCopies: number;
+    /** Doublons demandés par un trade-up : tirage libre, ou catégorie choisie. */
+    tradeUp: { count: number; targetedCount: number };
+  };
+}
+
+/** Trade-up (section 6.4) : cartes possibles, toutes équiprobables, affichées avant l'échange. */
+export interface TradeUpOfferDto {
+  rarity: string;
+  outputRarity: string;
+  category: string | null;
+  required: number;
+  pool: string[];
+  /** Probabilité de chaque carte, en %. */
+  chance: number;
+  /** Vrai si le tirage se limite aux cartes pas encore possédées. */
+  unownedOnly: boolean;
 }
 
 export interface DeckDto {

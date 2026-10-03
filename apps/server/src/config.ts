@@ -17,6 +17,8 @@ export interface EconomyConfig {
   craft: Record<Rarity, number>;
   /** Pièces gagnées en fin de partie en ligne, et plafond journalier. */
   rewards: { win: number; loss: number; draw: number; dailyCap: number };
+  /** Trade-up (section 6.4) : doublons de même rareté pour une carte de la rareté supérieure ; davantage pour choisir la catégorie. */
+  tradeUp: { count: number; targetedCount: number };
 }
 
 /** Vérification par SMS : jamais, seulement pour les inscriptions à risque (VPN, appareil connu ailleurs), ou toujours. */
@@ -95,6 +97,7 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
   recycle: { basique: 5, tendance: 12, viral: 40, iconique: 120, goat: 400 },
   craft: { basique: 20, tendance: 50, viral: 150, iconique: 500, goat: 1500 },
   rewards: { win: 40, loss: 15, draw: 20, dailyCap: 400 },
+  tradeUp: { count: 5, targetedCount: 8 },
 };
 
 /** Pays de lancement (section 4.5) : seuls leurs numéros reçoivent des SMS. */

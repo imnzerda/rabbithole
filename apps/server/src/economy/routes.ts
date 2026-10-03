@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { CATEGORIES, RARITIES } from '@rabbithole/engine';
 import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
 import { grantTestKit } from '../content.js';
@@ -16,6 +17,8 @@ import {
   openFreeBooster,
   purchasePreview,
   recycle,
+  tradeUp,
+  tradeUpOffer,
 } from './economy.js';
 
 const cardId = z.string().min(1).max(80);
@@ -51,7 +54,11 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
         preview: await ensurePreview(db, userId, type as keyof typeof BOOSTER_TYPES, economy, available),
       })),
     );
-    return { types, wallet: await getWallet(db, userId), economy: { recycle: economy.recycle, craft: economy.craft, keepCopies: economy.keepCopies } };
+    return {
+      types,
+      wallet: await getWallet(db, userId),
+      economy: { recycle: economy.recycle, craft: economy.craft, keepCopies: economy.keepCopies, tradeUp: economy.tradeUp },
+    };
   });
 
   app.post('/api/boosters/:type/purchase', { preHandler: requireUser }, async (request, reply) => {
@@ -97,6 +104,32 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
     }
   });
 
+  const category = z.enum(CATEGORIES);
+
+  /** Trade-up (section 6.4) : cartes possibles et probabilité de chacune, avant tout échange. */
+  app.get('/api/trade-up', { preHandler: requireUser }, async (request, reply) => {
+    const query = z.object({ rarity: z.enum(RARITIES), category: category.optional() }).safeParse(request.query);
+    if (!query.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      return { offer: await tradeUpOffer(db, request.user!.id, query.data.rarity, query.data.category ?? null, economy, await catFor(request)) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/trade-up', { preHandler: requireUser }, async (request, reply) => {
+    const body = z
+      .object({ cards: z.array(z.object({ cardId, count: z.number().int().min(1).max(20) })).min(1).max(20), category: category.optional() })
+      .safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const r = await tradeUp(db, request.user!.id, body.data.cards, body.data.category ?? null, economy, await catFor(request));
+      return { card: r.cardId, offer: r.offer };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
   app.post('/api/starter-leader', { preHandler: requireUser }, async (request, reply) => {
     const body = z.object({ leaderId: cardId }).safeParse(request.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
@@ -112,6 +145,16 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
   if (config.testFixtures) {
     app.post('/api/test/grant-kit', { preHandler: requireUser }, async (request) => {
       await grantTestKit(db, request.user!.id, cat());
+      return { ok: true };
+    });
+    app.post('/api/test/set-card', { preHandler: requireUser }, async (request, reply) => {
+      const body = z.object({ cardId, quantity: z.number().int().min(0).max(50) }).safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+      await db.query(
+        `INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, $3)
+         ON CONFLICT (user_id, card_id) DO UPDATE SET quantity = EXCLUDED.quantity`,
+        [request.user!.id, body.data.cardId, body.data.quantity],
+      );
       return { ok: true };
     });
   }

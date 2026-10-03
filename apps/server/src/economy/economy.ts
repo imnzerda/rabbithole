@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { RARITIES, Rng, type CardDef, type Rarity } from '@rabbithole/engine';
+import { RARITIES, Rng, type CardDef, type CategoryId, type Rarity } from '@rabbithole/engine';
 import type { CatalogSnapshot } from '../catalog/catalog.js';
 import type { EconomyConfig } from '../config.js';
 import type { Db } from '../db/db.js';
@@ -229,5 +229,105 @@ export async function awardMatchCoins(db: Db, userId: string, amount: number, ma
       await ledger(tx, userId, 'coins', granted, 'match', matchId);
     }
     return granted;
+  });
+}
+
+/** Rareté obtenue par un trade-up : la suivante ; aucune au-dessus de GOAT. */
+export function nextRarity(rarity: Rarity): Rarity | null {
+  return RARITIES[RARITIES.indexOf(rarity) + 1] ?? null;
+}
+
+export interface TradeUpOffer {
+  rarity: Rarity;
+  outputRarity: Rarity;
+  category: CategoryId | null;
+  /** Doublons à donner : 5, ou 8 pour choisir la catégorie (config). */
+  required: number;
+  /** Cartes possibles, toutes équiprobables (probabilité affichée). */
+  pool: string[];
+  chance: number;
+  /** Vrai si le tirage se limite aux cartes que le joueur ne possède pas encore. */
+  unownedOnly: boolean;
+}
+
+/**
+ * Cartes qu'un trade-up peut donner (section 6.4) : rareté supérieure, catégorie choisie le cas échéant,
+ * et de préférence non possédées ; s'il n'en reste aucune, toutes celles de la rareté.
+ */
+export async function tradeUpOffer(
+  db: Db,
+  userId: string,
+  rarity: Rarity,
+  category: CategoryId | null,
+  economy: EconomyConfig,
+  catalog: CatalogSnapshot,
+): Promise<TradeUpOffer> {
+  const outputRarity = nextRarity(rarity);
+  if (!outputRarity) throw new EconomyError('no_higher_rarity');
+  const all = [...catalog.collectibles, ...catalog.leaders]
+    .filter((c) => c.rarity === outputRarity && (!category || c.categories.includes(category)))
+    .map((c) => c.id)
+    .sort();
+  if (all.length === 0) throw new EconomyError('empty_pool', 404);
+  const owned = new Set(
+    (await db.query<{ card_id: string }>('SELECT card_id FROM collections WHERE user_id = $1 AND quantity > 0 AND card_id = ANY($2::text[])', [userId, all])).map(
+      (r) => r.card_id,
+    ),
+  );
+  const unowned = all.filter((id) => !owned.has(id));
+  const pool = unowned.length ? unowned : all;
+  return {
+    rarity,
+    outputRarity,
+    category,
+    required: category ? economy.tradeUp.targetedCount : economy.tradeUp.count,
+    pool,
+    chance: Math.round((100 / pool.length) * 100) / 100,
+    unownedOnly: unowned.length > 0,
+  };
+}
+
+/**
+ * Trade-up : des doublons de même rareté (au-delà des exemplaires jouables) contre une carte tirée
+ * par le serveur dans l'offre affichée. Jamais de monnaie en jeu. Seed et cartes possibles enregistrées.
+ */
+export async function tradeUp(
+  db: Db,
+  userId: string,
+  inputs: { cardId: string; count: number }[],
+  category: CategoryId | null,
+  economy: EconomyConfig,
+  catalog: CatalogSnapshot,
+): Promise<{ cardId: string; offer: TradeUpOffer }> {
+  const counts = new Map<string, number>();
+  for (const i of inputs) counts.set(i.cardId, (counts.get(i.cardId) ?? 0) + i.count);
+  const required = category ? economy.tradeUp.targetedCount : economy.tradeUp.count;
+  const total = [...counts.values()].reduce((a, b) => a + b, 0);
+  if (total !== required) throw new EconomyError('wrong_count');
+  const defs = [...counts.keys()].map((id) => collectible(id, catalog));
+  const rarity = defs[0]!.rarity;
+  if (defs.some((d) => d.rarity !== rarity)) throw new EconomyError('mixed_rarities');
+
+  return db.transaction(async (tx) => {
+    const offer = await tradeUpOffer(tx, userId, rarity, category, economy, catalog);
+    for (const def of defs) {
+      const n = counts.get(def.id)!;
+      const done = await tx.query('UPDATE collections SET quantity = quantity - $3 WHERE user_id = $1 AND card_id = $2 AND quantity - $3 >= $4 RETURNING quantity', [
+        userId,
+        def.id,
+        n,
+        keepFor(def, economy),
+      ]);
+      if (done.length === 0) throw new EconomyError('not_enough_duplicates');
+    }
+    const seed = newSeed();
+    const cardId = Rng.fromSeed(seed).pick(offer.pool);
+    await addCards(tx, userId, [cardId]);
+    await ledger(tx, userId, 'cards', 1, 'trade_up', cardId);
+    await tx.query(
+      'INSERT INTO trade_ups (user_id, input_card_ids, input_rarity, target_category, pool_card_ids, output_card_id, seed) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [userId, [...counts].flatMap(([id, n]) => Array<string>(n).fill(id)), rarity, category, offer.pool, cardId, seed],
+    );
+    return { cardId, offer };
   });
 }

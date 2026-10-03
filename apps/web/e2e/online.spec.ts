@@ -86,6 +86,24 @@ test('nouveau compte : aucune carte, Leader de départ, booster gratuit, achat b
   await expect(page.getByTestId('no-deck')).toBeVisible();
 });
 
+test('trade-up : 5 doublons contre 1 carte de la rareté supérieure, probabilités affichées', async ({ page }, info) => {
+  await signup(page, `tu-${info.project.name}`, '/collection');
+  await page.request.post('/api/test/set-card', { data: { cardId: 'proto_chevalier', quantity: 7 } });
+  await page.reload();
+  const panel = page.getByTestId('tradeup');
+  await expect(panel.getByTestId('tu-basique')).toContainText('5 doublons');
+  await expect(panel.getByTestId('tu-odds')).toContainText(/Tendance : \d+ cartes possibles, [\d.]+ % chacune/);
+
+  await panel.getByTestId('tu-go').click();
+  const opened = page.getByTestId('opened');
+  await expect(opened).toContainText('Ton trade-up');
+  await expect(opened.getByRole('button')).toHaveCount(2); // 1 carte + Fermer
+  await opened.getByRole('button', { name: 'Fermer' }).click();
+  // Les exemplaires jouables sont gardés : plus de doublons basiques.
+  await expect(panel.getByTestId('tu-basique')).toContainText('0 doublons');
+  await expect(panel.getByTestId('tu-go')).toBeDisabled();
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

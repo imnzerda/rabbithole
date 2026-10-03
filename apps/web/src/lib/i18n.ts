@@ -230,6 +230,20 @@ const fr = {
   rarity_viral: 'Viral',
   rarity_iconique: 'Iconique',
   rarity_goat: 'GOAT',
+  tradeup_title: 'Trade-up',
+  tradeup_hint: '{n} doublons de même rareté contre 1 carte de la rareté supérieure. Tu gardes toujours tes exemplaires jouables.',
+  tradeup_spares: '{n} doublons',
+  tradeup_random: 'Au hasard ({n})',
+  tradeup_targeted: 'Catégorie au choix ({n})',
+  tradeup_give: 'Tu donnes',
+  tradeup_pool: '{n} cartes possibles, {p} % chacune',
+  tradeup_unowned: "Seulement des cartes que tu n'as pas encore.",
+  tradeup_btn: 'Échanger {n} doublons',
+  tradeup_missing: 'Il te manque {n} doublons {r}.',
+  tradeup_result: 'Ton trade-up',
+  tradeup_see_pool: 'Voir les cartes possibles',
+  err_wrong_count: 'Nombre de doublons incorrect.',
+  err_mixed_rarities: 'Les doublons doivent être de même rareté.',
 } as const;
 
 type Key = keyof typeof fr;
@@ -463,6 +477,20 @@ const en: Record<Key, string> = {
   rarity_viral: 'Viral',
   rarity_iconique: 'Iconic',
   rarity_goat: 'GOAT',
+  tradeup_title: 'Trade-up',
+  tradeup_hint: '{n} duplicates of the same rarity for 1 card of the next rarity. You always keep your playable copies.',
+  tradeup_spares: '{n} duplicates',
+  tradeup_random: 'Random ({n})',
+  tradeup_targeted: 'Pick a category ({n})',
+  tradeup_give: 'You give',
+  tradeup_pool: '{n} possible cards, {p}% each',
+  tradeup_unowned: "Only cards you don't have yet.",
+  tradeup_btn: 'Trade {n} duplicates',
+  tradeup_missing: 'You need {n} more {r} duplicates.',
+  tradeup_result: 'Your trade-up',
+  tradeup_see_pool: 'See the possible cards',
+  err_wrong_count: 'Wrong number of duplicates.',
+  err_mixed_rarities: 'Duplicates must share the same rarity.',
 };
 
 export const locale: GlossaryLocale =

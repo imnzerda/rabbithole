@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, WalletDto } from '@rabbithole/shared';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -67,6 +67,10 @@ export const api = {
   openFree: (type: string) => request<{ cards: string[]; wallet: WalletDto }>('POST', `/boosters/${type}/open-free`),
   recycle: (cardId: string, count: number) => request<{ wallet: WalletDto }>('POST', '/collection/recycle', { cardId, count }),
   craft: (cardId: string) => request<{ wallet: WalletDto }>('POST', '/collection/craft', { cardId }),
+  tradeUpOffer: (rarity: string, category: string | null) =>
+    request<{ offer: TradeUpOfferDto }>('GET', `/trade-up?rarity=${rarity}${category ? `&category=${category}` : ''}`),
+  tradeUp: (cards: { cardId: string; count: number }[], category: string | null) =>
+    request<{ card: string; offer: TradeUpOfferDto }>('POST', '/trade-up', { cards, ...(category ? { category } : {}) }),
   starterLeader: (leaderId: string) => request<{ ok: true }>('POST', '/starter-leader', { leaderId }),
 
   decks: () => request<{ decks: DeckDto[] }>('GET', '/decks'),
