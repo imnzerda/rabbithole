@@ -22,6 +22,14 @@
 
 ## Journal
 
+### 2026-10-03 — Set de base complet : 250 cartes + 15 Leaders
+
+- **Décision** : les Leaders ne comptent pas dans les 250 cartes du set de base, ni dans les raretés (cahier des charges, section 4.1). On peut ainsi ajouter des Leaders pour de nouvelles paires de catégories sans retirer de cartes.
+- **Lot 6** (`tools/pipeline/drafts/base_01_lot6.json`) : une carte de plus par catégorie, pour arriver à 24 partout. Ce sont 9 iconiques (Angelina Jolie, Godzilla, Charles III, Ronaldo, Paul McCartney, Marlon Brando, Shigeru Miyamoto, Copernic, Amelia Earhart) et une virale (l'attaque du train postal de 1963).
+- **Le set colle maintenant au cahier des charges** : 24 cartes par catégorie, 10 Légendes, 110 basiques, 70 tendance, 45 virales, 18 iconiques, 7 GOAT. Les coûts se répartissent ainsi : 1 : 32, 2 : 55, 3 : 55, 4 : 47, 5 : 37, 6 : 17, 7 : 7. C'est plus lourd que la courbe prévue (section 4.3 : 20 % de coûts 1, on en a 13 %).
+- Les decks de référence ne changent pas (41–62 %).
+- Base de dev : 265 cartes publiées dans `base_01` (250 cartes et 15 Leaders).
+
 ### 2026-10-03 — 5 Leaders de plus (15), decks avec les cartes du lot 4
 
 - **5 Leaders** (`tools/pipeline/drafts/base_01_lot5.json`), chacun sur une paire de catégories encore sans Leader ; chaque catégorie apparaît une fois :
@@ -355,8 +363,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Fait en dev : set de base importé et publié. Relire les cartes en jeu et dans l'admin, enlever celles qui ne conviennent pas.
 
 ### Set de base (suite)
-- Les **250 cartes** sont là (4 lots) et 15 Leaders couvrent 10 paires de catégories sur 45. Reste à faire : d'autres Leaders, pour que plus de paires forment un deck jouable (section 4.3).
-- Le cahier des charges (section 4.1) prévoit 24 cartes par catégorie et 10 Légendes, soit 250 cartes sans dire si les Leaders en font partie. Le set en dev compte 230 cartes de catégorie, 10 Légendes et 15 Leaders. Si les Leaders sont à part, il manque 10 cartes de catégorie.
+- Les **250 cartes** sont là (6 lots, Leaders comptés à part) et 15 Leaders couvrent 10 paires de catégories sur 45. Reste à faire : d'autres Leaders, pour que plus de paires forment un deck jouable (section 4.3).
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)

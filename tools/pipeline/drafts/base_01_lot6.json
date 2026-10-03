@@ -1,0 +1,366 @@
+{
+  "series": "base_01",
+  "cards": [
+    {
+      "id": "base_01_angelina_jolie",
+      "wikidataId": "Q13909",
+      "type": "character",
+      "name": {
+        "fr": "Angelina Jolie",
+        "en": "Angelina Jolie"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Lara Croft à l’écran, envoyée spéciale du HCR pendant vingt ans.",
+        "en": "Lara Croft on screen, UN refugee envoy for twenty years."
+      }
+    },
+    {
+      "id": "base_01_great_train_robbery",
+      "wikidataId": "Q1140155",
+      "type": "event",
+      "name": {
+        "fr": "L’attaque du train postal",
+        "en": "The Great Train Robbery"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "steal",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 3
+            }
+          }
+        },
+        {
+          "trigger": "main",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "2,6 millions de livres en 1963. L’un des braqueurs a fini à Rio.",
+        "en": "£2.6 million in 1963. One of the robbers ended up in Rio."
+      }
+    },
+    {
+      "id": "base_01_godzilla",
+      "wikidataId": "Q6567",
+      "type": "character",
+      "name": {
+        "fr": "Godzilla",
+        "en": "Godzilla"
+      },
+      "categories": [
+        "mysteres",
+        "series_cinema"
+      ],
+      "cost": 7,
+      "power": 7,
+      "counter": 0,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "ko",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 4
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Né en 1954, roi des monstres, et un peu plus grand à chaque film.",
+        "en": "Born in 1954, King of the Monsters, and a bit taller in every film."
+      }
+    },
+    {
+      "id": "base_01_charles_iii",
+      "wikidataId": "Q43274",
+      "type": "character",
+      "name": {
+        "fr": "Charles III",
+        "en": "Charles III"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 4,
+      "power": 3,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "opponent_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Prince de Galles pendant 64 ans. La patience est une vertu royale.",
+        "en": "Prince of Wales for 64 years. Patience is a royal virtue."
+      }
+    },
+    {
+      "id": "base_01_ronaldo_nazario",
+      "wikidataId": "Q529207",
+      "type": "character",
+      "name": {
+        "fr": "Ronaldo",
+        "en": "Ronaldo Nazário"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 5,
+      "power": 6,
+      "counter": 0,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "battle"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "O Fenômeno. Deux Ballons d’or, et une coupe de cheveux en 2002 que personne n’a oubliée.",
+        "en": "O Fenômeno. Two Ballon d’Or awards, and a 2002 haircut nobody has forgotten."
+      }
+    },
+    {
+      "id": "base_01_paul_mccartney",
+      "wikidataId": "Q2599",
+      "type": "character",
+      "name": {
+        "fr": "Paul McCartney",
+        "en": "Paul McCartney"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        },
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "« Yesterday » lui est venue en rêve. Elle a été reprise des milliers de fois.",
+        "en": "“Yesterday” came to him in a dream. It has been covered thousands of times."
+      }
+    },
+    {
+      "id": "base_01_marlon_brando",
+      "wikidataId": "Q34012",
+      "type": "character",
+      "name": {
+        "fr": "Marlon Brando",
+        "en": "Marlon Brando"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 6,
+      "power": 5,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur",
+        "rickroll"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Deux Oscars, et il en a refusé un.",
+        "en": "Two Oscars, and he turned one down."
+      }
+    },
+    {
+      "id": "base_01_shigeru_miyamoto",
+      "wikidataId": "Q12382",
+      "type": "character",
+      "name": {
+        "fr": "Shigeru Miyamoto",
+        "en": "Shigeru Miyamoto"
+      },
+      "categories": [
+        "internet",
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 1
+              },
+              {
+                "type": "add_buzz",
+                "amount": 1
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Mario, Zelda, Donkey Kong : le jeu vidéo lui doit un plombier.",
+        "en": "Mario, Zelda, Donkey Kong: video games owe him a plumber."
+      }
+    },
+    {
+      "id": "base_01_copernic",
+      "wikidataId": "Q619",
+      "type": "character",
+      "name": {
+        "fr": "Nicolas Copernic",
+        "en": "Nicolaus Copernicus"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "La Terre tourne autour du Soleil. Il l’a publié l’année de sa mort.",
+        "en": "The Earth goes around the Sun. He published it the year he died."
+      }
+    },
+    {
+      "id": "base_01_amelia_earhart",
+      "wikidataId": "Q3355",
+      "type": "character",
+      "name": {
+        "fr": "Amelia Earhart",
+        "en": "Amelia Earhart"
+      },
+      "categories": [
+        "exploration",
+        "mysteres"
+      ],
+      "cost": 4,
+      "power": 3,
+      "counter": 1,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [
+        "croissance",
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Première femme à traverser l’Atlantique seule. Sa disparition reste un mystère.",
+        "en": "First woman to fly solo across the Atlantic. Her disappearance remains a mystery."
+      }
+    }
+  ]
+}
