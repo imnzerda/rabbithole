@@ -334,6 +334,9 @@ const fr = {
   sandbox_closed: "Ce paiement est déjà terminé.",
   notice_card_retired: "« {name} » a été retirée du jeu : tu as reçu {coins} 🪙 pour {n} exemplaire(s).",
   notice_ok: "OK",
+  tradeup_pick_rarity: "Rareté à échanger",
+  tradeup_pick_mode: "Tirage",
+  tradeup_odds_title: "Cartes possibles",
 } as const;
 
 type Key = keyof typeof fr;
@@ -671,6 +674,9 @@ const en: Record<Key, string> = {
   sandbox_closed: "This payment is already finished.",
   notice_card_retired: "“{name}” was removed from the game: you got {coins} 🪙 for {n} copy(ies).",
   notice_ok: "Got it",
+  tradeup_pick_rarity: "Rarity to trade",
+  tradeup_pick_mode: "Draw",
+  tradeup_odds_title: "Possible cards",
 };
 
 export const locale: GlossaryLocale =

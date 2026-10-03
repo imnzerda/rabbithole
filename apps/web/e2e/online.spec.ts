@@ -86,22 +86,24 @@ test('nouveau compte : aucune carte, Leader de départ, booster gratuit, achat b
   await expect(page.getByTestId('no-deck')).toBeVisible();
 });
 
-test('trade-up : 5 doublons contre 1 carte de la rareté supérieure, probabilités affichées', async ({ page }, info) => {
+test('trade-up : rubrique dédiée, 5 doublons contre 1 carte de la rareté supérieure, probabilités affichées', async ({ page }, info) => {
   await signup(page, `tu-${info.project.name}`, '/collection');
   await page.request.post('/api/test/set-card', { data: { cardId: 'proto_chevalier', quantity: 7 } });
+  // Depuis la Collection, le lien mène à la rubrique Trade-up.
   await page.reload();
-  const panel = page.getByTestId('tradeup');
-  await expect(panel.getByTestId('tu-basique')).toContainText('5 doublons');
-  await expect(panel.getByTestId('tu-odds')).toContainText(/Tendance : \d+ cartes possibles, [\d.]+ % chacune/);
+  await page.getByTestId('to-tradeup').click();
+  await expect(page).toHaveURL(/\/trade-up$/);
+  await expect(page.getByTestId('tu-basique')).toContainText('5 doublons');
+  await expect(page.getByTestId('tu-odds')).toContainText(/Tendance : \d+ cartes possibles, [\d.]+ % chacune/);
 
-  await panel.getByTestId('tu-go').click();
+  await page.getByTestId('tu-go').click();
   const opened = page.getByTestId('opened');
   await expect(opened).toContainText('Ton trade-up');
   await expect(opened.getByRole('button')).toHaveCount(2); // 1 carte + Fermer
   await opened.getByRole('button', { name: 'Fermer' }).click();
   // Les exemplaires jouables sont gardés : plus de doublons basiques.
-  await expect(panel.getByTestId('tu-basique')).toContainText('0 doublons');
-  await expect(panel.getByTestId('tu-go')).toBeDisabled();
+  await expect(page.getByTestId('tu-basique')).toContainText('0 doublons');
+  await expect(page.getByTestId('tu-go')).toBeDisabled();
 });
 
 test('amis et échange : ajout par code ami, plusieurs cartes de raretés différentes, acceptation', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {

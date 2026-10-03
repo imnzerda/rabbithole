@@ -22,6 +22,11 @@
 
 ## Journal
 
+### 2026-10-03 — Rubrique « Trade-up » à part
+
+- Le trade-up quitte la page Collection pour sa propre rubrique (`/trade-up`), avec un lien sur l'accueil et depuis la Collection. La page suit l'ordre du choix : 1. rareté à échanger, 2. tirage (au hasard, ou catégorie au choix), puis les cartes possibles avec leur probabilité, les doublons donnés et le bouton d'échange. La carte obtenue est révélée avec une animation.
+- Le scénario E2E passe désormais par le lien de la Collection.
+
 ### 2026-10-03 — Phase 5, étape 4 : compensation des cartes retirées
 
 - **Règle** (cahier des charges, section 5) : quand une carte publiée est retirée du jeu, chaque joueur qui la possédait reçoit **son prix de fabrication en pièces, par exemplaire** (par exemple 20 pour une basique, 1 500 pour une GOAT). Les valeurs viennent de la config (`DEFAULT_ECONOMY.craft`).
