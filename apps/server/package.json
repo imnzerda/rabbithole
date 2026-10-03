@@ -9,7 +9,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "dev:lan": "tsx watch --env-file-if-exists=.env src/server.ts",
-    "content:import": "tsx --env-file-if-exists=.env scripts/import-series.ts"
+    "content:import": "tsx --env-file-if-exists=.env scripts/import-series.ts",
+    "content:remove-series": "tsx --env-file-if-exists=.env scripts/remove-series.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

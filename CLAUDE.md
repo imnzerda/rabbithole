@@ -29,6 +29,7 @@ pnpm typecheck   # tsc / svelte-check strict sur tous les packages
 pnpm test:e2e    # Playwright (lance les serveurs si besoin)
 pnpm --filter @rabbithole/pipeline pipeline all --series base_01   # pipeline de contenu
 pnpm --filter @rabbithole/server content:import -- --series base_01 --drafts … --decks … --publish [--sync]   # import d'une série (serveur arrêté)
+pnpm --filter @rabbithole/server content:remove-series -- --series prototype,prototype_tokens   # suppression définitive (serveur arrêté)
 ```
 
 Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par exemple `ADMIN_EMAILS=…` pour l'accès à l'admin. En dev, PostgreSQL tourne en embarqué (PGlite, `apps/server/.data/`).
@@ -83,7 +84,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `budget.ts` : budget de puissance (section 3.9), valeurs dans `DEFAULT_BUDGET` (`rules.ts`).
   - `simulate.ts` : simulations IA contre IA pour l'équilibrage.
 - `packages/engine/test/` : `fixtures.ts` contient un pool qui couvre tous les mots-clés ; `helpers.ts` fournit un bac à sable (`sandbox`, classe `Duel`) pour écrire des scénarios, et `playOut` pour simuler des parties.
-- [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans sa base au premier démarrage ; le site ne l'utilise plus qu'en repli, pour l'entraînement quand le serveur est injoignable ou qu'aucune série n'est publiée (`apps/web/src/lib/practice.ts`). Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
+- [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans une base vide (premier démarrage, tests) ; en dev, les séries du prototype ont été supprimées (`content:remove-series`) ; le site ne l'utilise plus qu'en repli, pour l'entraînement quand le serveur est injoignable ou qu'aucune série n'est publiée (`apps/web/src/lib/practice.ts`). Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
 - [apps/server/](apps/server/) : Fastify, PostgreSQL (PGlite en dev et en test), WebSocket.
   - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `FINGERPRINT_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).

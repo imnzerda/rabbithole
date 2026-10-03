@@ -22,6 +22,13 @@
 
 ## Journal
 
+### 2026-10-03 — Séries du prototype supprimées
+
+- Commande `pnpm --filter @rabbithole/server content:remove-series` (serveur arrêté, irréversible, pas de bouton dans l'admin) : cartes, images et decks de référence de la série ; les collections perdent ces cartes, les decks de joueurs qui les utilisent sont effacés, les aperçus de boosters régénérés, un Leader de départ disparu peut être choisi de nouveau. Les replays restent lisibles.
+- Le prototype n'est plus réimporté au démarrage, sauf sur une base vide (premier lancement, tests).
+- Base de dev : séries `prototype` et `prototype_tokens` supprimées (57 cartes, 132 entrées de collection, 10 decks de joueurs) ; le catalogue joué ne contient plus que les 85 cartes de `base_01`. Le contenu du prototype reste embarqué dans le site pour l'entraînement hors ligne (serveur injoignable).
+
+
 ### 2026-10-03 — Set de base importé et publié en dev
 
 - Commande `pnpm --filter @rabbithole/server content:import` (serveur arrêté) : candidats, lots de brouillons, decks de référence, publication, et `--sync` pour aligner les cartes déjà présentes sur les lots. Mêmes fonctions que l'admin, actions notées dans le journal d'audit.

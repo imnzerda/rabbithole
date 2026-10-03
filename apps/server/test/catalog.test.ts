@@ -75,3 +75,31 @@ describe('catalogue en base', () => {
     expect(snap.collectibles.map((c) => c.id)).not.toContain(id);
   });
 });
+
+describe('suppression d’une série', () => {
+  it('cartes, collections, decks et aperçus nettoyés ; pas de réimport du prototype au redémarrage', async () => {
+    const { removeSeries } = await import('../src/admin/admin.js');
+    const { Catalog } = await import('../src/catalog/catalog.js');
+    const { signupWithKit, auth } = await import('./helpers.js');
+    t = await startApp();
+    const player = await signupWithKit(t.app, 'ancien');
+    expect((await t.app.inject({ method: 'GET', url: '/api/decks', headers: auth(player.token) })).json().decks.length).toBeGreaterThan(0);
+    // Une autre série existe : le prototype n'est plus nécessaire.
+    await t.db.query(`INSERT INTO series (id, type, name, status) VALUES ('base_99', 'base', '{"fr":"Base"}', 'published')`);
+
+    await t.db.query("UPDATE users SET starter_leader = 'proto_l_star' WHERE id = $1", [player.id]);
+    const r1 = await removeSeries(t.db, 'prototype');
+    await removeSeries(t.db, 'prototype_tokens');
+    expect(r1.cards).toBe(55);
+    expect(r1.collections).toBeGreaterThan(0);
+    expect(r1.decks).toBe(5);
+    expect((await t.app.inject({ method: 'GET', url: '/api/decks', headers: auth(player.token) })).json().decks).toEqual([]);
+    expect((await t.app.inject({ method: 'GET', url: '/api/collection', headers: auth(player.token) })).json().cards).toEqual([]);
+    expect((await t.app.inject({ method: 'GET', url: '/api/me', headers: auth(player.token) })).json().user.starterLeader).toBeNull();
+
+    // Redémarrage : le catalogue est relu, le prototype n'est pas réimporté.
+    const reopened = await Catalog.open(t.db);
+    expect(Object.keys(reopened.current.ctx.cards)).toEqual([]);
+    expect((await t.db.query("SELECT 1 FROM series WHERE id = 'prototype'")).length).toBe(0);
+  });
+});

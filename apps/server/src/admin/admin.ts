@@ -497,3 +497,26 @@ export async function importDrafts(db: Db, seriesId: string, defs: CardDef[]): P
   }
   return result;
 }
+
+/**
+ * Suppression définitive d'une série (en ligne de commande, serveur arrêté) : ses cartes, leurs images et
+ * ses decks de référence. Les collections perdent ces cartes, les decks de joueurs qui les utilisent sont
+ * effacés, les aperçus de boosters qui les contiennent sont régénérés, et un Leader de départ disparu peut
+ * être choisi de nouveau. Les replays restent lisibles
+ * (`catalog_versions`).
+ */
+export async function removeSeries(db: Db, seriesId: string): Promise<{ cards: number; collections: number; decks: number; previews: number }> {
+  const [series] = await db.query('SELECT 1 FROM series WHERE id = $1', [seriesId]);
+  if (!series) throw new AdminError('unknown_series', 404);
+  return db.transaction(async (tx) => {
+    const ids = (await tx.query<{ id: string }>('SELECT id FROM cards WHERE series_id = $1', [seriesId])).map((r) => r.id);
+    const collections = await tx.query('DELETE FROM collections WHERE card_id = ANY($1::text[]) RETURNING card_id', [ids]);
+    const decks = await tx.query('DELETE FROM decks WHERE leader_id = ANY($1::text[]) OR card_ids && $1::text[] RETURNING id', [ids]);
+    const previews = await tx.query('DELETE FROM booster_previews WHERE card_ids && $1::text[] RETURNING user_id', [ids]);
+    // Leader de départ disparu : le joueur peut en choisir un nouveau.
+    await tx.query('UPDATE users SET starter_leader = NULL WHERE starter_leader = ANY($1::text[])', [ids]);
+    await tx.query('DELETE FROM cards WHERE series_id = $1', [seriesId]);
+    await tx.query('DELETE FROM series WHERE id = $1', [seriesId]);
+    return { cards: ids.length, collections: collections.length, decks: decks.length, previews: previews.length };
+  });
+}

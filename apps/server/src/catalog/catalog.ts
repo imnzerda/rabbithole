@@ -79,10 +79,13 @@ export class Catalog {
   }
 }
 
-/** Premier démarrage : les cartes fictives du prototype deviennent la série `prototype`, publiée. */
+/**
+ * Base vide (premier démarrage, tests) : les cartes fictives du prototype deviennent la série `prototype`,
+ * publiée. Dès qu'une série existe, rien n'est réimporté : les séries du prototype peuvent être supprimées.
+ */
 async function seedPrototype(db: Db): Promise<void> {
-  const [done] = await db.query("SELECT 1 FROM series WHERE id = 'prototype'");
-  if (done) return;
+  const [any] = await db.query('SELECT 1 FROM series LIMIT 1');
+  if (any) return;
   await db.transaction(async (tx) => {
     await tx.query(
       `INSERT INTO series (id, type, name, status) VALUES
