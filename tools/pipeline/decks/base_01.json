@@ -120,6 +120,126 @@
         "fr": "Bloqueurs, Contres et Séduction : la défense fait le spectacle.",
         "en": "Blockers, Counters and Seduction: defense steals the show."
       }
+    },
+    {
+      "id": "base_01_d_billie",
+      "name": {
+        "fr": "Nouvelle vague",
+        "en": "New Wave"
+      },
+      "leader": "base_01_l_billie_eilish",
+      "cards": [
+        "pewdiepie",
+        "charli_damelio",
+        "khaby_lame",
+        "distracted_boyfriend",
+        "harlem_shake",
+        "david_bowie",
+        "rihanna",
+        "bob_marley",
+        "prince",
+        "the_beatles"
+      ],
+      "description": {
+        "fr": "Créateurs et légendes de la musique : ton Leader booste chaque morceau.",
+        "en": "Creators and music legends: your Leader boosts every track."
+      }
+    },
+    {
+      "id": "base_01_d_pele",
+      "name": {
+        "fr": "Ballon d’or et palais",
+        "en": "Gold Ball and Palaces"
+      },
+      "leader": "base_01_l_pele",
+      "cards": [
+        "neymar",
+        "djokovic",
+        "ronaldinho",
+        "lewis_hamilton",
+        "kobe_bryant",
+        "ronald_reagan",
+        "gorbatchev",
+        "jean_paul_ii",
+        "richard_nixon",
+        "terechkova"
+      ],
+      "description": {
+        "fr": "Les sportifs ouvrent la voie, les chefs d’État tiennent la ligne.",
+        "en": "Athletes lead the charge, heads of state hold the line."
+      }
+    },
+    {
+      "id": "base_01_d_houdini",
+      "name": {
+        "fr": "Grande évasion",
+        "en": "Great Escape"
+      },
+      "leader": "base_01_l_houdini",
+      "cards": [
+        "francis_drake",
+        "mary_read",
+        "henry_morgan",
+        "barberousse",
+        "al_capone",
+        "moai",
+        "nazca",
+        "roswell",
+        "chupacabra",
+        "mothman"
+      ],
+      "description": {
+        "fr": "Pirates et mystères : ton Leader libère tes alliés pour une deuxième attaque.",
+        "en": "Pirates and mysteries: your Leader frees your allies for a second strike."
+      }
+    },
+    {
+      "id": "base_01_d_sagan",
+      "name": {
+        "fr": "Cosmos",
+        "en": "Cosmos"
+      },
+      "leader": "base_01_l_carl_sagan",
+      "cards": [
+        "bill_gates",
+        "nikola_tesla",
+        "marie_curie",
+        "alan_turing",
+        "charles_darwin",
+        "gagarine",
+        "vasco_de_gama",
+        "bear_grylls",
+        "tensing_norgay",
+        "ibn_battuta"
+      ],
+      "description": {
+        "fr": "Pioche et Croissance : chaque tour ouvre de nouvelles pistes.",
+        "en": "Draw and Growth: every turn opens new frontiers."
+      }
+    },
+    {
+      "id": "base_01_d_paris",
+      "name": {
+        "fr": "Jet-set",
+        "en": "Jet Set"
+      },
+      "leader": "base_01_l_paris_hilton",
+      "cards": [
+        "monica_bellucci",
+        "gal_gadot",
+        "selena_gomez",
+        "cameron_diaz",
+        "whitney_houston",
+        "brad_pitt",
+        "bruce_lee",
+        "stallone",
+        "keanu_reeves",
+        "clint_eastwood"
+      ],
+      "description": {
+        "fr": "Stars et nuits de fête : le tapis rouge déroulé pour tes alliés.",
+        "en": "Stars and party nights: the red carpet rolled out for your allies."
+      }
     }
   ]
 }

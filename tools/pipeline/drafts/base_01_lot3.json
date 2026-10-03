@@ -1,0 +1,1734 @@
+{
+  "series": "base_01",
+  "seriesInfo": {
+    "type": "base",
+    "country": null,
+    "name": {
+      "fr": "Set de base",
+      "en": "Base set"
+    }
+  },
+  "cards": [
+    {
+      "id": "base_01_l_billie_eilish",
+      "wikidataId": "Q29564107",
+      "type": "leader",
+      "name": {
+        "fr": "Billie Eilish",
+        "en": "Billie Eilish"
+      },
+      "categories": [
+        "internet",
+        "musique"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un titre posté sur SoundCloud depuis sa chambre. Le reste, c'est de l'histoire.",
+        "en": "One song posted on SoundCloud from her bedroom. The rest is history."
+      }
+    },
+    {
+      "id": "base_01_l_pele",
+      "wikidataId": "Q12897",
+      "type": "leader",
+      "name": {
+        "fr": "Pelé",
+        "en": "Pelé"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "sport"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "action": {
+            "type": "add_power",
+            "target": "strongest_ally",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Trois Coupes du monde, puis ministre des Sports du Brésil.",
+        "en": "Three World Cups, then Brazil’s Minister of Sport."
+      }
+    },
+    {
+      "id": "base_01_l_houdini",
+      "wikidataId": "Q131545",
+      "type": "leader",
+      "name": {
+        "fr": "Harry Houdini",
+        "en": "Harry Houdini"
+      },
+      "categories": [
+        "crimes_scandales",
+        "mysteres"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "opponent_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Menottes, camisole, cellule : il s’en sortait toujours.",
+        "en": "Handcuffs, straitjackets, jail cells: he always got out."
+      }
+    },
+    {
+      "id": "base_01_l_carl_sagan",
+      "wikidataId": "Q410",
+      "type": "leader",
+      "name": {
+        "fr": "Carl Sagan",
+        "en": "Carl Sagan"
+      },
+      "categories": [
+        "science",
+        "exploration"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 5,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des milliards et des milliards d’étoiles, racontées à la télévision.",
+        "en": "Billions and billions of stars, brought to television."
+      }
+    },
+    {
+      "id": "base_01_l_paris_hilton",
+      "wikidataId": "Q47899",
+      "type": "leader",
+      "name": {
+        "fr": "Paris Hilton",
+        "en": "Paris Hilton"
+      },
+      "categories": [
+        "series_cinema",
+        "nuits_exces"
+      ],
+      "cost": 0,
+      "power": 5,
+      "life": 4,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "nuits_exces"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "La téléréalité avant tout le monde. That’s hot.",
+        "en": "Reality TV before anyone else. That’s hot."
+      }
+    },
+    {
+      "id": "base_01_monica_bellucci",
+      "wikidataId": "Q81819",
+      "type": "character",
+      "name": {
+        "fr": "Monica Bellucci",
+        "en": "Monica Bellucci"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le cinéma italien a trouvé son ambassadrice.",
+        "en": "Italian cinema found its ambassador."
+      }
+    },
+    {
+      "id": "base_01_gal_gadot",
+      "wikidataId": "Q185654",
+      "type": "character",
+      "name": {
+        "fr": "Gal Gadot",
+        "en": "Gal Gadot"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Mannequin, puis Wonder Woman. Le lasso est en option.",
+        "en": "Model, then Wonder Woman. Lasso optional."
+      }
+    },
+    {
+      "id": "base_01_selena_gomez",
+      "wikidataId": "Q83287",
+      "type": "character",
+      "name": {
+        "fr": "Selena Gomez",
+        "en": "Selena Gomez"
+      },
+      "categories": [
+        "nuits_exces",
+        "musique"
+      ],
+      "cost": 2,
+      "power": 5,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "end_of_turn",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": -1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une des personnes les plus suivies d’Instagram.",
+        "en": "One of the most followed people on Instagram."
+      }
+    },
+    {
+      "id": "base_01_cameron_diaz",
+      "wikidataId": "Q44380",
+      "type": "character",
+      "name": {
+        "fr": "Cameron Diaz",
+        "en": "Cameron Diaz"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Elle a fait rire Hollywood pendant vingt ans.",
+        "en": "She kept Hollywood laughing for twenty years."
+      }
+    },
+    {
+      "id": "base_01_whitney_houston",
+      "wikidataId": "Q34389",
+      "type": "character",
+      "name": {
+        "fr": "Whitney Houston",
+        "en": "Whitney Houston"
+      },
+      "categories": [
+        "nuits_exces",
+        "musique"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Elle l’a chantée pour toujours. Le monde aussi.",
+        "en": "She sang it forever. So did the world."
+      }
+    },
+    {
+      "id": "base_01_francis_drake",
+      "wikidataId": "Q36517",
+      "type": "character",
+      "name": {
+        "fr": "Francis Drake",
+        "en": "Francis Drake"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Corsaire pour la reine, pirate pour les Espagnols.",
+        "en": "A privateer to the Queen, a pirate to the Spanish."
+      }
+    },
+    {
+      "id": "base_01_mary_read",
+      "wikidataId": "Q234421",
+      "type": "character",
+      "name": {
+        "fr": "Mary Read",
+        "en": "Mary Read"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "S’est fait passer pour un homme pour devenir pirate.",
+        "en": "Passed as a man to become a pirate."
+      }
+    },
+    {
+      "id": "base_01_henry_morgan",
+      "wikidataId": "Q215502",
+      "type": "character",
+      "name": {
+        "fr": "Henry Morgan",
+        "en": "Henry Morgan"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 5,
+      "power": 6,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "ko",
+            "target": "weakest_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Pirate, puis gouverneur de la Jamaïque. La reconversion parfaite.",
+        "en": "Pirate, then Governor of Jamaica. The perfect career change."
+      }
+    },
+    {
+      "id": "base_01_barberousse",
+      "wikidataId": "Q200582",
+      "type": "character",
+      "name": {
+        "fr": "Barberousse",
+        "en": "Barbarossa"
+      },
+      "categories": [
+        "crimes_scandales",
+        "guerre_pouvoir"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Amiral, corsaire, et cauchemar de la Méditerranée.",
+        "en": "Admiral, privateer, and nightmare of the Mediterranean."
+      }
+    },
+    {
+      "id": "base_01_iran_contra",
+      "wikidataId": "Q273659",
+      "type": "event",
+      "name": {
+        "fr": "L'affaire Iran-Contra",
+        "en": "The Iran–Contra affair"
+      },
+      "categories": [
+        "crimes_scandales",
+        "guerre_pouvoir"
+      ],
+      "cost": 4,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        },
+        {
+          "trigger": "main",
+          "action": {
+            "type": "ko",
+            "target": "weakest_enemy",
+            "filter": {
+              "maxCost": 3
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des armes contre des otages, l’argent pour des rebelles. Personne n’était au courant.",
+        "en": "Arms for hostages, the money for rebels. Nobody knew a thing."
+      }
+    },
+    {
+      "id": "base_01_moai",
+      "wikidataId": "Q20350",
+      "type": "character",
+      "name": {
+        "fr": "Les moaïs",
+        "en": "The Moai"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Presque tous regardent vers l’intérieur de l’île. Personne ne sait vraiment pourquoi.",
+        "en": "Nearly all of them face inland. Nobody really knows why."
+      }
+    },
+    {
+      "id": "base_01_nazca",
+      "wikidataId": "Q2620036",
+      "type": "event",
+      "name": {
+        "fr": "Les géoglyphes de Nazca",
+        "en": "The Nazca Lines"
+      },
+      "categories": [
+        "mysteres",
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 2
+              },
+              {
+                "type": "bounce",
+                "target": "strongest_enemy",
+                "filter": {
+                  "maxCost": 5
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des dessins géants, visibles seulement du ciel. Mais pour qui ?",
+        "en": "Giant drawings, visible only from the sky. But for whom?"
+      }
+    },
+    {
+      "id": "base_01_roswell",
+      "wikidataId": "Q219355",
+      "type": "character",
+      "name": {
+        "fr": "L'affaire de Roswell",
+        "en": "The Roswell incident"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "bounce",
+            "target": "random_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un ballon-sonde, selon l’armée. Bien trop discret, selon Internet.",
+        "en": "A weather balloon, says the army. Suspiciously quiet, says the internet."
+      }
+    },
+    {
+      "id": "base_01_crop_circle",
+      "wikidataId": "Q193330",
+      "type": "character",
+      "name": {
+        "fr": "Les cercles de culture",
+        "en": "Crop circles"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 1
+              },
+              {
+                "type": "add_power",
+                "target": "self",
+                "amount": 2,
+                "duration": "turn"
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Faits en une nuit, par des extraterrestres ou deux types avec une planche.",
+        "en": "Made overnight, by aliens or two guys with a plank."
+      }
+    },
+    {
+      "id": "base_01_mothman",
+      "wikidataId": "Q746248",
+      "type": "character",
+      "name": {
+        "fr": "L'Homme-papillon",
+        "en": "Mothman"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "shitpost",
+        "rickroll"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Aperçu juste avant les catastrophes. Coïncidence, probablement.",
+        "en": "Seen right before disasters. Coincidence, probably."
+      }
+    },
+    {
+      "id": "base_01_ronald_reagan",
+      "wikidataId": "Q9960",
+      "type": "character",
+      "name": {
+        "fr": "Ronald Reagan",
+        "en": "Ronald Reagan"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Acteur, puis président. Il avait déjà eu le rôle.",
+        "en": "Actor, then President. He’d already had the part."
+      }
+    },
+    {
+      "id": "base_01_barack_obama",
+      "wikidataId": "Q76",
+      "type": "character",
+      "name": {
+        "fr": "Barack Obama",
+        "en": "Barack Obama"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Yes we can. Et il l’a fait deux fois.",
+        "en": "Yes we can. And he did, twice."
+      }
+    },
+    {
+      "id": "base_01_jean_paul_ii",
+      "wikidataId": "Q989",
+      "type": "character",
+      "name": {
+        "fr": "Jean-Paul II",
+        "en": "John Paul II"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 2,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le pape qui a parcouru le monde : 129 pays visités.",
+        "en": "The globetrotting pope: 129 countries visited."
+      }
+    },
+    {
+      "id": "base_01_richard_nixon",
+      "wikidataId": "Q9588",
+      "type": "character",
+      "name": {
+        "fr": "Richard Nixon",
+        "en": "Richard Nixon"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "crimes_scandales"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il n’était pas un escroc. Il l’a dit lui-même.",
+        "en": "He was not a crook. He said so himself."
+      }
+    },
+    {
+      "id": "base_01_terechkova",
+      "wikidataId": "Q44371",
+      "type": "character",
+      "name": {
+        "fr": "Valentina Terechkova",
+        "en": "Valentina Tereshkova"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Première femme dans l’espace, en 1963. Seule à bord.",
+        "en": "First woman in space, in 1963. Flying solo."
+      }
+    },
+    {
+      "id": "base_01_neymar",
+      "wikidataId": "Q142794",
+      "type": "character",
+      "name": {
+        "fr": "Neymar",
+        "en": "Neymar"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un dribble, deux dribbles, trois défenseurs au sol.",
+        "en": "One dribble, two dribbles, three defenders on the floor."
+      }
+    },
+    {
+      "id": "base_01_djokovic",
+      "wikidataId": "Q5812",
+      "type": "character",
+      "name": {
+        "fr": "Novak Djokovic",
+        "en": "Novak Djokovic"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "24 titres du Grand Chelem. Il en veut encore.",
+        "en": "24 Grand Slam titles. He still wants more."
+      }
+    },
+    {
+      "id": "base_01_ronaldinho",
+      "wikidataId": "Q39444",
+      "type": "character",
+      "name": {
+        "fr": "Ronaldinho",
+        "en": "Ronaldinho"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il jouait au football en souriant. Les défenseurs, moins.",
+        "en": "He played football smiling. The defenders, less so."
+      }
+    },
+    {
+      "id": "base_01_lewis_hamilton",
+      "wikidataId": "Q9673",
+      "type": "character",
+      "name": {
+        "fr": "Lewis Hamilton",
+        "en": "Lewis Hamilton"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Sept titres mondiaux, et toujours le premier dans les virages.",
+        "en": "Seven world titles, and still first into every corner."
+      }
+    },
+    {
+      "id": "base_01_kobe_bryant",
+      "wikidataId": "Q25369",
+      "type": "character",
+      "name": {
+        "fr": "Kobe Bryant",
+        "en": "Kobe Bryant"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 6,
+      "power": 5,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "battle"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "81 points en un seul match. Mamba Mentality.",
+        "en": "81 points in a single game. Mamba Mentality."
+      }
+    },
+    {
+      "id": "base_01_david_bowie",
+      "wikidataId": "Q5383",
+      "type": "character",
+      "name": {
+        "fr": "David Bowie",
+        "en": "David Bowie"
+      },
+      "categories": [
+        "musique",
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Ziggy, Aladdin Sane, le Thin White Duke : toujours un coup d’avance.",
+        "en": "Ziggy, Aladdin Sane, the Thin White Duke: always one step ahead."
+      }
+    },
+    {
+      "id": "base_01_rihanna",
+      "wikidataId": "Q36844",
+      "type": "character",
+      "name": {
+        "fr": "Rihanna",
+        "en": "Rihanna"
+      },
+      "categories": [
+        "musique",
+        "nuits_exces"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Des tubes d’abord, puis un empire de la beauté.",
+        "en": "Hits first, then a beauty empire."
+      }
+    },
+    {
+      "id": "base_01_the_beatles",
+      "wikidataId": "Q1299",
+      "type": "character",
+      "name": {
+        "fr": "The Beatles",
+        "en": "The Beatles"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 7,
+      "power": 7,
+      "counter": 0,
+      "rarity": "iconique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Quatre gars de Liverpool, et la pop n’a plus jamais été la même.",
+        "en": "Four lads from Liverpool, and pop was never the same."
+      }
+    },
+    {
+      "id": "base_01_bob_marley",
+      "wikidataId": "Q409",
+      "type": "character",
+      "name": {
+        "fr": "Bob Marley",
+        "en": "Bob Marley"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Ne t’inquiète pas pour cette carte. Tout ira bien.",
+        "en": "Don’t worry about this card. Every little thing is gonna be alright."
+      }
+    },
+    {
+      "id": "base_01_prince",
+      "wikidataId": "Q7542",
+      "type": "character",
+      "name": {
+        "fr": "Prince",
+        "en": "Prince"
+      },
+      "categories": [
+        "musique",
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "add_power",
+            "target": "strongest_ally",
+            "amount": 2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un symbole à la place du nom. Une guitare pour tout le reste.",
+        "en": "A symbol instead of a name. A guitar for everything else."
+      }
+    },
+    {
+      "id": "base_01_brad_pitt",
+      "wikidataId": "Q35332",
+      "type": "character",
+      "name": {
+        "fr": "Brad Pitt",
+        "en": "Brad Pitt"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Première règle : on ne parle pas de cette carte.",
+        "en": "First rule: you do not talk about this card."
+      }
+    },
+    {
+      "id": "base_01_bruce_lee",
+      "wikidataId": "Q16397",
+      "type": "character",
+      "name": {
+        "fr": "Bruce Lee",
+        "en": "Bruce Lee"
+      },
+      "categories": [
+        "series_cinema",
+        "sport"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Sois comme l’eau, mon ami.",
+        "en": "Be water, my friend."
+      }
+    },
+    {
+      "id": "base_01_stallone",
+      "wikidataId": "Q40026",
+      "type": "character",
+      "name": {
+        "fr": "Sylvester Stallone",
+        "en": "Sylvester Stallone"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Rocky : il l’a écrit, puis il l’a joué.",
+        "en": "Rocky: he wrote it, then starred in it."
+      }
+    },
+    {
+      "id": "base_01_keanu_reeves",
+      "wikidataId": "Q43416",
+      "type": "character",
+      "name": {
+        "fr": "Keanu Reeves",
+        "en": "Keanu Reeves"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Internet a décidé qu’il était parfait. Internet a raison.",
+        "en": "The internet decided he’s perfect. The internet is right."
+      }
+    },
+    {
+      "id": "base_01_clint_eastwood",
+      "wikidataId": "Q43203",
+      "type": "character",
+      "name": {
+        "fr": "Clint Eastwood",
+        "en": "Clint Eastwood"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "rickroll"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il a regardé l’adversaire. L’adversaire a changé d’avis.",
+        "en": "He looked at the opponent. The opponent changed their mind."
+      }
+    },
+    {
+      "id": "base_01_pewdiepie",
+      "wikidataId": "Q13423853",
+      "type": "character",
+      "name": {
+        "fr": "PewDiePie",
+        "en": "PewDiePie"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Abonne-toi à PewDiePie. Une bonne partie de la planète l’a fait.",
+        "en": "Subscribe to PewDiePie. A good part of the planet did."
+      }
+    },
+    {
+      "id": "base_01_harlem_shake",
+      "wikidataId": "Q4606965",
+      "type": "event",
+      "name": {
+        "fr": "Le Harlem Shake",
+        "en": "The Harlem Shake"
+      },
+      "categories": [
+        "internet",
+        "musique"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "add_power",
+                "target": "all_mine",
+                "amount": 2,
+                "duration": "turn"
+              },
+              {
+                "type": "draw",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "30 secondes de calme, puis le chaos total.",
+        "en": "30 seconds of calm, then total chaos."
+      }
+    },
+    {
+      "id": "base_01_distracted_boyfriend",
+      "wikidataId": "Q55691704",
+      "type": "character",
+      "name": {
+        "fr": "Le petit ami distrait",
+        "en": "Distracted Boyfriend"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il regarde ailleurs. Ta carte aussi.",
+        "en": "He’s looking elsewhere. So is your card."
+      }
+    },
+    {
+      "id": "base_01_charli_damelio",
+      "wikidataId": "Q83648587",
+      "type": "character",
+      "name": {
+        "fr": "Charli D'Amelio",
+        "en": "Charli D'Amelio"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Une danse de 15 secondes, des dizaines de millions d’abonnés.",
+        "en": "A 15-second dance, tens of millions of followers."
+      }
+    },
+    {
+      "id": "base_01_khaby_lame",
+      "wikidataId": "Q106839925",
+      "type": "character",
+      "name": {
+        "fr": "Khaby Lame",
+        "en": "Khaby Lame"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il n’a rien dit. Il a juste montré.",
+        "en": "He didn’t say a word. He just showed you."
+      }
+    },
+    {
+      "id": "base_01_bill_gates",
+      "wikidataId": "Q5284",
+      "type": "character",
+      "name": {
+        "fr": "Bill Gates",
+        "en": "Bill Gates"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "A quitté Harvard. Ça s’est plutôt bien passé.",
+        "en": "Dropped out of Harvard. It worked out fine."
+      }
+    },
+    {
+      "id": "base_01_linus_torvalds",
+      "wikidataId": "Q34253",
+      "type": "character",
+      "name": {
+        "fr": "Linus Torvalds",
+        "en": "Linus Torvalds"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "A créé Linux pour s’amuser. Le Web tourne dessus.",
+        "en": "Built Linux for fun. The web runs on it."
+      }
+    },
+    {
+      "id": "base_01_steve_wozniak",
+      "wikidataId": "Q483382",
+      "type": "character",
+      "name": {
+        "fr": "Steve Wozniak",
+        "en": "Steve Wozniak"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le génie du garage, à côté de l’autre Steve.",
+        "en": "The genius in the garage, next to the other Steve."
+      }
+    },
+    {
+      "id": "base_01_alan_turing",
+      "wikidataId": "Q7251",
+      "type": "character",
+      "name": {
+        "fr": "Alan Turing",
+        "en": "Alan Turing"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 4,
+      "power": 3,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a percé Enigma et inventé l’informatique.",
+        "en": "He cracked Enigma and invented computer science."
+      }
+    },
+    {
+      "id": "base_01_descartes",
+      "wikidataId": "Q9191",
+      "type": "character",
+      "name": {
+        "fr": "René Descartes",
+        "en": "René Descartes"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Je pense, donc je pioche.",
+        "en": "I think, therefore I draw."
+      }
+    },
+    {
+      "id": "base_01_gagarine",
+      "wikidataId": "Q7327",
+      "type": "character",
+      "name": {
+        "fr": "Youri Gagarine",
+        "en": "Yuri Gagarin"
+      },
+      "categories": [
+        "exploration",
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Poyekhali ! Premier homme dans l’espace.",
+        "en": "Poyekhali! First man in space."
+      }
+    },
+    {
+      "id": "base_01_vasco_de_gama",
+      "wikidataId": "Q7328",
+      "type": "character",
+      "name": {
+        "fr": "Vasco de Gama",
+        "en": "Vasco da Gama"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "La route des Indes par la mer, enfin.",
+        "en": "The sea route to India, at last."
+      }
+    },
+    {
+      "id": "base_01_bear_grylls",
+      "wikidataId": "Q485365",
+      "type": "character",
+      "name": {
+        "fr": "Bear Grylls",
+        "en": "Bear Grylls"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il boit des choses que tu préfères ne pas connaître.",
+        "en": "He drinks things you’d rather not know about."
+      }
+    },
+    {
+      "id": "base_01_tensing_norgay",
+      "wikidataId": "Q80732",
+      "type": "character",
+      "name": {
+        "fr": "Tensing Norgay",
+        "en": "Tenzing Norgay"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Premier au sommet de l’Everest avec Hillary. Sur la photo, c’est lui.",
+        "en": "First on top of Everest with Hillary. He’s the one in the photo."
+      }
+    },
+    {
+      "id": "base_01_ibn_battuta",
+      "wikidataId": "Q7331",
+      "type": "character",
+      "name": {
+        "fr": "Ibn Battuta",
+        "en": "Ibn Battuta"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "120 000 km à pied, à cheval et en bateau. Au XIVe siècle.",
+        "en": "120,000 km on foot, on horseback and by boat. In the 14th century."
+      }
+    }
+  ]
+}

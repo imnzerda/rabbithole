@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -10,6 +10,7 @@ import { auth, signupPayload, signupWithKit, startApp, TestClient } from './help
  */
 const PIPELINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'tools', 'pipeline');
 const read = (path: string) => JSON.parse(readFileSync(join(PIPELINE, path), 'utf8')) as Record<string, unknown>;
+const DECK_COUNT = (read('decks/base_01.json').decks as unknown[]).length;
 
 type Started = Awaited<ReturnType<typeof startApp>>;
 let t: Started | null = null;
@@ -27,7 +28,7 @@ async function setupBaseSet() {
   const res = await t.app.inject({ method: 'POST', url: '/api/auth/signup', payload: signupPayload('decks', { email: ADMIN }) });
   const token = res.cookies.find((c) => c.name === 'rh_session')!.value;
   const call = (method: 'GET' | 'POST', url: string, payload?: unknown) => t!.app.inject({ method, url, headers: auth(token), payload: payload as object });
-  for (const lot of ['drafts/base_01.json', 'drafts/base_01_lot2.json']) {
+  for (const lot of readdirSync(join(PIPELINE, 'drafts')).filter((f) => f.endsWith('.json')).map((f) => `drafts/${f}`)) {
     const r = (await call('POST', '/api/admin/cards/import', read(lot))).json();
     expect(r.skipped).toEqual([]);
   }
@@ -57,11 +58,11 @@ describe('decks de référence', () => {
     expect(result).toEqual({ imported: expect.arrayContaining(['base_01_d_bieber', 'base_01_d_marilyn']), invalid: [] });
     // Série encore en brouillon : pas encore proposés aux joueurs.
     expect((await call('GET', '/api/decks/reference')).json().decks.some((d: { series: string }) => d.series === 'base_01')).toBe(false);
-    expect((await call('GET', '/api/admin/decks')).json().decks.filter((d: { series: string }) => d.series === 'base_01')).toHaveLength(5);
+    expect((await call('GET', '/api/admin/decks')).json().decks.filter((d: { series: string }) => d.series === 'base_01')).toHaveLength(DECK_COUNT);
 
     await publishAll(call);
     const decks = (await call('GET', '/api/decks/reference')).json().decks;
-    expect(decks.slice(0, 5).map((d: { series: string }) => d.series)).toEqual(Array(5).fill('base_01'));
+    expect(decks.slice(0, DECK_COUNT).map((d: { series: string }) => d.series)).toEqual(Array(DECK_COUNT).fill('base_01'));
     expect(decks[0].cards).toHaveLength(20);
 
     // Simulation dans l'admin avec les decks de référence.

@@ -22,6 +22,14 @@
 
 ## Journal
 
+### 2026-10-03 — Set de base : lot 3 (140 cartes, 10 Leaders, 10 decks)
+
+- **5 nouveaux Leaders** (un deuxième par paire) : Billie Eilish (Internet + Musique), Pelé (Guerre + Sport), Harry Houdini (Crimes + Mystères), Carl Sagan (Science + Exploration), Paris Hilton (Séries + Nuits).
+- **50 cartes** (`tools/pipeline/drafts/base_01_lot3.json`) : Whitney Houston, Monica Bellucci, Gal Gadot, Selena Gomez, Cameron Diaz ; Mary Read, Francis Drake, Henry Morgan, Barberousse, l'affaire Iran-Contra ; moaïs, Nazca, Roswell, Mothman ; Reagan, Obama, Jean-Paul II, Nixon, Terechkova ; Neymar, Djokovic, Ronaldinho, Hamilton, Kobe Bryant ; Bowie, Rihanna, The Beatles (iconique), Bob Marley, Prince ; Brad Pitt, Bruce Lee, Stallone, Keanu Reeves, Clint Eastwood ; PewDiePie, Harlem Shake, Distracted Boyfriend, Charli D'Amelio, Khaby Lame ; Bill Gates, Linus Torvalds, Wozniak, Alan Turing, Descartes ; Gagarine, Vasco de Gama, Bear Grylls, Tensing Norgay, Ibn Battuta.
+- **Équilibre à 10 decks** : premier essai Pelé 81 %, Sagan 7 %, Houdini 31 %. Ajustements : capacités des Leaders Pelé (+1 à l'allié le plus fort), Houdini (alliés +1 pendant le tour adverse), Sagan (alliés +1 pendant son tour) ; Hamilton et Kobe Bryant 6 → 5 ; decks Pelé, Houdini et Sagan retouchés. Résultat : **40 % à 59 %**. Le test d'intégration du serveur importe maintenant tous les lots du dossier.
+- Base de dev : 140 cartes publiées dans `base_01` (130 cartes et 10 Leaders), 10 decks de référence. Il reste 110 cartes pour atteindre les 250 du set de base.
+
+
 ### 2026-10-03 — Séries du prototype supprimées
 
 - Commande `pnpm --filter @rabbithole/server content:remove-series` (serveur arrêté, irréversible, pas de bouton dans l'admin) : cartes, images et decks de référence de la série ; les collections perdent ces cartes, les decks de joueurs qui les utilisent sont effacés, les aperçus de boosters régénérés, un Leader de départ disparu peut être choisi de nouveau. Les replays restent lisibles.
