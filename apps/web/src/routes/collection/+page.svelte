@@ -75,7 +75,7 @@
 
   function errorText(e: unknown): string {
     if (!(e instanceof ApiError)) return t('err_generic');
-    const known = ['not_enough_coins', 'preview_changed', 'not_enough_essence', 'not_enough_duplicates', 'wrong_count', 'mixed_rarities'] as const;
+    const known = ['not_enough_coins', 'preview_changed', 'not_enough_duplicates', 'wrong_count', 'mixed_rarities'] as const;
     const code = known.find((k) => k === e.code);
     return code ? t(`err_${code}`) : t('err_generic');
   }
@@ -154,7 +154,6 @@
       <div class="wallet" data-testid="wallet">
         <span title={t('coins')}>🪙 {wallet.coins}</span>
         <span title={t('gems')}>💎 {wallet.gems}</span>
-        <span title={t('essence')}>✨ {wallet.essence}</span>
         <span title={t('free_boosters')}>🎁 {wallet.freeBoosters}</span>
       </div>
     {/if}
@@ -303,7 +302,7 @@
         <p class="owned">{t('owned_count', { n: count })}</p>
         <div class="actions">
           <button class="btn" disabled={busy || count <= keepFor(def)} onclick={() => recycle(def.id)}>{t('recycle_btn', { n: shop.economy.recycle[def.rarity] ?? 0 })}</button>
-          <button class="btn btn-primary" disabled={busy || count >= keepFor(def) || (wallet?.essence ?? 0) < (shop.economy.craft[def.rarity] ?? Infinity)} onclick={() => craft(def.id)}>
+          <button class="btn btn-primary" disabled={busy || count >= keepFor(def) || (wallet?.coins ?? 0) < (shop.economy.craft[def.rarity] ?? Infinity)} onclick={() => craft(def.id)}>
             {t('craft_btn', { n: shop.economy.craft[def.rarity] ?? 0 })}
           </button>
         </div>

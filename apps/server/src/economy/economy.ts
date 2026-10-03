@@ -52,16 +52,15 @@ const keepFor = (def: CardDef, economy: EconomyConfig) => (def.type === 'leader'
 export interface Wallet {
   coins: number;
   gems: number;
-  essence: number;
   freeBoosters: number;
 }
 
 export async function getWallet(db: Db, userId: string): Promise<Wallet> {
-  const [w] = await db.query<{ coins: number; gems: number; essence: number; free_boosters: number }>(
-    'SELECT coins, gems, essence, free_boosters FROM wallets WHERE user_id = $1',
+  const [w] = await db.query<{ coins: number; gems: number; free_boosters: number }>(
+    'SELECT coins, gems, free_boosters FROM wallets WHERE user_id = $1',
     [userId],
   );
-  return { coins: w?.coins ?? 0, gems: w?.gems ?? 0, essence: w?.essence ?? 0, freeBoosters: w?.free_boosters ?? 0 };
+  return { coins: w?.coins ?? 0, gems: w?.gems ?? 0, freeBoosters: w?.free_boosters ?? 0 };
 }
 
 async function ledger(db: Db, userId: string, currency: string, amount: number, reason: string, ref: string | null = null): Promise<void> {
@@ -170,7 +169,7 @@ function collectible(cardId: string, catalog: CatalogSnapshot): CardDef {
   return def;
 }
 
-/** Recyclage des doublons en essence : on garde toujours les exemplaires jouables. */
+/** Recyclage des doublons en pièces : on garde toujours les exemplaires jouables. */
 export async function recycle(db: Db, userId: string, cardId: string, count: number, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Wallet> {
   const def = collectible(cardId, catalog);
   return db.transaction(async (tx) => {
@@ -183,23 +182,23 @@ export async function recycle(db: Db, userId: string, cardId: string, count: num
     ]);
     if (done.length === 0) throw new EconomyError('not_enough_duplicates');
     const gain = economy.recycle[def.rarity] * count;
-    await tx.query('UPDATE wallets SET essence = essence + $2 WHERE user_id = $1', [userId, gain]);
-    await ledger(tx, userId, 'essence', gain, 'recycle', cardId);
+    await tx.query('UPDATE wallets SET coins = coins + $2 WHERE user_id = $1', [userId, gain]);
+    await ledger(tx, userId, 'coins', gain, 'recycle', cardId);
     return getWallet(tx, userId);
   });
 }
 
-/** Fabrication d'une carte avec l'essence, jusqu'au nombre d'exemplaires jouables. */
+/** Fabrication d'une carte avec des pièces, jusqu'au nombre d'exemplaires jouables. */
 export async function craft(db: Db, userId: string, cardId: string, economy: EconomyConfig, catalog: CatalogSnapshot): Promise<Wallet> {
   const def = collectible(cardId, catalog);
   return db.transaction(async (tx) => {
     const [owned] = await tx.query<{ quantity: number }>('SELECT quantity FROM collections WHERE user_id = $1 AND card_id = $2', [userId, cardId]);
     if ((owned?.quantity ?? 0) >= keepFor(def, economy)) throw new EconomyError('already_complete');
     const cost = economy.craft[def.rarity];
-    const paid = await tx.query('UPDATE wallets SET essence = essence - $2 WHERE user_id = $1 AND essence >= $2 RETURNING essence', [userId, cost]);
-    if (paid.length === 0) throw new EconomyError('not_enough_essence', 402);
+    const paid = await tx.query('UPDATE wallets SET coins = coins - $2 WHERE user_id = $1 AND coins >= $2 RETURNING coins', [userId, cost]);
+    if (paid.length === 0) throw new EconomyError('not_enough_coins', 402);
     await addCards(tx, userId, [cardId]);
-    await ledger(tx, userId, 'essence', -cost, 'craft', cardId);
+    await ledger(tx, userId, 'coins', -cost, 'craft', cardId);
     return getWallet(tx, userId);
   });
 }

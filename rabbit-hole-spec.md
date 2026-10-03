@@ -286,7 +286,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 **Procédure de retrait**
 - Formulaire public « Demande de retrait » (page dédiée + lien sur chaque fiche de carte).
 - Traitement prioritaire : retrait ou anonymisation sous 72 h depuis l'outil d'admin (section 12).
-- Une carte retirée : désactivée en jeu, remplacée dans les collections par une carte de même rareté ou compensée en essence (section 6). Le retrait (catalogue, boosters, decks) est implémenté ; la compensation reste à faire (phase 5).
+- Une carte retirée : désactivée en jeu, remplacée dans les collections par une carte de même rareté ou compensée en pièces (section 6). Le retrait (catalogue, boosters, decks) est implémenté ; la compensation reste à faire (phase 5).
 
 ---
 
@@ -295,10 +295,11 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 ### 6.1 Monnaies
 | Monnaie | Gagnée en jeu | Achetable | Usage |
 |---|---|---|---|
-| Pièces | Oui | Non | Boosters standards, boutique quotidienne |
+| Pièces | Oui (parties, recyclage des doublons) | Non | Boosters standards, crafting de cartes au choix, boutique quotidienne |
 | Gemmes | Un peu (succès, pass) | Oui | Boosters premium, cosmétiques, pass |
-| Essence | Recyclage des doublons | **Non** | Crafting de cartes au choix |
 | Jetons de guilde | Activité de guilde | **Non** | Boutique de guilde |
+
+> L'essence a été **fusionnée dans les pièces** le 2026-10-03 : une seule monnaie gagnée en jeu. Le recyclage rapporte des pièces et le crafting en coûte.
 
 ### 6.2 Boosters avec aperçu (aucun hasard à l'achat)
 - Plusieurs types de boosters : Base, Série mondiale en cours, chaque Série pays. Taille : 5 cartes.
@@ -316,9 +317,9 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Pièces** gagnées en partie en ligne : victoire 40, défaite 15, nul 20, plafond 400 par jour (config). Booster de base : 100 pièces.
 
 ### 6.3 Crafting
-- Doublons au-delà de 2 exemplaires (le maximum par deck, `keepCopies` en config) → recyclables en essence. Le crafting complète jusqu'à ce même nombre.
-- Toute carte d'une série publiée peut être fabriquée avec de l'essence. Coûts par rareté : 20 / 50 / 150 / 500 / 1500 (config).
-- Recyclage : 5 / 12 / 40 / 120 / 400 (config).
+- Doublons au-delà de 2 exemplaires (le maximum par deck, `keepCopies` en config) → recyclables en pièces. Le crafting complète jusqu'à ce même nombre.
+- Toute carte d'une série publiée peut être fabriquée avec des pièces. Coûts par rareté : 20 / 50 / 150 / 500 / 1500 (config).
+- Recyclage : 1 / 3 / 10 / 30 / 100 pièces (config). Recycler un booster rapporte en moyenne environ un quart de son prix : acheter des boosters pour les recycler n'est jamais rentable (vérifié par un test).
 
 ### 6.4 Trade-up
 - **5 doublons de même rareté** → 1 carte aléatoire de la rareté supérieure, **non possédée** par le joueur si possible.
@@ -512,7 +513,7 @@ country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
 decks(id, user_id, name, leader_id, card_ids TEXT[], updated_at)
 series_decks(id, series_id, name JSONB, description JSONB, leader_id, card_ids TEXT[])   -- decks de référence
-wallets(user_id, coins, gems, essence, guild_tokens, free_boosters)
+wallets(user_id, coins, gems /*peut être négatif après un remboursement*/, guild_tokens, free_boosters)
 coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
 booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
@@ -595,7 +596,7 @@ POST /takedown
 ### Phase 5 — Économie
 - Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges, boutique quotidienne.
 - `PaymentProvider` en sandbox, prix régionaux, webhooks.
-- **Déjà fait en phase 3** : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting.
+- **Déjà fait en phase 3** : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting.
 
 ### Phase 6 — Rétention
 - Classé et saisons, missions, pass (3 pistes), progression de collection, succès, défi du jour, draft, tournois, Tendance du jour, partage de clips.

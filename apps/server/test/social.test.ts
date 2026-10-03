@@ -132,7 +132,7 @@ describe('échanges', () => {
     expect(await qty(b.id, 'proto_empereur')).toBe(0);
     expect((await post(`/api/trades/${trade.id}/accept`, b.token)).json().error).toBe('trade_closed');
     // Aucune monnaie en jeu.
-    expect((await get('/api/wallet', a.token)).json().wallet).toMatchObject({ coins: 0, gems: 0, essence: 0 });
+    expect((await get('/api/wallet', a.token)).json().wallet).toMatchObject({ coins: 0, gems: 0 });
   });
 
   it('don (rien en retour) et demande de don', async () => {

@@ -108,7 +108,8 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
   previewRefreshHours: 24,
   rarityWeights: { basique: 55, tendance: 27, viral: 12, iconique: 5, goat: 1 },
   keepCopies: 2,
-  recycle: { basique: 5, tendance: 12, viral: 40, iconique: 120, goat: 400 },
+  // Recycler un booster rapporte environ un quart de son prix : acheter pour recycler n'est jamais rentable.
+  recycle: { basique: 1, tendance: 3, viral: 10, iconique: 30, goat: 100 },
   craft: { basique: 20, tendance: 50, viral: 150, iconique: 500, goat: 1500 },
   rewards: { win: 40, loss: 15, draw: 20, dailyCap: 400 },
   tradeUp: { count: 5, targetedCount: 8 },

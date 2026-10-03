@@ -69,7 +69,6 @@ export interface PublicUser {
 export interface WalletDto {
   coins: number;
   gems: number;
-  essence: number;
   freeBoosters: number;
 }
 

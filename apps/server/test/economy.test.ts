@@ -39,6 +39,14 @@ describe('génération des boosters', () => {
   });
 });
 
+describe('équilibre des pièces', () => {
+  it('recycler un booster rapporte bien moins que son prix (pas de pièces infinies)', () => {
+    const odds = boosterOdds('base', DEFAULT_ECONOMY, t.catalog.current);
+    const perCard = Object.entries(odds).reduce((sum, [rarity, pct]) => sum + (pct / 100) * DEFAULT_ECONOMY.recycle[rarity as keyof typeof DEFAULT_ECONOMY.recycle], 0);
+    expect(perCard * DEFAULT_ECONOMY.boosterSize).toBeLessThan(DEFAULT_ECONOMY.boosterPrice / 2);
+  });
+});
+
 describe('boosters', () => {
   it('boosters gratuits de bienvenue : contenu aléatoire, ajouté à la collection, jusqu’à épuisement', async () => {
     const { token } = await signup(t.app);
@@ -110,20 +118,21 @@ describe('collection', () => {
     expect((await post('/api/starter-leader', token, { leaderId: 'proto_l_star' })).statusCode).toBe(409);
   });
 
-  it('recyclage des doublons au-delà de 2, puis fabrication avec l’essence', async () => {
+  it('recyclage des doublons au-delà de 2 en pièces, puis fabrication avec des pièces', async () => {
     const { token, id } = await signup(t.app);
     await t.db.query("INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, 'proto_chevalier', 6)", [id]);
     const tooMany = await post('/api/collection/recycle', token, { cardId: 'proto_chevalier', count: 5 });
     expect(tooMany.json().error).toBe('not_enough_duplicates');
     const ok = await post('/api/collection/recycle', token, { cardId: 'proto_chevalier', count: 4 });
-    expect(ok.json().wallet.essence).toBe(4 * DEFAULT_ECONOMY.recycle.basique);
+    expect(ok.json().wallet.coins).toBe(4 * DEFAULT_ECONOMY.recycle.basique);
     expect((await owned(token)).get('proto_chevalier')).toBe(2);
 
     expect((await post('/api/collection/craft', token, { cardId: 'proto_chevalier' })).json().error).toBe('already_complete');
-    expect((await post('/api/collection/craft', token, { cardId: 'proto_empereur' })).json().error).toBe('not_enough_essence');
+    expect((await post('/api/collection/craft', token, { cardId: 'proto_empereur' })).json().error).toBe('not_enough_coins');
+    await giveCoins(id, 4 * DEFAULT_ECONOMY.recycle.basique + DEFAULT_ECONOMY.craft.basique);
     const crafted = await post('/api/collection/craft', token, { cardId: 'proto_figurant' });
     expect(crafted.statusCode).toBe(200);
-    expect(crafted.json().wallet.essence).toBe(4 * DEFAULT_ECONOMY.recycle.basique - DEFAULT_ECONOMY.craft.basique);
+    expect(crafted.json().wallet.coins).toBe(4 * DEFAULT_ECONOMY.recycle.basique);
     expect((await owned(token)).get('proto_figurant')).toBe(1);
     expect((await post('/api/collection/craft', token, { cardId: 'proto_ovni' })).statusCode).toBe(404);
   });

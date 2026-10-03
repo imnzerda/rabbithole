@@ -94,6 +94,12 @@ describe('boutique', () => {
     expect(await gems(p.token)).toBe(0);
     const statuses = (await get('/api/purchases', p.token)).json().purchases.map((x: { status: string }) => x.status).sort();
     expect(statuses).toEqual(['chargeback', 'refunded']);
+    // Gemmes déjà dépensées : le remboursement rend le solde négatif au lieu d'échouer.
+    const { url } = (await post('/api/shop/checkout', p.token, { productId: 'gems_80' })).json();
+    await webhook({ id: 'evt_r5', type: 'payment_succeeded', sessionId: sessionOf(url), providerTransactionId: 'tx_evt_r5', amount: 99, currency: 'EUR' });
+    await t.db.query('UPDATE wallets SET gems = 0 WHERE user_id = $1', [p.id]);
+    expect((await webhook({ id: 'evt_r6', type: 'refunded', providerTransactionId: 'tx_evt_r5' })).json().result).toBe('applied');
+    expect(await gems(p.token)).toBe(-80);
     const [audit] = await t.db.query("SELECT 1 FROM admin_audit WHERE action = 'payment.chargeback' AND target = $1", [p.id]);
     expect(audit).toBeTruthy();
   });
