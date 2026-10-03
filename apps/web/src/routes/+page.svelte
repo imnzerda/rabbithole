@@ -33,6 +33,7 @@
       <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
       <a href="/decks">{t('decks')}</a>
       <a href="/friends" data-testid="nav-friends">{t('friends')}</a>
+      <a href="/trades" data-testid="nav-trades">{t('trades')}</a>
       <a href="/replays">{t('history')}</a>
       <a href="/settings" data-testid="nav-settings">{t('settings')}</a>
       <button class="link" onclick={() => logout()}>{t('logout')}</button>

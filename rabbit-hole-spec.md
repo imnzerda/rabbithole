@@ -335,7 +335,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Decks** : on peut donner un exemplaire qu'on utilise dans un deck ; la carte quitte alors ce deck, et la page le signale. Un Leader donné reste en tête du deck, qui demande alors un autre Leader.
 - **Acceptation** : le serveur revérifie tout (amitié, possession, cartes autorisées dans les deux pays), puis les cartes changent de main d'un coup. Une proposition expire après 72 h (config).
 - Les comptes liés (même empreinte numérique, cookie d'appareil ou IP, section 14) peuvent échanger : ils restent signalés pour revue (décision du 2026-10-03).
-- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges libres (proposition, acceptation, refus, annulation, expiration). Page « Amis et échanges » (`/friends`). Reste : tableau de guilde (phase 7).
+- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges libres (proposition, acceptation, refus, annulation, expiration). Rubriques « Amis » (`/friends`) et « Échanges » (`/trades`). Reste : tableau de guilde (phase 7).
 
 ### 6.6 Monétisation
 - **Gemmes** : 6 paliers de prix, prix régionaux (table `price_tiers` par pays).

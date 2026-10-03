@@ -245,7 +245,6 @@ const fr = {
   err_wrong_count: 'Nombre de doublons incorrect.',
   err_mixed_rarities: 'Les doublons doivent être de même rareté.',
   friends: "Amis",
-  friends_title: "Amis et échanges",
   friend_code: "Ton code ami",
   friend_code_hint: "Donne-le à tes amis pour qu'ils t'ajoutent.",
   copy: "Copier",
@@ -301,6 +300,10 @@ const fr = {
   trade_nothing: "Rien",
   err_empty_trade: "Choisis au moins une carte.",
   err_same_card: "Une même carte ne peut pas être des deux côtés.",
+  trades: "Échanges",
+  new_trade: "Nouvel échange",
+  trades_none_in: "Aucune proposition reçue pour le moment.",
+  trades_no_friends: "Ajoute d'abord un ami pour pouvoir échanger.",
 } as const;
 
 type Key = keyof typeof fr;
@@ -549,7 +552,6 @@ const en: Record<Key, string> = {
   err_wrong_count: 'Wrong number of duplicates.',
   err_mixed_rarities: 'Duplicates must share the same rarity.',
   friends: "Friends",
-  friends_title: "Friends and trades",
   friend_code: "Your friend code",
   friend_code_hint: "Share it so your friends can add you.",
   copy: "Copy",
@@ -605,6 +607,10 @@ const en: Record<Key, string> = {
   trade_nothing: "Nothing",
   err_empty_trade: "Pick at least one card.",
   err_same_card: "The same card cannot be on both sides.",
+  trades: "Trades",
+  new_trade: "New trade",
+  trades_none_in: "No offers received yet.",
+  trades_no_friends: "Add a friend first to start trading.",
 };
 
 export const locale: GlossaryLocale =

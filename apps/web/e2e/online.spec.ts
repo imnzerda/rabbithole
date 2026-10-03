@@ -126,8 +126,10 @@ test('amis et échange : ajout par code ami, plusieurs cartes de raretés diffé
   await page.request.post('/api/test/set-card', { data: { cardId: 'proto_empereur', quantity: 1 } });
   await bob.request.post('/api/test/set-card', { data: { cardId: 'proto_garde', quantity: 1 } });
 
+  // Depuis la page Amis, « Proposer un échange » ouvre la proposition dans la rubrique Échanges.
   await page.reload();
   await page.getByTestId('propose-trade').click();
+  await expect(page).toHaveURL(/\/trades\?with=/);
   const sheet = page.getByTestId('proposal');
   await sheet.getByTestId('theirs').getByRole('button', { name: /Garde/ }).click();
   const chevalier = sheet.getByTestId('mine').getByRole('button', { name: /Chevalier/ });
@@ -139,7 +141,10 @@ test('amis et échange : ajout par code ami, plusieurs cartes de raretés diffé
   await expect(page.getByTestId('message')).toHaveText('Proposition envoyée.');
   await expect(page.getByTestId('trade-outgoing')).toHaveCount(1);
 
+  // Bob voit la proposition signalée depuis ses amis, puis dans ses échanges.
   await bob.reload();
+  await expect(bob.getByTestId('to-trades')).toContainText('1');
+  await bob.getByTestId('to-trades').click();
   await expect(bob.getByTestId('trade-incoming')).toHaveCount(1);
   await bob.getByTestId('trade-accept').click();
   await expect(bob.getByTestId('message')).toHaveText('Échange effectué !');

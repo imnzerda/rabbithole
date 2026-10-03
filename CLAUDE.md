@@ -106,7 +106,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `lib/api.ts`, `lib/session.svelte.ts` : API REST et session.
   - `lib/catalog.ts` : catalogue publié par le serveur (et versions passées pour les replays) ; `lib/viewer.svelte.ts` : ce que le joueur voit (cartes masquées ou bloquées, crédits).
   - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
-  - Pages : `collection` (boosters, trade-up), `decks`, `friends` (amis et échanges), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
+  - Pages : `collection` (boosters, trade-up), `decks`, `friends` (amis, code ami), `trades` (échanges), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.

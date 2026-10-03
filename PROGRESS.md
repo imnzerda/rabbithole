@@ -22,6 +22,13 @@
 
 ## Journal
 
+### 2026-10-03 — Rubrique « Échanges » à part
+
+- La page « Amis et échanges » est découpée en deux rubriques, chacune avec son lien sur l'accueil.
+  - **Amis** (`/friends`) : code ami, ajout, demandes, liste des amis. Un lien vers les Échanges indique le nombre de propositions reçues.
+  - **Échanges** (`/trades`) : propositions reçues, nouvel échange (choix d'un ami), propositions envoyées, historique.
+- Depuis un ami, « Proposer un échange » ouvre directement la proposition dans la rubrique Échanges (`/trades?with=…`).
+
 ### 2026-10-03 — Échanges libres entre amis
 
 - **Décision** : plus de limites dans les échanges. On peut mettre plusieurs cartes de chaque côté, de raretés libres, ou faire un don (un côté vide, ou une demande de don). Il n'y a plus de limite par jour ni de limite pour les GOAT, et les comptes liés peuvent échanger (ils restent signalés pour revue).
