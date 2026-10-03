@@ -141,12 +141,12 @@ export const POLICY = {
    * Une carrière commencée avant 18 ans n'exclut plus personne (décision du 2026-10-02).
    */
   majority: 18,
-  /** Natures exclues d'office (terrorisme). */
+  /** Terrorisme (nature) : revue humaine obligatoire et contenu sensible. */
   excludedInstances: { Q2223653: 'attaque terroriste', Q17127659: 'organisation terroriste' } as Record<string, string>,
-  /** Descriptions qui excluent d'office : terrorisme, négation de crimes contre l'humanité. */
+  /** Descriptions évoquant le terrorisme ou la négation de crimes contre l'humanité : revue humaine obligatoire. */
   // « terroris » (terrorisme, terroriste, terrorista…) et non « terror » : en portugais, terror = film d'horreur.
   excludedWords: /\b(terroris|attentat|négation(?:nisme)? de la shoah|holocaust denial|negationism|négationnisme)/i,
-  /** Condamnations qui excluent (terrorisme). */
+  /** Condamnation pour terrorisme : revue humaine obligatoire. */
   excludedConvictions: { Q7283: 'terrorisme' } as Record<string, string>,
   /** Occupations contenu adulte : drapeau `adult`, revue (exploitation dénoncée ?). */
   adultOccupations: ['Q488111'],

@@ -22,6 +22,13 @@
 
 ## Journal
 
+### 2026-10-03 — Exclusions automatiques remplacées par la revue humaine
+
+- Décision : plus d'exclusion automatique pour le terrorisme, les attentats, la négation de la Shoah ; ces sujets passent « à revoir » (note obligatoire pour publier) et sont marqués « sensibles ». Base `base_01` : 0 exclu, 282 à revoir.
+- Gardé : une personne **encore mineure aujourd'hui** reste exclue d'office.
+- Cahier des charges (section 5), CLAUDE.md et README du pipeline mis à jour. Correctif : raisons en double qui faisaient planter la page Candidats.
+
+
 ### 2026-10-03 — Set de base : Leaders réels, deuxième lot, decks équilibrés
 
 - **`pipeline add`** : ajout manuel de sujets par identifiant Wikidata, avec les mêmes contrôles (notoriété, politique, image). 21 sujets ajoutés : D. B. Cooper, Frank Abagnale, Charles Ponzi, train postal Glasgow-Londres ; triangle des Bermudes, zone 51, Stonehenge, Nazca, moaïs, Sasquatch, Voynich, Mothman, cercles de culture ; Doge, Nyan Cat, Grumpy Cat, Gangnam Style, Harlem Shake, Distracted Boyfriend, Trollface ; Cléopâtre, Studio 54. Pepe the Frog écarté (récupéré comme symbole haineux).

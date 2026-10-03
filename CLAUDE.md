@@ -53,12 +53,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
 - Aucun avantage de jeu achetable en dehors des boosters prévisualisés.
 
 ### Contenu
-- Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Exclusions strictes :
-  - toute personne encore mineure aujourd'hui (une carrière commencée avant 18 ans n'exclut pas) ;
-  - les victimes ;
-  - le terrorisme (attentats, figures et organisations terroristes) et la négation de crimes contre l'humanité ;
-  - les personnes privées ;
-  - les performeurs X ayant dénoncé une exploitation.
+- Chaque carte passe la **politique de contenu** (section 5 du cahier des charges) avant publication. Seule exclusion automatique : **toute personne encore mineure aujourd'hui** (une carrière commencée avant 18 ans n'exclut pas). Tout le reste est décidé en revue humaine dans l'admin (décision du 2026-10-03) : victimes, terrorisme, négation de crimes contre l'humanité, condamnations, personnes privées, performeurs X ayant dénoncé une exploitation. Ces sujets sont marqués « sensibles ».
 - Les textes sont décalés mais **jamais dégradants ni diffamatoires**, et aucune image n'est explicite.
 - **Images libres uniquement** : domaine public, CC0, CC BY, CC BY-SA. Chaque image a un crédit enregistré. Les licences NC, ND et fair use sont refusées.
 - Le contenu `adult` (et `politicallySensitive`) est filtré par pays (`country_rules`).

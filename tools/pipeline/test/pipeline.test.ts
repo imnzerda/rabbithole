@@ -138,11 +138,11 @@ describe('politique de contenu', () => {
     expect(evaluatePolicy(candidate({ categories: ['sport'], start: null }), NOW).status).toBe('ok');
   });
 
-  it('terrorisme exclu ; victimes, condamnations, morts violentes à revoir', () => {
-    expect(evaluatePolicy(candidate({ kind: 'event', instanceOf: ['Q2223653'], birth: null }), NOW).status).toBe('excluded');
-    expect(evaluatePolicy(candidate({ convictedOf: ['Q7283'] }), NOW).status).toBe('excluded');
-    expect(evaluatePolicy(candidate({ kind: 'event', birth: null, descriptions: { fr: "série d'attentats-suicides aux États-Unis" } }), NOW).status).toBe('excluded');
-    expect(evaluatePolicy(candidate({ kind: 'concept', birth: null, labels: { fr: 'négation de la Shoah' } }), NOW).status).toBe('excluded');
+  it('terrorisme et négation de la Shoah : revue humaine et contenu sensible ; victimes, condamnations, morts violentes à revoir', () => {
+    expect(evaluatePolicy(candidate({ kind: 'event', instanceOf: ['Q2223653'], birth: null }), NOW)).toMatchObject({ status: 'needs_review', flags: { sensitive: true } });
+    expect(evaluatePolicy(candidate({ convictedOf: ['Q7283'] }), NOW).status).toBe('needs_review');
+    expect(evaluatePolicy(candidate({ kind: 'event', birth: null, descriptions: { fr: "série d'attentats-suicides aux États-Unis" } }), NOW).reasons).toContain('terrorism_or_denial');
+    expect(evaluatePolicy(candidate({ kind: 'concept', birth: null, labels: { fr: 'négation de la Shoah' } }), NOW).status).toBe('needs_review');
     expect(evaluatePolicy(candidate({ listedAsVictim: true }), NOW).reasons).toEqual(['listed_as_victim']);
     const convicted = evaluatePolicy(candidate({ convictedOf: ['Q132821'] }), NOW);
     expect(convicted).toMatchObject({ status: 'needs_review', reasons: ['convicted'], flags: { sensitive: true } });

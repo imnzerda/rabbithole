@@ -40,7 +40,7 @@ Chaque étape reprend le fichier de la précédente ; `score` reprend les sujets
 | Règle | Résultat |
 |---|---|
 | Personne mineure aujourd'hui | `excluded` |
-| Attaque ou organisation terroriste, condamnation pour terrorisme | `excluded` |
+| Attaque ou organisation terroriste, condamnation pour terrorisme, description évoquant le terrorisme ou la négation de la Shoah | `needs_review` + contenu sensible |
 | Cité comme victime d'un événement, condamné, mort violente, overdose | `needs_review` (+ contenu sensible) |
 | Actrice ou acteur X | `needs_review` + drapeau `adult` (vérifier qu'aucune exploitation n'a été dénoncée) |
 | Mots sensibles dans la description (meurtre, victime, attentat…) | `needs_review` + contenu sensible |

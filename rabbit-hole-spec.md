@@ -256,19 +256,22 @@ Chaque critère est converti en percentile **dans la catégorie principale du su
 À appliquer à **chaque carte** avant publication. Le pipeline marque les cas douteux, un humain valide.
 
 **Contrôles automatiques du pipeline** (`tools/pipeline/src/policy.ts`) :
-- exclus d'office : personne mineure aujourd'hui ; attaque ou organisation terroriste, condamnation pour terrorisme ; libellé ou description évoquant le terrorisme (« terroris… », « attentat ») ou la négation de la Shoah ;
+- exclue d'office : personne mineure aujourd'hui ;
+- à revoir (et contenu sensible) : attaque ou organisation terroriste, condamnation pour terrorisme, libellé ou description évoquant le terrorisme (« terroris… », « attentat ») ou la négation de la Shoah ;
 - à revoir : cité comme victime d'un événement, condamnation, mort violente, overdose, Industrie X, mots sensibles dans la description ;
 - drapeaux : `adult`, `sensitive` (masquable par le joueur), `politicallySensitive` (filtrage par pays).
 
-Dans l'outil d'admin, une carte « à revoir » ne se publie qu'avec une note de validation ; un sujet exclu ne peut jamais devenir une carte.
+Dans l'outil d'admin, une carte « à revoir » ne se publie qu'avec une note de validation ; un sujet exclu (mineur aujourd'hui) ne peut jamais devenir une carte.
 
-**Exclusions strictes**
+**Exclusion automatique**
 - Toute personne **encore mineure aujourd'hui** → exclue. Une carrière commencée avant 18 ans n'exclut pas (décision du 2026-10-02).
-- **Victimes** de crimes, d'attentats, de catastrophes.
-- Attentats, figures terroristes, organisations terroristes.
-- Négation de crimes contre l'humanité (ex. négation de la Shoah).
-- Performeurs X ayant publiquement dénoncé avoir été contraints ou exploités.
-- Personnes privées (sans notoriété publique documentée).
+
+**Revue humaine obligatoire** (décision du 2026-10-03 : plus d'exclusion automatique, l'admin décide, avec une note) :
+- **victimes** de crimes, d'attentats, de catastrophes ;
+- attentats, figures terroristes, organisations terroristes ;
+- négation de crimes contre l'humanité (ex. négation de la Shoah) ;
+- performeurs X ayant publiquement dénoncé avoir été contraints ou exploités ;
+- personnes privées (sans notoriété publique documentée).
 
 **Règles pour les personnes réelles**
 - Uniquement des faits publics et documentés (article Wikipédia de référence).

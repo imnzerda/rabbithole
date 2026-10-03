@@ -19,11 +19,16 @@ export function evaluatePolicy(c: Candidate, now = new Date()): { status: Policy
   const birthYear = yearOf(c.birth);
   if (isPerson && birthYear !== null && now.getUTCFullYear() - birthYear < POLICY.majority + 1) excluded.push('minor_now');
 
-  // Terrorisme.
-  for (const i of c.instanceOf) if (POLICY.excludedInstances[i]) excluded.push(`terrorism:${i}`);
-  for (const x of c.convictedOf) if (POLICY.excludedConvictions[x]) excluded.push(`convicted_terrorism:${x}`);
+  // Terrorisme, négation de la Shoah : plus d'exclusion automatique (décision du 2026-10-03), revue humaine
+  // obligatoire et contenu sensible. Seuls les mineurs d'aujourd'hui restent exclus d'office.
+  const sensitiveReview = (reason: string) => {
+    review.push(reason);
+    flags.sensitive = true;
+  };
+  for (const i of c.instanceOf) if (POLICY.excludedInstances[i]) sensitiveReview(`terrorism:${i}`);
+  for (const x of c.convictedOf) if (POLICY.excludedConvictions[x]) sensitiveReview(`convicted_terrorism:${x}`);
   const allText = [...Object.values(c.labels), ...Object.values(c.descriptions)].join(' ');
-  if (POLICY.excludedWords.test(allText)) excluded.push('terrorism_or_denial');
+  if (POLICY.excludedWords.test(allText)) sensitiveReview('terrorism_or_denial');
 
   // Victimes, condamnations, morts violentes : revue humaine.
   if (c.listedAsVictim) review.push('listed_as_victim');
