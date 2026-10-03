@@ -580,7 +580,7 @@ POST /takedown
 - `tools/pipeline` (Wikidata, Pageviews, Commons, filtres de licences, traitement d'images, carte typographique de secours).
 - `apps/admin` (éditeur, budget de puissance, retraits, country_rules).
 - Production du set de base de 250 cartes.
-- **État (2026-10-03)** : code terminé (catalogue en base, pipeline, admin, signalements, contenu sensible, retraits, crédits, règles par pays). Set de base complet en dev : 250 cartes (24 par catégorie, 10 Légendes) et 15 Leaders, 15 decks de référence équilibrés. Reste : illustrations en jeu (R2).
+- **État : validée le 2026-10-03.** Code terminé (catalogue en base, pipeline, admin, signalements, contenu sensible, retraits, crédits, règles par pays). Set de base complet en dev : 250 cartes (24 par catégorie, 10 Légendes) et 15 Leaders, 15 decks de référence équilibrés. Reste : illustrations en jeu (R2).
 
 ### Phase 5 — Économie
 - Monnaies, aperçus de boosters (verrouillage serveur, minuteur 24 h, renouvellement après achat), crafting, recyclage, trade-up, échanges, boutique quotidienne.

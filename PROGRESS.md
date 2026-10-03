@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 4 — Pipeline de contenu et admin** : terminée, en attente de validation (premier lot de 30 cartes réelles à relire et publier dans l'admin).
+**Phase 5 — Économie** : à démarrer (phase 4 validée le 2026-10-03).
 
 | Phase | Statut |
 |---|---|
@@ -10,7 +10,7 @@
 | 2. Prototype jouable local | ✅ Validée (fusionnée dans `master`) |
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
-| 4. Pipeline de contenu et admin | ✅ Terminée, en attente de validation |
+| 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
 | 5. Économie | 🟡 Bases avancées (pièces, aperçus, boosters gratuits, recyclage, crafting) |
 | 6. Rétention | — |
 | 7. Social | — |
@@ -21,6 +21,11 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 4 validée
+
+- Pipeline de contenu, outil d'administration et set de base (250 cartes, 15 Leaders, 15 decks de référence) validés.
+- Restent pour plus tard, hors phase 4 : les illustrations sur les cartes en jeu (Cloudflare R2), d'autres Leaders pour couvrir plus de paires de catégories, et une courbe de coût plus légère.
 
 ### 2026-10-03 — Décisions : marques, règles par pays, seuils de Crimes et Mystères
 
@@ -367,9 +372,6 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 
 ## Prochaines étapes
 
-### Clore la phase 4
-- Fait en dev : set de base importé et publié. Relire les cartes en jeu et dans l'admin, enlever celles qui ne conviennent pas.
-
 ### Set de base (suite)
 - Les **250 cartes** sont là (6 lots, Leaders comptés à part) et 15 Leaders couvrent 10 paires de catégories sur 45. Reste à faire : d'autres Leaders, pour que plus de paires forment un deck jouable (section 4.3).
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
@@ -378,7 +380,6 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting. Reste : trade-up, échanges (avec blocage des comptes liés), boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
 
 ### Questions ouvertes
-- Valider la phase 4.
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
