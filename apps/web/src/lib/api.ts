@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, PublicUser, ReplayData, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, PublicUser, PurchaseDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -83,6 +83,14 @@ export const api = {
   proposeTrade: (toUserId: string, offered: { cardId: string; quantity: number }[], requested: { cardId: string; quantity: number }[]) =>
     request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offered, requested }),
   tradeAction: (id: string, action: 'accept' | 'decline' | 'cancel') => request<{ trade?: TradeDto }>('POST', `/trades/${id}/${action}`),
+
+  shop: () => request<ShopDto>('GET', '/shop'),
+  checkout: (productId: string) => request<{ url: string; transactionId: string }>('POST', '/shop/checkout', { productId }),
+  purchases: () => request<{ purchases: PurchaseDto[] }>('GET', '/purchases'),
+  setSpendCap: (cap: number | null) => request<{ spendCap: number | null }>('POST', '/me/spend-cap', { cap }),
+  sandboxSession: (session: string) =>
+    request<{ session: { amount: number; currency: string; status: string; name: Record<string, string>; gems: number } }>('GET', `/payments/sandbox/${session}`),
+  sandboxAction: (session: string, action: 'pay' | 'cancel') => request<{ ok: true }>('POST', `/payments/sandbox/${session}/${action}`),
 
   decks: () => request<{ decks: DeckDto[] }>('GET', '/decks'),
   createDeck: (deck: DeckInput) => request<{ deck: DeckDto }>('POST', '/decks', deck),

@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 5 — Économie** : en cours (phase 4 validée le 2026-10-03). Fait : trade-up, amis et échanges.
+**Phase 5 — Économie** : en cours (phase 4 validée le 2026-10-03). Fait : trade-up, amis et échanges, gemmes et paiement sandbox.
 
 | Phase | Statut |
 |---|---|
@@ -11,7 +11,7 @@
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
-| 5. Économie | 🟡 En cours (pièces, aperçus, boosters gratuits, recyclage, crafting, trade-up, amis et échanges) |
+| 5. Économie | 🟡 En cours (pièces, aperçus, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes) |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
@@ -21,6 +21,16 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 5, étape 3 : gemmes et paiement en sandbox
+
+- **Produits** (migration 014) : 6 packs de gemmes (80, 170, 450, 950, 2 000, 5 200), de 0,99 € à 49,99 €. Les prix régionaux couvrent les pays de lancement (USD, CAD, GBP, CHF, PLN, BRL, MXN, JPY, PHP), en unité mineure de la devise ; le pays « * » donne le prix par défaut en euros. Les prix vivent en base, pas dans le code.
+- **`PaymentProvider`** (`apps/server/src/payments/provider.ts`) : `createCheckout`, `verifyWebhook`, `refund`. Le prestataire **sandbox** (`PAYMENT_PROVIDER=sandbox`, par défaut en dev et en test) a une page de paiement factice (`/shop/sandbox`). « Payer » lui fait envoyer au serveur un **webhook signé HMAC**, par la même route qu'un vrai prestataire (`/api/webhooks/payment/:provider`, corps brut vérifié). Le sandbox est **interdit en production**, où la boutique reste fermée tant qu'aucun prestataire réel n'est branché.
+- **Crédit** : le passage en caisse crée une transaction `pending`, et seul un webhook vérifié la complète et crédite les gemmes. Un événement rejoué n'a aucun effet (`payment_events`), et une transaction n'est créditée qu'une fois (`provider_transaction_id` unique, statut `pending` exigé). Un montant ou une devise incohérents ne sont pas crédités (statut `mismatch`, inscrit au journal d'audit). Un remboursement ou une rétrofacturation retirent les gemmes (le solde peut devenir négatif) ; une rétrofacturation est inscrite au journal d'audit. Aucune route ne permet au client de se créditer.
+- **Transparence** : historique d'achats, et **plafond de dépense mensuel** facultatif dans la devise du joueur (les paiements en attente comptent, un paiement abandonné ne compte plus).
+- **Interface** : page **Boutique** (`/shop`, lien sur l'accueil), avec les packs au prix du pays, le plafond et l'historique. Les gemmes s'affichent aussi dans la Collection.
+- **Tests** : 7 tests serveur (prix régionaux, crédit par webhook seulement, signature, rejeu, montant incohérent, remboursement, rétrofacturation, plafond, abandon, sandbox interdit en production, boutique fermée) et 1 scénario E2E (achat, retour, annulation) sur smartphone et PC.
+- **À choisir avant la mise en ligne** : le prestataire réel (classique, ou spécialisé si le contenu adulte fait classer le site, section 14). Il suffira d'écrire sa classe `PaymentProvider`.
 
 ### 2026-10-03 — Rubrique « Échanges » à part
 
@@ -412,13 +422,14 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)
-Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges. Reste : boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
+Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux). Reste : boutique quotidienne (premier usage des gemmes). À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
 - Faut-il affiner l'équilibrage avec de vraies parties (Coups tordus reste un peu au-dessus) ?
 - Anti-double compte : garder le mode souple (empreinte + même IP, SMS ailleurs) ou passer en strict (`FINGERPRINT_STRICT=true`) ? SMS seulement en cas de risque (`risky`) ou pour tout le monde (`always`, environ 0,07 € par inscription) ?
 - Créer les comptes Cloudflare Turnstile, Twilio et proxycheck.io avant la mise en ligne.
+- Choisir le prestataire de paiement réel (classique ou spécialisé : CCBill, Segpay, Verotel) et écrire sa classe `PaymentProvider`.
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.
 - Règles par pays (contenu adulte, politique) : reportées, à définir plus tard.

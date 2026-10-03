@@ -87,13 +87,14 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
 - [packages/content/](packages/content/) : contenu du prototype en JSON (`data/prototype/`). Le serveur l'importe dans une base vide (premier démarrage, tests) ; en dev, les séries du prototype ont été supprimées (`content:remove-series`) ; le site ne l'utilise plus qu'en repli, pour l'entraînement quand le serveur est injoignable ou qu'aucune série n'est publiée (`apps/web/src/lib/practice.ts`). Le catalogue qui fait foi est celui du serveur (`/api/catalog`, `apps/web/src/lib/catalog.ts`).
 - [packages/shared/](packages/shared/) : types du protocole WebSocket et de l'API REST, partagés entre le serveur et le site.
 - [apps/server/](apps/server/) : Fastify, PostgreSQL (PGlite en dev et en test), WebSocket.
-  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `FINGERPRINT_STRICT`, `GHOST_DELAY_MS`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
+  - `src/config.ts` : configuration par variables d'environnement (`DATABASE_URL`, `SIGNAL_SALT`, `TURNSTILE_*`, `SMS_MODE`, `TWILIO_*`, `PROXYCHECK_KEY`, `FINGERPRINT_STRICT`, `GHOST_DELAY_MS`, `PAYMENT_PROVIDER`, `SANDBOX_WEBHOOK_SECRET`…) et valeurs de l'économie (`DEFAULT_ECONOMY`).
   - `src/db/` : accès base (`pg` / PGlite) et migrations SQL.
   - `src/auth/` : comptes, Argon2, sessions  ; inscription protégée : `antiabuse.ts` (appareils, comptes liés), `guard.ts` (captcha, SMS, VPN, débit, e-mails jetables et alias), `phone.ts` (numéros), `signup.ts` (vérification par SMS). L'empreinte numérique est calculée par `apps/web/src/lib/fingerprint.ts`.
   - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, Leader de départ, pièces de fin de partie.
   - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
   - `src/decks/` : collection et decks (validation par le moteur et par la possession) ; `reference.ts` : decks de référence des séries (entraînement, fantômes de repli, route `/api/decks/reference`).
+  - `src/payments/` : boutique en argent réel : interface `PaymentProvider` et prestataire sandbox (`provider.ts`), offres aux prix régionaux, passage en caisse, webhooks idempotents, remboursements, plafond de dépense (`payments.ts`).
   - `src/social/` : amis (code ami, demandes) et échanges libres entre amis (plusieurs cartes, dons compris, sans limite ; une carte donnée quitte les decks).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
@@ -106,7 +107,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `lib/api.ts`, `lib/session.svelte.ts` : API REST et session.
   - `lib/catalog.ts` : catalogue publié par le serveur (et versions passées pour les replays) ; `lib/viewer.svelte.ts` : ce que le joueur voit (cartes masquées ou bloquées, crédits).
   - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
-  - Pages : `collection` (boosters, trade-up), `decks`, `friends` (amis, code ami), `trades` (échanges), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
+  - Pages : `collection` (boosters, trade-up), `decks`, `friends` (amis, code ami), `trades` (échanges), `shop` (gemmes, historique d'achats, plafond ; `shop/sandbox` : page de paiement factice), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.

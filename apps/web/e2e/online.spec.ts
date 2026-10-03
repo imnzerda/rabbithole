@@ -156,6 +156,27 @@ test('amis et échange : ajout par code ami, plusieurs cartes de raretés diffé
   await other.close();
 });
 
+test('boutique : pack de gemmes payé en sandbox, crédité par webhook, historique ; paiement annulé', async ({ page }, info) => {
+  await signup(page, `shop-${info.project.name}`, '/shop');
+  await expect(page.getByTestId('gems')).toHaveText('💎 0');
+
+  await page.getByTestId('pack-gems_80').getByRole('button').click();
+  await expect(page).toHaveURL(/\/shop\/sandbox\?session=sbx_/);
+  await page.getByTestId('sandbox-pay').click();
+  await expect(page).toHaveURL(/\/shop\?status=success$/);
+  await expect(page.getByTestId('gems')).toHaveText('💎 80');
+  await expect(page.getByTestId('purchase')).toHaveCount(1);
+  await expect(page.getByTestId('purchase')).toContainText('Payé');
+  await expect(page.getByTestId('message')).toHaveText('Merci ! Tes gemmes ont été ajoutées.');
+
+  // Paiement abandonné : rien n'est crédité ni dû.
+  await page.getByTestId('pack-gems_170').getByRole('button').click();
+  await page.getByTestId('sandbox-cancel').click();
+  await expect(page.getByTestId('message')).toHaveText("Paiement annulé : rien n'a été débité.");
+  await expect(page.getByTestId('gems')).toHaveText('💎 80');
+  await expect(page.getByTestId('purchase')).toHaveCount(1);
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

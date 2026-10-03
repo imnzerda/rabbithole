@@ -52,6 +52,17 @@ export interface GuardConfig {
   proxycheck: { key: string | null } | null;
 }
 
+/**
+ * Paiements (section 14). Le prestataire réel n'est pas encore choisi : `sandbox` simule un prestataire
+ * (page de paiement factice et webhooks signés) en développement et en test ; il est interdit en production.
+ * `none` : boutique fermée.
+ */
+export interface PaymentsConfig {
+  provider: 'sandbox' | 'none';
+  /** Secret HMAC des webhooks du prestataire sandbox. */
+  sandboxSecret: string;
+}
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -86,6 +97,7 @@ export interface ServerConfig {
   /** Route de données de test (`/api/test/*`). Jamais en production. */
   testFixtures: boolean;
   economy: EconomyConfig;
+  payments: PaymentsConfig;
   logLevel: string;
 }
 
@@ -121,6 +133,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   if (production && !(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET)) throw new Error('TURNSTILE_SITE_KEY et TURNSTILE_SECRET sont obligatoires en production.');
   const smsMode = (env.SMS_MODE ?? 'risky') as SmsMode;
   if (!['off', 'risky', 'always'].includes(smsMode)) throw new Error(`SMS_MODE inconnu : ${smsMode}`);
+  const paymentProvider = (env.PAYMENT_PROVIDER ?? (production ? 'none' : 'sandbox')) as PaymentsConfig['provider'];
+  if (!['sandbox', 'none'].includes(paymentProvider)) throw new Error(`PAYMENT_PROVIDER inconnu : ${paymentProvider}`);
+  if (production && paymentProvider === 'sandbox') throw new Error('PAYMENT_PROVIDER=sandbox est interdit en production.');
   if (production && smsMode !== 'off' && !env.TWILIO_ACCOUNT_SID) throw new Error('TWILIO_* est obligatoire en production quand SMS_MODE est actif.');
   return {
     port: int(env.PORT, 3000),
@@ -158,6 +173,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     authRateLimit: int(env.AUTH_RATE_LIMIT, 20),
     testFixtures: !production && env.TEST_FIXTURES === '1',
     economy: DEFAULT_ECONOMY,
+    payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };
 }

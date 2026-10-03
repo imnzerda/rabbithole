@@ -178,3 +178,35 @@ export interface TradeDto {
   expiresAt: string;
   resolvedAt: string | null;
 }
+
+// --- Boutique en argent réel (sections 6.6 et 14) ---
+
+export interface OfferDto {
+  id: string;
+  name: Record<string, string>;
+  gems: number;
+  /** Unité mineure de la devise. */
+  amount: number;
+  currency: string;
+}
+
+export interface PurchaseDto {
+  id: string;
+  productId: string;
+  name: Record<string, string>;
+  gems: number;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'cancelled' | 'refunded' | 'chargeback' | 'mismatch';
+  createdAt: string;
+}
+
+export interface ShopDto {
+  /** Faux si aucun prestataire de paiement n'est branché (boutique fermée). */
+  enabled: boolean;
+  offers: OfferDto[];
+  currency: string;
+  /** Plafond de dépense mensuel choisi par le joueur (unité mineure), ou null. */
+  spendCap: number | null;
+  monthSpent: number;
+}

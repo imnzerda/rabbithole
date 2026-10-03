@@ -153,6 +153,7 @@
     {#if wallet}
       <div class="wallet" data-testid="wallet">
         <span title={t('coins')}>🪙 {wallet.coins}</span>
+        <span title={t('gems')}>💎 {wallet.gems}</span>
         <span title={t('essence')}>✨ {wallet.essence}</span>
         <span title={t('free_boosters')}>🎁 {wallet.freeBoosters}</span>
       </div>

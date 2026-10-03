@@ -344,6 +344,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - **Cosmétiques** : dos de cartes, plateaux, avatars, titres, emotes.
 - **Boutique quotidienne** : quelques cartes précises (contenu connu) en pièces ou gemmes.
 - **Aucune carte sous licence officielle** et aucun avantage de jeu achetable hors boosters prévisualisés.
+- **Implémenté** (phase 5) : 6 packs de gemmes (80 à 5 200 gemmes, 0,99 € à 49,99 €), prix régionaux pour les pays de lancement (table `price_tiers`, pays « * » par défaut), boutique (`/shop`), historique d'achats et plafond de dépense mensuel facultatif. Les gemmes n'ont pas encore d'usage (boutique quotidienne, cosmétiques et pass à venir).
 
 ---
 
@@ -469,9 +470,9 @@ Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, �
   - **appareil** : un compte par appareil, reconnu par son **empreinte numérique** (processeur, carte graphique, mémoire, écran, polices installées, langues, rendu canvas et audio, paramètres WebGL), qui résiste à l'effacement des cookies et à la navigation privée, ou par le cookie d'appareil. Une empreinte déjà connue bloque l'inscription depuis la même IP ; depuis une autre IP (deux téléphones du même modèle peuvent se ressembler), un SMS est demandé. `FINGERPRINT_STRICT=true` bloque partout ;
   - **VPN et proxys** détectés (proxycheck.io) → SMS demandé ;
   - **SMS** (`SMS_MODE` : `off`, `risky` par défaut, `always`) : code à 6 chiffres valable 10 min, 5 essais ; **un numéro = un compte** ; numéros virtuels (VoIP), surtaxés, fixes et pays hors liste refusés ; 3 SMS par numéro et 5 par IP et par heure. Si les SMS sont désactivés, les VPN sont refusés ;
-  - IP, appareils et numéros ne sont stockés que sous forme d'**empreinte salée**. Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`) ; ces liens serviront à bloquer les échanges entre comptes liés (section 6.5).
+  - IP, appareils et numéros ne sont stockés que sous forme d'**empreinte salée**. Les comptes qui partagent un appareil ou une IP sont signalés (`account_flags`) ; ils sont signalés pour revue (les échanges entre comptes liés restent permis, section 6.5).
   - ⚠️ RGPD : empreinte d'appareil et vérification d'IP par un tiers relèvent de l'intérêt légitime (lutte contre la fraude) et doivent figurer dans la politique de confidentialité.
-- **Paiement** : interface `PaymentProvider` (`createCheckout`, `handleWebhook`, `refund`). Les produits ne sont crédités **que** via webhook serveur vérifié et idempotent (`provider_transaction_id` unique). Gestion des remboursements et rétrofacturations.
+- **Paiement** : interface `PaymentProvider` (`createCheckout`, `verifyWebhook`, `refund`). Les produits ne sont crédités **que** via webhook serveur vérifié et idempotent (`provider_transaction_id` unique). Gestion des remboursements et rétrofacturations. **Implémenté** (phase 5) : prestataire **sandbox** (`PAYMENT_PROVIDER=sandbox`, interdit en production, où la boutique est fermée tant qu'aucun prestataire n'est branché) dont la page de paiement factice fait envoyer un webhook signé HMAC ; transactions `pending` → `completed` uniquement par webhook ; événements rejoués sans effet (`payment_events`) ; montant ou devise incohérents jamais crédités (`mismatch`, signalé) ; remboursement et rétrofacturation retirent les gemmes (rétrofacturation signalée dans le journal d'audit).
 - ⚠️ Le choix du prestataire n'est pas arrêté : la présence de cartes liées à l'industrie X peut faire classer le site « adulte ». Prévoir l'implémentation sandbox d'un prestataire classique **et** la possibilité d'en brancher un spécialisé (CCBill, Segpay, Verotel) sans changer le reste du code.
 - **RGPD** : consentement cookies, export et suppression des données.
 - **Transparence** : probabilités affichées (aperçus, trade-up, boosters gratuits), historique d'achats, plafond de dépense personnel facultatif.
@@ -527,9 +528,11 @@ trending(date, card_id, score)
 guilds(id, name, emblem JSONB, language, level, xp) / guild_members(guild_id, user_id, role, tokens)
 guild_requests(id, guild_id, user_id, card_id, filled, expires_at)
 passes(user_id, season_id, tier, points, claimed JSONB)
-products(id, type, contents JSONB, active) / price_tiers(product_id, country, currency, amount)
-transactions(id, user_id, product_id, provider, provider_transaction_id UNIQUE, amount,
-             currency, status, created_at)
+products(id, type, name JSONB, contents JSONB, sort, active) / price_tiers(product_id, country /* * = défaut */, currency, amount /*unité mineure*/)
+transactions(id, user_id, product_id, contents JSONB, provider, provider_session_id, provider_transaction_id UNIQUE, amount,
+             currency, status /*pending|completed|cancelled|refunded|chargeback|mismatch*/, created_at, completed_at, refunded_at)
+payment_events(provider, event_id, type, received_at)   -- idempotence des webhooks
+users.monthly_spend_cap
 takedown_requests(id, card_id, requester_name, requester_contact, relation, reason,
                   status /*open|in_progress|done|rejected*/, resolution, created_at, due_at /*+72 h*/, resolved_at)
 admin_audit(id, admin_id, action, target, payload JSONB, created_at)
@@ -551,7 +554,7 @@ GET/POST /friends  POST /friends/:id/accept  DELETE /friends/:id  GET /friends/:
 GET/POST /trades  POST /trades/:id/accept|decline|cancel
 GET  /trending
 GET  /ranked/leaderboard?country=FR
-GET  /shop  POST /shop/checkout  POST /webhooks/payment
+GET  /shop  POST /shop/checkout  POST /webhooks/payment/:provider  GET /purchases  POST /me/spend-cap
 GET/POST /guilds ...  WS /guilds/:id/chat
 POST /takedown
 ```
