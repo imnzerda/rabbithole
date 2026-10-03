@@ -1,0 +1,3365 @@
+{
+  "series": "base_01",
+  "cards": [
+    {
+      "id": "base_01_moulin_rouge",
+      "wikidataId": "Q151030",
+      "type": "character",
+      "name": {
+        "fr": "Le Moulin-Rouge",
+        "en": "The Moulin Rouge"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le french cancan depuis 1889. Les ailes tournent toujours.",
+        "en": "French cancan since 1889. The sails are still turning."
+      }
+    },
+    {
+      "id": "base_01_oktoberfest",
+      "wikidataId": "Q102400",
+      "type": "event",
+      "name": {
+        "fr": "L'Oktoberfest",
+        "en": "Oktoberfest"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 1,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Six millions de visiteurs, et pas un seul verre de moins d’un litre.",
+        "en": "Six million visitors, and not one glass under a litre."
+      }
+    },
+    {
+      "id": "base_01_woodstock",
+      "wikidataId": "Q164815",
+      "type": "event",
+      "name": {
+        "fr": "Le festival de Woodstock",
+        "en": "Woodstock"
+      },
+      "categories": [
+        "nuits_exces",
+        "musique"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "add_power",
+            "target": "all_mine",
+            "amount": 2,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Trois jours de paix et de musique. Et de boue.",
+        "en": "Three days of peace and music. And mud."
+      }
+    },
+    {
+      "id": "base_01_carnaval_rio",
+      "wikidataId": "Q35232",
+      "type": "character",
+      "name": {
+        "fr": "Le carnaval de Rio",
+        "en": "Rio Carnival"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des mois de préparation pour quatre jours de samba.",
+        "en": "Months of rehearsal for four days of samba."
+      }
+    },
+    {
+      "id": "base_01_las_vegas_strip",
+      "wikidataId": "Q745608",
+      "type": "character",
+      "name": {
+        "fr": "Le Strip de Las Vegas",
+        "en": "The Las Vegas Strip"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Ce qui se passe à Vegas reste à Vegas. Sauf sur Instagram.",
+        "en": "What happens in Vegas stays in Vegas. Except on Instagram."
+      }
+    },
+    {
+      "id": "base_01_ibiza",
+      "wikidataId": "Q52631",
+      "type": "character",
+      "name": {
+        "fr": "Ibiza",
+        "en": "Ibiza"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Une île classée au patrimoine mondial. Pour ses posidonies, surtout.",
+        "en": "A World Heritage island. Mostly for its seagrass."
+      }
+    },
+    {
+      "id": "base_01_andy_warhol",
+      "wikidataId": "Q5603",
+      "type": "character",
+      "name": {
+        "fr": "Andy Warhol",
+        "en": "Andy Warhol"
+      },
+      "categories": [
+        "nuits_exces",
+        "series_cinema"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "À l’avenir, chacun aura son quart d’heure de célébrité. Lui a eu le sien en boîte de soupe.",
+        "en": "In the future, everyone will be famous for 15 minutes. His came in a soup can."
+      }
+    },
+    {
+      "id": "base_01_naomi_campbell",
+      "wikidataId": "Q199369",
+      "type": "character",
+      "name": {
+        "fr": "Naomi Campbell",
+        "en": "Naomi Campbell"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "La démarche la plus célèbre des podiums.",
+        "en": "The most famous walk on any runway."
+      }
+    },
+    {
+      "id": "base_01_kate_moss",
+      "wikidataId": "Q212531",
+      "type": "character",
+      "name": {
+        "fr": "Kate Moss",
+        "en": "Kate Moss"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Repérée à 14 ans dans un aéroport. Le reste a décollé.",
+        "en": "Spotted at 14 in an airport. The rest took off."
+      }
+    },
+    {
+      "id": "base_01_coco_chanel",
+      "wikidataId": "Q45661",
+      "type": "character",
+      "name": {
+        "fr": "Coco Chanel",
+        "en": "Coco Chanel"
+      },
+      "categories": [
+        "nuits_exces"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une petite robe noire, et la mode a changé de siècle.",
+        "en": "One little black dress, and fashion changed centuries."
+      }
+    },
+    {
+      "id": "base_01_lucky_luciano",
+      "wikidataId": "Q208357",
+      "type": "character",
+      "name": {
+        "fr": "Lucky Luciano",
+        "en": "Lucky Luciano"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a réorganisé la mafia comme une entreprise, avec un conseil d’administration.",
+        "en": "He reorganised the Mob like a company, board of directors included."
+      }
+    },
+    {
+      "id": "base_01_el_chapo",
+      "wikidataId": "Q456321",
+      "type": "character",
+      "name": {
+        "fr": "El Chapo",
+        "en": "El Chapo"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Deux évasions d’une prison de haute sécurité, dont une par un tunnel de 1,5 km.",
+        "en": "Two escapes from maximum-security prisons, one through a mile-long tunnel."
+      }
+    },
+    {
+      "id": "base_01_jesse_james",
+      "wikidataId": "Q213626",
+      "type": "character",
+      "name": {
+        "fr": "Jesse James",
+        "en": "Jesse James"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Trains, banques, diligences : le Far West n’avait plus de coffre sûr.",
+        "en": "Trains, banks, stagecoaches: the Wild West had no safe vault left."
+      }
+    },
+    {
+      "id": "base_01_butch_cassidy",
+      "wikidataId": "Q313574",
+      "type": "character",
+      "name": {
+        "fr": "Butch Cassidy",
+        "en": "Butch Cassidy"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le Far West devenait trop petit : il est parti braquer en Bolivie.",
+        "en": "The Wild West got too small, so he took his robberies to Bolivia."
+      }
+    },
+    {
+      "id": "base_01_jack_rackham",
+      "wikidataId": "Q312905",
+      "type": "character",
+      "name": {
+        "fr": "Jack Rackham",
+        "en": "Calico Jack"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "On lui attribue le drapeau à tête de mort et sabres croisés.",
+        "en": "Credited with the skull-and-crossed-swords flag."
+      }
+    },
+    {
+      "id": "base_01_william_kidd",
+      "wikidataId": "Q26558",
+      "type": "character",
+      "name": {
+        "fr": "William Kidd",
+        "en": "William Kidd"
+      },
+      "categories": [
+        "crimes_scandales",
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Son trésor n’a jamais été retrouvé. Beaucoup ont creusé.",
+        "en": "His treasure was never found. Many have dug."
+      }
+    },
+    {
+      "id": "base_01_enron",
+      "wikidataId": "Q2723024",
+      "type": "event",
+      "name": {
+        "fr": "Le scandale Enron",
+        "en": "The Enron scandal"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "discard",
+            "amount": 2,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Les bénéfices étaient fabuleux. Ils étaient surtout inventés.",
+        "en": "The profits were fabulous. Mostly because they were made up."
+      }
+    },
+    {
+      "id": "base_01_dieselgate",
+      "wikidataId": "Q21000630",
+      "type": "event",
+      "name": {
+        "fr": "L'affaire Volkswagen",
+        "en": "Dieselgate"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 1,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "rest",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 3
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un moteur très propre, mais seulement pendant les tests.",
+        "en": "A very clean engine, but only during testing."
+      }
+    },
+    {
+      "id": "base_01_bernard_madoff",
+      "wikidataId": "Q14043",
+      "type": "character",
+      "name": {
+        "fr": "Bernard Madoff",
+        "en": "Bernie Madoff"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 2,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des rendements réguliers pendant des décennies. Trop réguliers.",
+        "en": "Steady returns for decades. Too steady."
+      }
+    },
+    {
+      "id": "base_01_john_gotti",
+      "wikidataId": "Q301646",
+      "type": "character",
+      "name": {
+        "fr": "John Gotti",
+        "en": "John Gotti"
+      },
+      "categories": [
+        "crimes_scandales"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Surnommé « Teflon Don » : aucune accusation ne collait. Jusqu’à la dernière.",
+        "en": "Nicknamed the Teflon Don: no charge would stick. Until the last one."
+      }
+    },
+    {
+      "id": "base_01_atlantide",
+      "wikidataId": "Q25373",
+      "type": "character",
+      "name": {
+        "fr": "L'Atlantide",
+        "en": "Atlantis"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "bounce",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 4
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Platon l’a décrite, puis engloutie en une nuit. On la cherche encore.",
+        "en": "Plato described it, then sank it in a single night. People are still looking."
+      }
+    },
+    {
+      "id": "base_01_eldorado",
+      "wikidataId": "Q192550",
+      "type": "event",
+      "name": {
+        "fr": "L'Eldorado",
+        "en": "El Dorado"
+      },
+      "categories": [
+        "mysteres",
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 2
+              },
+              {
+                "type": "add_buzz",
+                "amount": 1
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une cité en or que personne n’a trouvée. Pas faute d’avoir cherché.",
+        "en": "A city of gold nobody ever found. Not for lack of trying."
+      }
+    },
+    {
+      "id": "base_01_kraken",
+      "wikidataId": "Q193165",
+      "type": "character",
+      "name": {
+        "fr": "Le kraken",
+        "en": "The Kraken"
+      },
+      "categories": [
+        "mysteres",
+        "exploration"
+      ],
+      "cost": 6,
+      "power": 7,
+      "counter": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "rest",
+            "target": "strongest_enemy"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un monstre de légende. Le calmar géant, lui, existe vraiment.",
+        "en": "A legendary monster. The giant squid, though, is real."
+      }
+    },
+    {
+      "id": "base_01_mary_celeste",
+      "wikidataId": "Q33209",
+      "type": "character",
+      "name": {
+        "fr": "La Mary Celeste",
+        "en": "The Mary Celeste"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "bounce",
+            "target": "random_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Retrouvée intacte en pleine mer en 1872. L’équipage, jamais.",
+        "en": "Found intact at sea in 1872. The crew, never."
+      }
+    },
+    {
+      "id": "base_01_suaire_turin",
+      "wikidataId": "Q178331",
+      "type": "character",
+      "name": {
+        "fr": "Le suaire de Turin",
+        "en": "The Shroud of Turin"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Relique pour les uns, œuvre médiévale pour le carbone 14. Le débat continue.",
+        "en": "A relic to some, medieval work to carbon dating. The debate goes on."
+      }
+    },
+    {
+      "id": "base_01_anticythere",
+      "wikidataId": "Q182324",
+      "type": "character",
+      "name": {
+        "fr": "La machine d'Anticythère",
+        "en": "The Antikythera mechanism"
+      },
+      "categories": [
+        "mysteres",
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un calculateur astronomique vieux de plus de 2 000 ans.",
+        "en": "An astronomical calculator over 2,000 years old."
+      }
+    },
+    {
+      "id": "base_01_lumieres_phoenix",
+      "wikidataId": "Q129848",
+      "type": "character",
+      "name": {
+        "fr": "Les lumières de Phoenix",
+        "en": "The Phoenix Lights"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "rickroll"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Des milliers de témoins en 1997. L’armée parle de fusées éclairantes.",
+        "en": "Thousands of witnesses in 1997. The military says flares."
+      }
+    },
+    {
+      "id": "base_01_diable_jersey",
+      "wikidataId": "Q668330",
+      "type": "character",
+      "name": {
+        "fr": "Le diable de Jersey",
+        "en": "The Jersey Devil"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 2,
+      "power": 4,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il hante les Pine Barrens depuis le XVIIIe siècle. Et le logo d’une équipe de hockey.",
+        "en": "Haunting the Pine Barrens since the 18th century. And a hockey team logo."
+      }
+    },
+    {
+      "id": "base_01_kheops",
+      "wikidataId": "Q37200",
+      "type": "character",
+      "name": {
+        "fr": "La pyramide de Khéops",
+        "en": "The Great Pyramid of Giza"
+      },
+      "categories": [
+        "mysteres",
+        "guerre_pouvoir"
+      ],
+      "cost": 7,
+      "power": 7,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le plus haut monument du monde pendant près de 4 000 ans.",
+        "en": "The tallest structure on Earth for almost 4,000 years."
+      }
+    },
+    {
+      "id": "base_01_chemtrails",
+      "wikidataId": "Q727908",
+      "type": "character",
+      "name": {
+        "fr": "Les chemtrails",
+        "en": "Chemtrails"
+      },
+      "categories": [
+        "mysteres"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "strongest_enemy",
+            "amount": -1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Des traînées de condensation. Enfin, c’est ce qu’on veut te faire croire.",
+        "en": "Condensation trails. Or so they want you to think."
+      }
+    },
+    {
+      "id": "base_01_jeanne_darc",
+      "wikidataId": "Q7226",
+      "type": "character",
+      "name": {
+        "fr": "Jeanne d'Arc",
+        "en": "Joan of Arc"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Elle a levé le siège d’Orléans à 17 ans.",
+        "en": "She lifted the siege of Orléans at 17."
+      }
+    },
+    {
+      "id": "base_01_gengis_khan",
+      "wikidataId": "Q720",
+      "type": "character",
+      "name": {
+        "fr": "Gengis Khan",
+        "en": "Genghis Khan"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "ko",
+            "target": "weakest_enemy",
+            "filter": {
+              "maxCost": 1
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le plus grand empire d’un seul tenant de l’histoire. À cheval.",
+        "en": "The largest contiguous empire in history. On horseback."
+      }
+    },
+    {
+      "id": "base_01_abraham_lincoln",
+      "wikidataId": "Q91",
+      "type": "character",
+      "name": {
+        "fr": "Abraham Lincoln",
+        "en": "Abraham Lincoln"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le discours de Gettysburg : 272 mots, deux minutes, pour l’histoire.",
+        "en": "The Gettysburg Address: 272 words, two minutes, for the ages."
+      }
+    },
+    {
+      "id": "base_01_martin_luther_king",
+      "wikidataId": "Q8027",
+      "type": "character",
+      "name": {
+        "fr": "Martin Luther King",
+        "en": "Martin Luther King Jr."
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il avait un rêve, et 250 000 personnes l’ont écouté.",
+        "en": "He had a dream, and 250,000 people listened."
+      }
+    },
+    {
+      "id": "base_01_de_gaulle",
+      "wikidataId": "Q2042",
+      "type": "character",
+      "name": {
+        "fr": "Charles de Gaulle",
+        "en": "Charles de Gaulle"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un appel à la radio, le 18 juin 1940. Peu l’ont entendu, tout le monde le connaît.",
+        "en": "One radio appeal on 18 June 1940. Few heard it, everyone knows it."
+      }
+    },
+    {
+      "id": "base_01_john_f_kennedy",
+      "wikidataId": "Q9696",
+      "type": "character",
+      "name": {
+        "fr": "John F. Kennedy",
+        "en": "John F. Kennedy"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Nous avons choisi d’aller sur la Lune. Et pas parce que c’est facile.",
+        "en": "We choose to go to the Moon. Not because it is easy."
+      }
+    },
+    {
+      "id": "base_01_elisabeth_ii",
+      "wikidataId": "Q9682",
+      "type": "character",
+      "name": {
+        "fr": "Élisabeth II",
+        "en": "Elizabeth II"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Soixante-dix ans de règne et quinze Premiers ministres.",
+        "en": "Seventy years on the throne and fifteen prime ministers."
+      }
+    },
+    {
+      "id": "base_01_louis_xiv",
+      "wikidataId": "Q7742",
+      "type": "character",
+      "name": {
+        "fr": "Louis XIV",
+        "en": "Louis XIV"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "72 ans de règne, Versailles, et des talons rouges.",
+        "en": "72 years on the throne, Versailles, and red heels."
+      }
+    },
+    {
+      "id": "base_01_charlemagne",
+      "wikidataId": "Q3044",
+      "type": "character",
+      "name": {
+        "fr": "Charlemagne",
+        "en": "Charlemagne"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Empereur d’Occident, et inventeur de l’école à en croire la chanson.",
+        "en": "Emperor of the West, and inventor of school if you believe the French song."
+      }
+    },
+    {
+      "id": "base_01_chute_mur_berlin",
+      "wikidataId": "Q69163529",
+      "type": "event",
+      "name": {
+        "fr": "La chute du mur de Berlin",
+        "en": "The fall of the Berlin Wall"
+      },
+      "categories": [
+        "guerre_pouvoir"
+      ],
+      "cost": 3,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "bounce",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 3
+            }
+          }
+        },
+        {
+          "trigger": "main",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une conférence de presse confuse, et le mur tombe dans la nuit.",
+        "en": "One muddled press conference, and the Wall came down overnight."
+      }
+    },
+    {
+      "id": "base_01_rafael_nadal",
+      "wikidataId": "Q10132",
+      "type": "character",
+      "name": {
+        "fr": "Rafael Nadal",
+        "en": "Rafael Nadal"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Quatorze Roland-Garros. La terre battue porte encore ses traces.",
+        "en": "Fourteen French Open titles. The clay still bears his marks."
+      }
+    },
+    {
+      "id": "base_01_zlatan",
+      "wikidataId": "Q46896",
+      "type": "character",
+      "name": {
+        "fr": "Zlatan Ibrahimović",
+        "en": "Zlatan Ibrahimović"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il parle de lui à la troisième personne. Zlatan trouve ça normal.",
+        "en": "He speaks of himself in the third person. Zlatan thinks that’s normal."
+      }
+    },
+    {
+      "id": "base_01_erling_haaland",
+      "wikidataId": "Q28967995",
+      "type": "character",
+      "name": {
+        "fr": "Erling Haaland",
+        "en": "Erling Haaland"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 3,
+      "power": 5,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il marque. Puis il médite. Puis il marque encore.",
+        "en": "He scores. Then he meditates. Then he scores again."
+      }
+    },
+    {
+      "id": "base_01_max_verstappen",
+      "wikidataId": "Q2239218",
+      "type": "character",
+      "name": {
+        "fr": "Max Verstappen",
+        "en": "Max Verstappen"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Plus jeune vainqueur d’un Grand Prix, à 18 ans.",
+        "en": "Youngest Grand Prix winner ever, at 18."
+      }
+    },
+    {
+      "id": "base_01_pep_guardiola",
+      "wikidataId": "Q164038",
+      "type": "character",
+      "name": {
+        "fr": "Pep Guardiola",
+        "en": "Pep Guardiola"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "sport"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le tiki-taka, et des tableaux tactiques plein les carnets.",
+        "en": "Tiki-taka, and notebooks full of tactics boards."
+      }
+    },
+    {
+      "id": "base_01_mike_tyson",
+      "wikidataId": "Q79031",
+      "type": "character",
+      "name": {
+        "fr": "Mike Tyson",
+        "en": "Mike Tyson"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 2,
+            "duration": "battle"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Tout le monde a un plan jusqu’au premier coup de poing.",
+        "en": "Everybody has a plan until they get punched."
+      }
+    },
+    {
+      "id": "base_01_tiger_woods",
+      "wikidataId": "Q10993",
+      "type": "character",
+      "name": {
+        "fr": "Tiger Woods",
+        "en": "Tiger Woods"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un swing à la télévision à 2 ans. Quinze titres majeurs plus tard…",
+        "en": "Swinging on TV at age 2. Fifteen majors later…"
+      }
+    },
+    {
+      "id": "base_01_michael_phelps",
+      "wikidataId": "Q39562",
+      "type": "character",
+      "name": {
+        "fr": "Michael Phelps",
+        "en": "Michael Phelps"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 6,
+      "power": 7,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "23 médailles d’or olympiques. Plus que la plupart des pays.",
+        "en": "23 Olympic gold medals. More than most countries."
+      }
+    },
+    {
+      "id": "base_01_simone_biles",
+      "wikidataId": "Q7520267",
+      "type": "character",
+      "name": {
+        "fr": "Simone Biles",
+        "en": "Simone Biles"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "refresh",
+            "target": "weakest_ally",
+            "filter": {
+              "rested": true
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Cinq figures portent son nom. Peu d’autres osent les tenter.",
+        "en": "Five skills bear her name. Few others dare try them."
+      }
+    },
+    {
+      "id": "base_01_mohamed_salah",
+      "wikidataId": "Q1354960",
+      "type": "character",
+      "name": {
+        "fr": "Mohamed Salah",
+        "en": "Mohamed Salah"
+      },
+      "categories": [
+        "sport"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le roi égyptien d’Anfield, chanté par tout le stade.",
+        "en": "The Egyptian King of Anfield, sung by the whole stadium."
+      }
+    },
+    {
+      "id": "base_01_bob_dylan",
+      "wikidataId": "Q392",
+      "type": "character",
+      "name": {
+        "fr": "Bob Dylan",
+        "en": "Bob Dylan"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Prix Nobel de littérature. Il a mis du temps à répondre.",
+        "en": "Nobel Prize in Literature. He took a while to reply."
+      }
+    },
+    {
+      "id": "base_01_kurt_cobain",
+      "wikidataId": "Q8446",
+      "type": "character",
+      "name": {
+        "fr": "Kurt Cobain",
+        "en": "Kurt Cobain"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "« Smells Like Teen Spirit » a fait du grunge le son d’une génération.",
+        "en": "“Smells Like Teen Spirit” made grunge the sound of a generation."
+      }
+    },
+    {
+      "id": "base_01_eminem",
+      "wikidataId": "Q5608",
+      "type": "character",
+      "name": {
+        "fr": "Eminem",
+        "en": "Eminem"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "ratio",
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "« Rap God » : plus de 1 500 mots en six minutes.",
+        "en": "“Rap God”: over 1,500 words in six minutes."
+      }
+    },
+    {
+      "id": "base_01_snoop_dogg",
+      "wikidataId": "Q6096",
+      "type": "character",
+      "name": {
+        "fr": "Snoop Dogg",
+        "en": "Snoop Dogg"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Rappeur, cuisinier à la télévision, commentateur des JO. Toujours détendu.",
+        "en": "Rapper, TV cook, Olympics commentator. Always laid-back."
+      }
+    },
+    {
+      "id": "base_01_daft_punk",
+      "wikidataId": "Q185828",
+      "type": "character",
+      "name": {
+        "fr": "Daft Punk",
+        "en": "Daft Punk"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Deux casques, aucun visage, et la French Touch fait le tour du monde.",
+        "en": "Two helmets, no faces, and the French Touch went global."
+      }
+    },
+    {
+      "id": "base_01_adele",
+      "wikidataId": "Q23215",
+      "type": "character",
+      "name": {
+        "fr": "Adele",
+        "en": "Adele"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Ses albums portent son âge. Les ventes, elles, battent des records.",
+        "en": "Her albums are named after her age. Their sales break records."
+      }
+    },
+    {
+      "id": "base_01_ed_sheeran",
+      "wikidataId": "Q47447",
+      "type": "character",
+      "name": {
+        "fr": "Ed Sheeran",
+        "en": "Ed Sheeran"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn",
+            "filter": {
+              "categories": [
+                "musique"
+              ]
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une guitare, une pédale de boucle, et un stade plein.",
+        "en": "One guitar, one loop pedal, and a packed stadium."
+      }
+    },
+    {
+      "id": "base_01_mozart",
+      "wikidataId": "Q254",
+      "type": "character",
+      "name": {
+        "fr": "Wolfgang Amadeus Mozart",
+        "en": "Wolfgang Amadeus Mozart"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Sa première symphonie à 8 ans. Toi, à 8 ans ?",
+        "en": "His first symphony at 8. What were you doing at 8?"
+      }
+    },
+    {
+      "id": "base_01_beethoven",
+      "wikidataId": "Q255",
+      "type": "character",
+      "name": {
+        "fr": "Ludwig van Beethoven",
+        "en": "Ludwig van Beethoven"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a composé la Neuvième sans pouvoir l’entendre.",
+        "en": "He wrote the Ninth without being able to hear it."
+      }
+    },
+    {
+      "id": "base_01_miley_cyrus",
+      "wikidataId": "Q4235",
+      "type": "character",
+      "name": {
+        "fr": "Miley Cyrus",
+        "en": "Miley Cyrus"
+      },
+      "categories": [
+        "musique"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "De Hannah Montana à « Flowers » : plusieurs vies en une carrière.",
+        "en": "From Hannah Montana to “Flowers”: several lives in one career."
+      }
+    },
+    {
+      "id": "base_01_al_pacino",
+      "wikidataId": "Q41163",
+      "type": "character",
+      "name": {
+        "fr": "Al Pacino",
+        "en": "Al Pacino"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "ko",
+            "target": "weakest_enemy",
+            "filter": {
+              "maxCost": 1
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Michael Corleone, Tony Montana : on ne refuse pas ses offres.",
+        "en": "Michael Corleone, Tony Montana: you don’t refuse his offers."
+      }
+    },
+    {
+      "id": "base_01_tom_cruise",
+      "wikidataId": "Q37079",
+      "type": "character",
+      "name": {
+        "fr": "Tom Cruise",
+        "en": "Tom Cruise"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il fait ses cascades lui-même. Même accroché à un avion.",
+        "en": "He does his own stunts. Even hanging off a plane."
+      }
+    },
+    {
+      "id": "base_01_johnny_depp",
+      "wikidataId": "Q37175",
+      "type": "character",
+      "name": {
+        "fr": "Johnny Depp",
+        "en": "Johnny Depp"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Capitaine Jack Sparrow. Capitaine.",
+        "en": "Captain Jack Sparrow. Captain."
+      }
+    },
+    {
+      "id": "base_01_scarlett_johansson",
+      "wikidataId": "Q34436",
+      "type": "character",
+      "name": {
+        "fr": "Scarlett Johansson",
+        "en": "Scarlett Johansson"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur",
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Black Widow pendant dix ans, voix d’une IA dans « Her ».",
+        "en": "Black Widow for a decade, the voice of an AI in “Her”."
+      }
+    },
+    {
+      "id": "base_01_sean_connery",
+      "wikidataId": "Q4573",
+      "type": "character",
+      "name": {
+        "fr": "Sean Connery",
+        "en": "Sean Connery"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Bond. James Bond. Le premier, et pour beaucoup le seul.",
+        "en": "Bond. James Bond. The first, and for many the only one."
+      }
+    },
+    {
+      "id": "base_01_tom_holland",
+      "wikidataId": "Q2023710",
+      "type": "character",
+      "name": {
+        "fr": "Tom Holland",
+        "en": "Tom Holland"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Spider-Man, et champion du monde des spoilers involontaires.",
+        "en": "Spider-Man, and world champion of accidental spoilers."
+      }
+    },
+    {
+      "id": "base_01_jim_carrey",
+      "wikidataId": "Q40504",
+      "type": "character",
+      "name": {
+        "fr": "Jim Carrey",
+        "en": "Jim Carrey"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Un visage en caoutchouc, et des grimaces devenues mèmes.",
+        "en": "A rubber face, and grimaces turned into memes."
+      }
+    },
+    {
+      "id": "base_01_quentin_tarantino",
+      "wikidataId": "Q3772",
+      "type": "character",
+      "name": {
+        "fr": "Quentin Tarantino",
+        "en": "Quentin Tarantino"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a appris le cinéma derrière le comptoir d’un vidéoclub.",
+        "en": "He learned filmmaking behind a video store counter."
+      }
+    },
+    {
+      "id": "base_01_forrest_gump",
+      "wikidataId": "Q134773",
+      "type": "character",
+      "name": {
+        "fr": "Forrest Gump",
+        "en": "Forrest Gump"
+      },
+      "categories": [
+        "series_cinema"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "random_of",
+            "options": [
+              {
+                "type": "draw",
+                "amount": 1
+              },
+              {
+                "type": "add_buzz",
+                "amount": 1
+              },
+              {
+                "type": "add_power",
+                "target": "self",
+                "amount": 2,
+                "duration": "turn"
+              }
+            ]
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "La vie, c’est comme une boîte de chocolats.",
+        "en": "Life is like a box of chocolates."
+      }
+    },
+    {
+      "id": "base_01_avatar",
+      "wikidataId": "Q24871",
+      "type": "event",
+      "name": {
+        "fr": "Avatar",
+        "en": "Avatar"
+      },
+      "categories": [
+        "series_cinema",
+        "exploration"
+      ],
+      "cost": 5,
+      "power": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        },
+        {
+          "trigger": "main",
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le film le plus rentable de l’histoire. Tu te souviens du nom d’un personnage ?",
+        "en": "The highest-grossing film ever. Can you name a single character?"
+      }
+    },
+    {
+      "id": "base_01_leeroy_jenkins",
+      "wikidataId": "Q389312",
+      "type": "character",
+      "name": {
+        "fr": "Leeroy Jenkins",
+        "en": "Leeroy Jenkins"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 0,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "shitpost"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le plan était parfait. Puis il a crié son nom.",
+        "en": "The plan was perfect. Then he shouted his name."
+      }
+    },
+    {
+      "id": "base_01_all_your_base",
+      "wikidataId": "Q54",
+      "type": "event",
+      "name": {
+        "fr": "All your base are belong to us",
+        "en": "All your base are belong to us"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 0,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "main",
+          "action": {
+            "type": "steal",
+            "target": "strongest_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une traduction ratée de 1989, devenue un mème mondial.",
+        "en": "A botched 1989 translation turned global meme."
+      }
+    },
+    {
+      "id": "base_01_lolcat",
+      "wikidataId": "Q56",
+      "type": "character",
+      "name": {
+        "fr": "Lolcat",
+        "en": "Lolcat"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "I can has cheezburger ?",
+        "en": "I can has cheezburger?"
+      }
+    },
+    {
+      "id": "base_01_keyboard_cat",
+      "wikidataId": "Q1602458",
+      "type": "character",
+      "name": {
+        "fr": "Keyboard Cat",
+        "en": "Keyboard Cat"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "bounce",
+            "target": "random_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Quand quelque chose tourne mal, il joue le générique de fin.",
+        "en": "When things go wrong, he plays them off."
+      }
+    },
+    {
+      "id": "base_01_numa_numa",
+      "wikidataId": "Q2396344",
+      "type": "character",
+      "name": {
+        "fr": "Numa Numa",
+        "en": "Numa Numa"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Une webcam, un tube moldave, et l’un des premiers buzz de l’histoire.",
+        "en": "A webcam, a Moldovan pop song, and one of the first viral hits ever."
+      }
+    },
+    {
+      "id": "base_01_rage_comic",
+      "wikidataId": "Q1572966",
+      "type": "character",
+      "name": {
+        "fr": "Les rage comics",
+        "en": "Rage comics"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Problem ? Des visages dessinés à la souris pour tout dire.",
+        "en": "Problem? Faces drawn with a mouse to say it all."
+      }
+    },
+    {
+      "id": "base_01_ninja",
+      "wikidataId": "Q50825725",
+      "type": "character",
+      "name": {
+        "fr": "Ninja",
+        "en": "Ninja"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 3,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "clickbait"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Des cheveux bleus et des millions de spectateurs sur Fortnite.",
+        "en": "Blue hair and millions of viewers on Fortnite."
+      }
+    },
+    {
+      "id": "base_01_squeezie",
+      "wikidataId": "Q20971386",
+      "type": "character",
+      "name": {
+        "fr": "Squeezie",
+        "en": "Squeezie"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le premier youtubeur français à 10 millions d’abonnés. Et un Grand Prix de F4 sur la chaîne.",
+        "en": "France’s first YouTuber to 10 million subscribers. Plus his own racing Grand Prix."
+      }
+    },
+    {
+      "id": "base_01_markiplier",
+      "wikidataId": "Q16729001",
+      "type": "character",
+      "name": {
+        "fr": "Markiplier",
+        "en": "Markiplier"
+      },
+      "categories": [
+        "internet"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "clickbait"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Hello everybody, my name is Markiplier. Des milliers de fois.",
+        "en": "Hello everybody, my name is Markiplier. Thousands of times."
+      }
+    },
+    {
+      "id": "base_01_ksi",
+      "wikidataId": "Q16235544",
+      "type": "character",
+      "name": {
+        "fr": "KSI",
+        "en": "KSI"
+      },
+      "categories": [
+        "internet",
+        "sport"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "viral",
+        "elan"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Youtubeur, rappeur, boxeur, et une boisson dans tous les frigos.",
+        "en": "YouTuber, rapper, boxer, and a drink in every fridge."
+      }
+    },
+    {
+      "id": "base_01_stephen_hawking",
+      "wikidataId": "Q17714",
+      "type": "character",
+      "name": {
+        "fr": "Stephen Hawking",
+        "en": "Stephen Hawking"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 4,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Les trous noirs rayonnent. Il l’a calculé, puis il est passé dans les Simpson.",
+        "en": "Black holes radiate. He worked it out, then guest-starred on The Simpsons."
+      }
+    },
+    {
+      "id": "base_01_galilee",
+      "wikidataId": "Q307",
+      "type": "character",
+      "name": {
+        "fr": "Galilée",
+        "en": "Galileo"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Et pourtant, elle tourne.",
+        "en": "And yet it moves."
+      }
+    },
+    {
+      "id": "base_01_thomas_edison",
+      "wikidataId": "Q8743",
+      "type": "character",
+      "name": {
+        "fr": "Thomas Edison",
+        "en": "Thomas Edison"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Plus de mille brevets. Une ampoule au-dessus de la tête, en permanence.",
+        "en": "Over a thousand patents. A light bulb over his head at all times."
+      }
+    },
+    {
+      "id": "base_01_louis_pasteur",
+      "wikidataId": "Q529",
+      "type": "character",
+      "name": {
+        "fr": "Louis Pasteur",
+        "en": "Louis Pasteur"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 2,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le premier vaccin contre la rage, et ton lait pasteurisé.",
+        "en": "The first rabies vaccine, and your pasteurised milk."
+      }
+    },
+    {
+      "id": "base_01_sigmund_freud",
+      "wikidataId": "Q9215",
+      "type": "character",
+      "name": {
+        "fr": "Sigmund Freud",
+        "en": "Sigmund Freud"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "rest",
+            "target": "random_enemy",
+            "filter": {
+              "maxCost": 2
+            }
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Allongez-vous. Parlez-moi de votre deck.",
+        "en": "Lie down. Tell me about your deck."
+      }
+    },
+    {
+      "id": "base_01_jimmy_wales",
+      "wikidataId": "Q181",
+      "type": "character",
+      "name": {
+        "fr": "Jimmy Wales",
+        "en": "Jimmy Wales"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Cofondateur de Wikipédia. Et auteur de la bannière de dons.",
+        "en": "Co-founder of Wikipedia. And the face of the donation banner."
+      }
+    },
+    {
+      "id": "base_01_larry_page",
+      "wikidataId": "Q4934",
+      "type": "character",
+      "name": {
+        "fr": "Larry Page",
+        "en": "Larry Page"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un projet de thèse sur les liens entre pages. On l’appelle Google.",
+        "en": "A PhD project about links between pages. We call it Google."
+      }
+    },
+    {
+      "id": "base_01_edward_snowden",
+      "wikidataId": "Q13424289",
+      "type": "character",
+      "name": {
+        "fr": "Edward Snowden",
+        "en": "Edward Snowden"
+      },
+      "categories": [
+        "science",
+        "internet"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a révélé la surveillance de masse de la NSA en 2013.",
+        "en": "He revealed the NSA’s mass surveillance in 2013."
+      }
+    },
+    {
+      "id": "base_01_arthur_c_clarke",
+      "wikidataId": "Q47087",
+      "type": "character",
+      "name": {
+        "fr": "Arthur C. Clarke",
+        "en": "Arthur C. Clarke"
+      },
+      "categories": [
+        "science",
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Il a imaginé les satellites de communication avant qu’ils existent.",
+        "en": "He imagined communication satellites before they existed."
+      }
+    },
+    {
+      "id": "base_01_grace_hopper",
+      "wikidataId": "Q11641",
+      "type": "character",
+      "name": {
+        "fr": "Grace Hopper",
+        "en": "Grace Hopper"
+      },
+      "categories": [
+        "science"
+      ],
+      "cost": 1,
+      "power": 1,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le premier « bug » informatique était un vrai papillon de nuit. Elle l’a gardé.",
+        "en": "The first computer “bug” was a real moth. She kept it."
+      }
+    },
+    {
+      "id": "base_01_amerigo_vespucci",
+      "wikidataId": "Q47674",
+      "type": "character",
+      "name": {
+        "fr": "Amerigo Vespucci",
+        "en": "Amerigo Vespucci"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il a donné son prénom à deux continents.",
+        "en": "He gave his first name to two continents."
+      }
+    },
+    {
+      "id": "base_01_humboldt",
+      "wikidataId": "Q6694",
+      "type": "character",
+      "name": {
+        "fr": "Alexander von Humboldt",
+        "en": "Alexander von Humboldt"
+      },
+      "categories": [
+        "exploration",
+        "science"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Plus d’espèces et de lieux portent son nom que celui de n’importe qui.",
+        "en": "More species and places are named after him than anyone else."
+      }
+    },
+    {
+      "id": "base_01_alan_shepard",
+      "wikidataId": "Q174979",
+      "type": "character",
+      "name": {
+        "fr": "Alan Shepard",
+        "en": "Alan Shepard"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Premier Américain dans l’espace. Il a aussi joué au golf sur la Lune.",
+        "en": "First American in space. He also played golf on the Moon."
+      }
+    },
+    {
+      "id": "base_01_leif_ericson",
+      "wikidataId": "Q42838",
+      "type": "character",
+      "name": {
+        "fr": "Leif Erikson",
+        "en": "Leif Erikson"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 1,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "L’Amérique, vers l’an 1000. Christophe Colomb n’a rien inventé.",
+        "en": "America, around the year 1000. Columbus was late."
+      }
+    },
+    {
+      "id": "base_01_james_cook",
+      "wikidataId": "Q7324",
+      "type": "character",
+      "name": {
+        "fr": "James Cook",
+        "en": "James Cook"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Trois voyages autour du monde, et des cartes encore utilisées deux siècles plus tard.",
+        "en": "Three voyages around the world, and charts still used two centuries later."
+      }
+    },
+    {
+      "id": "base_01_magellan",
+      "wikidataId": "Q1496",
+      "type": "character",
+      "name": {
+        "fr": "Fernand de Magellan",
+        "en": "Ferdinand Magellan"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 6,
+      "power": 5,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_buzz",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "La première expédition autour du monde porte son nom. Il n’a pas vu la fin.",
+        "en": "The first trip around the world bears his name. He didn’t see the end."
+      }
+    },
+    {
+      "id": "base_01_thor_heyerdahl",
+      "wikidataId": "Q133622",
+      "type": "character",
+      "name": {
+        "fr": "Thor Heyerdahl",
+        "en": "Thor Heyerdahl"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "croissance",
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Le Pacifique en radeau de balsa, pour prouver que c’était possible.",
+        "en": "Across the Pacific on a balsa raft, to prove it could be done."
+      }
+    },
+    {
+      "id": "base_01_jim_lovell",
+      "wikidataId": "Q111240",
+      "type": "character",
+      "name": {
+        "fr": "James Lovell",
+        "en": "Jim Lovell"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_ko",
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Houston, nous avons eu un problème. Et ils sont tous rentrés.",
+        "en": "Houston, we’ve had a problem. And they all made it home."
+      }
+    },
+    {
+      "id": "base_01_shackleton",
+      "wikidataId": "Q957543",
+      "type": "character",
+      "name": {
+        "fr": "Ernest Shackleton",
+        "en": "Ernest Shackleton"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 4,
+      "power": 3,
+      "counter": 2,
+      "rarity": "tendance",
+      "series": "base_01",
+      "keywords": [
+        "bloqueur",
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Endurance broyé par la glace, et pas un seul homme perdu.",
+        "en": "Endurance crushed by the ice, and not a single man lost."
+      }
+    },
+    {
+      "id": "base_01_roald_amundsen",
+      "wikidataId": "Q926",
+      "type": "character",
+      "name": {
+        "fr": "Roald Amundsen",
+        "en": "Roald Amundsen"
+      },
+      "categories": [
+        "exploration"
+      ],
+      "cost": 2,
+      "power": 2,
+      "counter": 1,
+      "rarity": "basique",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "croissance"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Premier au pôle Sud, avec 34 jours d’avance.",
+        "en": "First to the South Pole, with 34 days to spare."
+      }
+    },
+    {
+      "id": "base_01_michael_jackson",
+      "wikidataId": "Q2831",
+      "type": "character",
+      "name": {
+        "fr": "Michael Jackson",
+        "en": "Michael Jackson"
+      },
+      "categories": [
+        "musique",
+        "series_cinema"
+      ],
+      "cost": 7,
+      "power": 7,
+      "counter": 0,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [
+        "elan"
+      ],
+      "effects": [
+        {
+          "trigger": "continuous",
+          "condition": {
+            "type": "my_turn"
+          },
+          "action": {
+            "type": "add_power",
+            "target": "allies",
+            "amount": 1,
+            "duration": "turn"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Un pas en arrière qui a fait avancer toute la pop.",
+        "en": "One step backwards that moved all of pop forward."
+      }
+    },
+    {
+      "id": "base_01_cristiano_ronaldo",
+      "wikidataId": "Q11571",
+      "type": "character",
+      "name": {
+        "fr": "Cristiano Ronaldo",
+        "en": "Cristiano Ronaldo"
+      },
+      "categories": [
+        "sport",
+        "internet"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "clickbait"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 1,
+            "duration": "permanent"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Le compte le plus suivi d’Instagram. Siuuu.",
+        "en": "The most followed account on Instagram. Siuuu."
+      }
+    },
+    {
+      "id": "base_01_agatha_christie",
+      "wikidataId": "Q35064",
+      "type": "character",
+      "name": {
+        "fr": "Agatha Christie",
+        "en": "Agatha Christie"
+      },
+      "categories": [
+        "crimes_scandales",
+        "mysteres"
+      ],
+      "cost": 6,
+      "power": 5,
+      "counter": 1,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "activate_main",
+          "buzzCost": 1,
+          "action": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "discard",
+            "amount": 1,
+            "side": "enemy",
+            "pick": "random"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Deux milliards de livres vendus, et onze jours de disparition jamais expliqués.",
+        "en": "Two billion books sold, and eleven days missing never explained."
+      }
+    },
+    {
+      "id": "base_01_jules_verne",
+      "wikidataId": "Q33977",
+      "type": "character",
+      "name": {
+        "fr": "Jules Verne",
+        "en": "Jules Verne"
+      },
+      "categories": [
+        "exploration",
+        "science"
+      ],
+      "cost": 7,
+      "power": 6,
+      "counter": 0,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [
+        "croissance"
+      ],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "La Lune, les abysses, le tour du monde : il y est allé avant tout le monde.",
+        "en": "The Moon, the deep sea, around the world: he got there first."
+      }
+    },
+    {
+      "id": "base_01_alfred_hitchcock",
+      "wikidataId": "Q7374",
+      "type": "character",
+      "name": {
+        "fr": "Alfred Hitchcock",
+        "en": "Alfred Hitchcock"
+      },
+      "categories": [
+        "series_cinema",
+        "mysteres"
+      ],
+      "cost": 6,
+      "power": 6,
+      "counter": 0,
+      "rarity": "goat",
+      "series": "base_01",
+      "keywords": [
+        "rickroll",
+        "bloqueur"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Il apparaît dans presque tous ses films. Cherche-le.",
+        "en": "He shows up in nearly all his films. Look for him."
+      }
+    },
+    {
+      "id": "base_01_diego_maradona",
+      "wikidataId": "Q17515",
+      "type": "character",
+      "name": {
+        "fr": "Diego Maradona",
+        "en": "Diego Maradona"
+      },
+      "categories": [
+        "sport",
+        "guerre_pouvoir"
+      ],
+      "cost": 5,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "elan",
+        "cancel"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "La main de Dieu, puis le but du siècle. En quatre minutes.",
+        "en": "The Hand of God, then the Goal of the Century. Four minutes apart."
+      }
+    },
+    {
+      "id": "base_01_tupac",
+      "wikidataId": "Q6107",
+      "type": "character",
+      "name": {
+        "fr": "Tupac Shakur",
+        "en": "Tupac Shakur"
+      },
+      "categories": [
+        "musique",
+        "mysteres"
+      ],
+      "cost": 4,
+      "power": 5,
+      "counter": 0,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "viral"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "Des albums inédits pendant des années, et un hologramme à Coachella.",
+        "en": "Unreleased albums for years, and a hologram at Coachella."
+      }
+    },
+    {
+      "id": "base_01_marie_antoinette",
+      "wikidataId": "Q47365",
+      "type": "character",
+      "name": {
+        "fr": "Marie-Antoinette",
+        "en": "Marie Antoinette"
+      },
+      "categories": [
+        "guerre_pouvoir",
+        "nuits_exces"
+      ],
+      "cost": 3,
+      "power": 3,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [
+        "seduction"
+      ],
+      "effects": [],
+      "flavor": {
+        "fr": "« Qu’ils mangent de la brioche » ? Elle ne l’a sans doute jamais dit.",
+        "en": "“Let them eat cake”? She most likely never said it."
+      }
+    },
+    {
+      "id": "base_01_stephen_king",
+      "wikidataId": "Q39829",
+      "type": "character",
+      "name": {
+        "fr": "Stephen King",
+        "en": "Stephen King"
+      },
+      "categories": [
+        "mysteres",
+        "series_cinema"
+      ],
+      "cost": 5,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_play",
+          "action": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Plus de soixante romans. Un clown dans chaque bouche d’égout.",
+        "en": "Over sixty novels. A clown in every storm drain."
+      }
+    },
+    {
+      "id": "base_01_jimi_hendrix",
+      "wikidataId": "Q5928",
+      "type": "character",
+      "name": {
+        "fr": "Jimi Hendrix",
+        "en": "Jimi Hendrix"
+      },
+      "categories": [
+        "musique",
+        "nuits_exces"
+      ],
+      "cost": 4,
+      "power": 4,
+      "counter": 1,
+      "rarity": "viral",
+      "series": "base_01",
+      "keywords": [],
+      "effects": [
+        {
+          "trigger": "on_attack",
+          "action": {
+            "type": "add_power",
+            "target": "self",
+            "amount": 2,
+            "duration": "battle"
+          }
+        }
+      ],
+      "flavor": {
+        "fr": "Une guitare pour droitier, jouée à l’envers par un gaucher.",
+        "en": "A right-handed guitar, played upside down by a lefty."
+      }
+    }
+  ]
+}

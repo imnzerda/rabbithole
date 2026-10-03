@@ -22,6 +22,14 @@
 
 ## Journal
 
+### 2026-10-03 — Set de base complet : lot 4 (250 cartes)
+
+- **110 cartes** (`tools/pipeline/drafts/base_01_lot4.json`), 10 par catégorie et 10 Légendes. Sujets ajoutés au pipeline avec `pipeline add` : Kate Moss, Coco Chanel, Moulin-Rouge, Oktoberfest, Woodstock, carnaval de Rio, Las Vegas Strip, Ibiza ; Jesse James, Butch Cassidy, Madoff, Enron, Dieselgate ; Atlantide, Eldorado, kraken, Mary Celeste, suaire de Turin, Anticythère, lumières de Phoenix, diable de Jersey, Khéops ; Élisabeth II, Charlemagne, Jeanne d'Arc, Gengis Khan, chute du mur de Berlin ; Tiger Woods, Simone Biles ; Ed Sheeran, Beethoven ; Hawking, Freud ; Leeroy Jenkins, All your base, Lolcat, Keyboard Cat, Numa Numa, rage comics, Ninja, Squeezie, KSI ; Jules Verne, Agatha Christie, Marie-Antoinette.
+- **Légendes** (deux catégories chacune) : GOAT : Michael Jackson, Cristiano Ronaldo, Agatha Christie, Jules Verne, Alfred Hitchcock ; virales : Maradona, Tupac, Marie-Antoinette, Stephen King, Jimi Hendrix.
+- Raretés du lot : 64 basiques, 30 tendance, 11 virales, 5 GOAT, surtout des coûts 1 à 3. Toutes les cartes sont dans le budget (test des brouillons).
+- Les decks de référence ne changent pas. L'équilibre reste à 40–59 %.
+- Base de dev : **250 cartes** publiées dans `base_01` (240 cartes et 10 Leaders). Six cartes sans image libre restent typographiques : Dieselgate, Enron, chemtrails, Keyboard Cat, de Gaulle et Élisabeth II.
+
 ### 2026-10-03 — Set de base : lot 3 (140 cartes, 10 Leaders, 10 decks)
 
 - **5 nouveaux Leaders** (un deuxième par paire) : Billie Eilish (Internet + Musique), Pelé (Guerre + Sport), Harry Houdini (Crimes + Mystères), Carl Sagan (Science + Exploration), Paris Hilton (Séries + Nuits).
@@ -334,7 +342,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Fait en dev : set de base importé et publié. Relire les cartes en jeu et dans l'admin, enlever celles qui ne conviennent pas.
 
 ### Set de base (suite)
-- Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons ; davantage de Leaders (plusieurs par paire de catégories).
+- Les **250 cartes** sont là (4 lots). Reste à faire : davantage de Leaders (plusieurs par paire de catégories), et des decks de référence qui utilisent les cartes du lot 4.
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)
