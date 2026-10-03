@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 5 — Économie** : en cours (phase 4 validée le 2026-10-03). Fait : trade-up.
+**Phase 5 — Économie** : en cours (phase 4 validée le 2026-10-03). Fait : trade-up, amis et échanges.
 
 | Phase | Statut |
 |---|---|
@@ -11,7 +11,7 @@
 | 2 bis. Refonte du duel (One Piece) | ✅ Validée (fusionnée dans `master`) |
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
-| 5. Économie | 🟡 En cours (pièces, aperçus, boosters gratuits, recyclage, crafting, trade-up) |
+| 5. Économie | 🟡 En cours (pièces, aperçus, boosters gratuits, recyclage, crafting, trade-up, amis et échanges) |
 | 6. Rétention | — |
 | 7. Social | — |
 | 8. International et lancement | — |
@@ -21,6 +21,16 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 5, étape 2 : amis et échanges
+
+- **Amis** : chaque joueur a un **code ami** unique de 8 caractères, puisque les pseudos ne sont pas uniques. On ajoute quelqu'un par son code, ou par pseudo s'il est unique. Deux demandes croisées valent acceptation. On peut refuser, annuler ou retirer un ami ; retirer un ami annule les échanges en attente entre vous. Il n'y a **pas de délai** avant de pouvoir échanger (décision du 2026-10-03).
+- **Échanges** (cahier des charges, section 6.5) : 1 carte contre 1, de même rareté, sans aucune monnaie. On propose une carte d'un ami et une des siennes ; rien ne bouge avant l'acceptation. À l'acceptation, tout est revérifié (amitié, comptes liés, possession, limites, cartes autorisées dans les deux pays), puis les deux cartes changent de main d'un coup. Une proposition expire au bout de 72 h. Les limites (5 échanges par jour, 1 échange de GOAT par semaine) sont dans la config (`DEFAULT_ECONOMY.trades`). Les comptes liés (même appareil ou même réseau) ne peuvent pas échanger entre eux. Les mouvements de cartes sont inscrits au journal (`coin_ledger`, motif `trade`).
+- **Base** : migration 012 (`users.friend_code`, tables `friendships` et `trades`). **API** : `/api/friends` et `/api/trades`. **Module** : `apps/server/src/social/`.
+- **Interface** : page « Amis et échanges » (`/friends`, lien « Amis » sur l'accueil). On y trouve son code ami à copier, l'ajout d'un ami, les demandes, la liste des amis, les échanges reçus (« Tu reçois » ⇄ « Tu donnes ») et envoyés, et l'historique. La proposition se fait en deux étapes : une carte de l'ami, puis une des siennes de même rareté.
+- **Tests** : 8 tests serveur (amis, échanges, refus, expiration, limites, GOAT, comptes liés) et 1 scénario E2E à deux navigateurs, sur smartphone et PC. Route de test `/api/test/unlink`, interdite en production : en test, tous les navigateurs viennent de la même adresse.
+- **À savoir** : en dev, deux comptes sur le même ordinateur ne peuvent pas échanger (même réseau, donc comptes liés). Et l'empreinte d'appareil empêche de toute façon d'en créer deux sur la même machine. Pour tester à la main, il faut un deuxième appareil sur un autre réseau, ou passer par les tests.
+- **Reste** : le tableau d'échanges de guilde (avec les guildes, phase 7) et la détection des flux d'échanges à sens unique.
 
 ### 2026-10-03 — Phase 5, étape 1 : trade-up
 
@@ -386,7 +396,7 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
 ### Phase 5 — Économie (suite)
-Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up. Reste : échanges (avec blocage des comptes liés), boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
+Déjà fait : pièces, essence, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges. Reste : boutique quotidienne, gemmes, `PaymentProvider` en sandbox (webhooks idempotents), prix régionaux. À faire aussi : compensation (carte de même rareté ou essence) quand une carte possédée est retirée (section 5).
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?

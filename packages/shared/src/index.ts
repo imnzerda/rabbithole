@@ -148,3 +148,32 @@ export interface MatchSummary {
   result: MatchResult;
   createdAt: string;
 }
+
+// --- Amis et échanges (section 6.5) ---
+
+export interface FriendDto {
+  id: string;
+  name: string;
+  since: string | null;
+}
+
+export interface FriendsDto {
+  /** Code à donner pour être ajouté (les pseudos ne sont pas uniques). */
+  code: string;
+  friends: FriendDto[];
+  incoming: FriendDto[];
+  outgoing: FriendDto[];
+}
+
+export interface TradeDto {
+  id: string;
+  fromUser: { id: string; name: string };
+  toUser: { id: string; name: string };
+  offeredCardId: string;
+  requestedCardId: string;
+  rarity: string;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
+  createdAt: string;
+  expiresAt: string;
+  resolvedAt: string | null;
+}

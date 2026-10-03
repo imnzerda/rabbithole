@@ -104,6 +104,46 @@ test('trade-up : 5 doublons contre 1 carte de la rareté supérieure, probabilit
   await expect(panel.getByTestId('tu-go')).toBeDisabled();
 });
 
+test('amis et échange : ajout par code ami, proposition 1 contre 1, acceptation', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {
+  // Bob, sur un autre appareil.
+  const other = await browser.newContext({ viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL, locale: 'fr-FR' });
+  await asDevice(other, device + 1);
+  const bob = await other.newPage();
+  await signup(bob, `bob-${info.project.name}`, '/friends');
+  const code = (await bob.getByTestId('friend-code').textContent())!.trim();
+
+  // Alice l'ajoute par son code ; Bob accepte.
+  await signup(page, `alice-${info.project.name}`, '/friends');
+  await page.getByTestId('friend-target').fill(code);
+  await page.getByTestId('add-friend').click();
+  await expect(page.getByTestId('message')).toContainText('Demande envoyée');
+  await bob.reload();
+  await bob.getByTestId('accept-friend').click();
+  await expect(bob.getByTestId('friend')).toHaveCount(1);
+
+  // Une carte basique chacun ; même adresse en test, donc on lève le signalement « comptes liés ».
+  await page.request.post('/api/test/set-card', { data: { cardId: 'proto_chevalier', quantity: 1 } });
+  await bob.request.post('/api/test/set-card', { data: { cardId: 'proto_garde', quantity: 1 } });
+  await page.request.post('/api/test/unlink');
+
+  await page.reload();
+  await page.getByTestId('propose-trade').click();
+  const sheet = page.getByTestId('proposal');
+  await sheet.getByTestId('theirs').getByRole('button').first().click();
+  await sheet.getByTestId('mine').getByRole('button').first().click();
+  await sheet.getByTestId('send-trade').click();
+  await expect(page.getByTestId('message')).toHaveText('Proposition envoyée.');
+  await expect(page.getByTestId('trade-outgoing')).toHaveCount(1);
+
+  await bob.reload();
+  await expect(bob.getByTestId('trade-incoming')).toHaveCount(1);
+  await bob.getByTestId('trade-accept').click();
+  await expect(bob.getByTestId('message')).toHaveText('Échange effectué !');
+  const owned = (await (await bob.request.get('/api/collection')).json()).cards as { cardId: string; quantity: number }[];
+  expect(owned).toEqual([{ cardId: 'proto_chevalier', quantity: 1 }]);
+  await other.close();
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

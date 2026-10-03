@@ -147,6 +147,11 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
       await grantTestKit(db, request.user!.id, cat());
       return { ok: true };
     });
+    // Tous les navigateurs de test partagent la même adresse : sans ça, ils seraient « liés » et ne pourraient pas échanger.
+    app.post('/api/test/unlink', { preHandler: requireUser }, async (request) => {
+      await db.query('DELETE FROM account_flags WHERE user_id = $1 OR other_user_id = $1', [request.user!.id]);
+      return { ok: true };
+    });
     app.post('/api/test/set-card', { preHandler: requireUser }, async (request, reply) => {
       const body = z.object({ cardId, quantity: z.number().int().min(0).max(50) }).safeParse(request.body);
       if (!body.success) return reply.code(400).send({ error: 'invalid_input' });

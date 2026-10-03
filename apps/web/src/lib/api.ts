@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, MatchSummary, PublicUser, ReplayData, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, MatchSummary, PublicUser, ReplayData, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -72,6 +72,17 @@ export const api = {
   tradeUp: (cards: { cardId: string; count: number }[], category: string | null) =>
     request<{ card: string; offer: TradeUpOfferDto }>('POST', '/trade-up', { cards, ...(category ? { category } : {}) }),
   starterLeader: (leaderId: string) => request<{ ok: true }>('POST', '/starter-leader', { leaderId }),
+
+  friends: () => request<FriendsDto>('GET', '/friends'),
+  addFriend: (target: { code: string } | { name: string }) => request<{ id: string; name: string; accepted: boolean }>('POST', '/friends', target),
+  acceptFriend: (id: string) => request<{ ok: true }>('POST', `/friends/${id}/accept`),
+  removeFriend: (id: string) => request<{ ok: true }>('DELETE', `/friends/${id}`),
+  friendCollection: (id: string) => request<{ cards: { cardId: string; quantity: number }[] }>('GET', `/friends/${id}/collection`),
+  trades: () =>
+    request<{ incoming: TradeDto[]; outgoing: TradeDto[]; history: TradeDto[]; limits: { perDay: number; goatPerWeek: number; expiryHours: number } }>('GET', '/trades'),
+  proposeTrade: (toUserId: string, offeredCardId: string, requestedCardId: string) =>
+    request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offeredCardId, requestedCardId }),
+  tradeAction: (id: string, action: 'accept' | 'decline' | 'cancel') => request<{ trade?: TradeDto }>('POST', `/trades/${id}/${action}`),
 
   decks: () => request<{ decks: DeckDto[] }>('GET', '/decks'),
   createDeck: (deck: DeckInput) => request<{ deck: DeckDto }>('POST', '/decks', deck),

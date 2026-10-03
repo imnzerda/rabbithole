@@ -32,6 +32,7 @@
       <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
       <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
       <a href="/decks">{t('decks')}</a>
+      <a href="/friends" data-testid="nav-friends">{t('friends')}</a>
       <a href="/replays">{t('history')}</a>
       <a href="/settings" data-testid="nav-settings">{t('settings')}</a>
       <button class="link" onclick={() => logout()}>{t('logout')}</button>

@@ -19,6 +19,8 @@ export interface EconomyConfig {
   rewards: { win: number; loss: number; draw: number; dailyCap: number };
   /** Trade-up (section 6.4) : doublons de même rareté pour une carte de la rareté supérieure ; davantage pour choisir la catégorie. */
   tradeUp: { count: number; targetedCount: number };
+  /** Échanges entre amis (section 6.5) : limites par joueur, et durée de validité d'une proposition. */
+  trades: { perDay: number; goatPerWeek: number; expiryHours: number };
 }
 
 /** Vérification par SMS : jamais, seulement pour les inscriptions à risque (VPN, appareil connu ailleurs), ou toujours. */
@@ -98,6 +100,7 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
   craft: { basique: 20, tendance: 50, viral: 150, iconique: 500, goat: 1500 },
   rewards: { win: 40, loss: 15, draw: 20, dailyCap: 400 },
   tradeUp: { count: 5, targetedCount: 8 },
+  trades: { perDay: 5, goatPerWeek: 1, expiryHours: 72 },
 };
 
 /** Pays de lancement (section 4.5) : seuls leurs numéros reçoivent des SMS. */

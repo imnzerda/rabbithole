@@ -329,10 +329,11 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 
 ### 6.5 Échanges entre joueurs
 - Cartes uniquement, **1 contre 1, même rareté**.
-- Entre membres d'une même guilde ou amis depuis plus de 3 jours.
+- Entre amis (demande puis acceptation, **sans délai**, décision du 2026-10-03), et plus tard entre membres d'une même guilde (phase 7). Les pseudos n'étant pas uniques, on ajoute un ami par son **code ami** (8 caractères), ou par pseudo s'il est unique.
 - 5 échanges / jour ; cartes GOAT : 1 échange / semaine.
 - Aucune monnaie, aucun objet dans un échange. Les CGU interdisent la vente de cartes ou de comptes contre de l'argent.
 - Tableau d'échanges de guilde (« je cherche / je propose »).
+- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges (proposition, acceptation qui revérifie tout et échange les deux cartes d'un coup, refus, annulation, expiration après 72 h). Limites en config (`trades` : 5 par jour, 1 GOAT par semaine). Comptes liés refusés. Une carte donnée peut être un exemplaire jouable : elle quitte alors les decks du joueur. Page « Amis et échanges » (`/friends`). Reste : tableau de guilde (phase 7), détection des flux à sens unique.
 - Détection d'abus : comptes liés (même empreinte numérique, cookie d'appareil ou IP, section 14) interdits d'échange entre eux, flux d'échanges à sens unique → blocage et revue.
 
 ### 6.6 Monétisation
@@ -514,7 +515,9 @@ coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
 booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
 trade_ups(id, user_id, input_card_ids TEXT[], input_rarity, target_category, pool_card_ids TEXT[], output_card_id, seed, created_at)
-trades(id, from_user, to_user, offered_card, requested_card, status, created_at, completed_at)
+users.friend_code (unique)
+friendships(requester_id, addressee_id, created_at, accepted_at)
+trades(id, from_user, to_user, offered_card_id, requested_card_id, rarity, status /*pending|accepted|declined|cancelled|expired*/, created_at, expires_at, resolved_at)
 matches(id, mode, player_a, player_b, leader_a, leader_b, ghost BOOLEAN, seed, actions JSONB,
         result, hype_level, created_at)
 ranked(user_id, season_id, rank, points, country)
@@ -542,7 +545,8 @@ GET  /replays/:id
 GET  /boosters/previews          → aperçus par type + minuteurs
 POST /boosters/:type/purchase    → achète l'aperçu actuel exact
 POST /craft  POST /recycle  POST /trade-up
-GET/POST /trades  POST /trades/:id/accept
+GET/POST /friends  POST /friends/:id/accept  DELETE /friends/:id  GET /friends/:id/collection
+GET/POST /trades  POST /trades/:id/accept|decline|cancel
 GET  /trending
 GET  /ranked/leaderboard?country=FR
 GET  /shop  POST /shop/checkout  POST /webhooks/payment

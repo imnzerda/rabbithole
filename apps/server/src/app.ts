@@ -14,6 +14,7 @@ import { migrate } from './db/migrate.js';
 import { registerDecks } from './decks/decks.js';
 import { registerEconomy } from './economy/routes.js';
 import { registerMatches } from './match/routes.js';
+import { registerSocial } from './social/routes.js';
 import { MatchService } from './match/service.js';
 
 export interface App {
@@ -46,6 +47,7 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   registerMatches(app, deps, matches);
   registerAdmin(app, deps);
   registerModeration(app, deps);
+  registerSocial(app, deps);
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {

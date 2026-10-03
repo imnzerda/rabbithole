@@ -94,6 +94,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
   - `src/decks/` : collection et decks (validation par le moteur et par la possession) ; `reference.ts` : decks de référence des séries (entraînement, fantômes de repli, route `/api/decks/reference`).
+  - `src/social/` : amis (code ami, demandes) et échanges entre amis (1 contre 1, même rareté, limites, comptes liés refusés).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
 - [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : tableau de bord, candidats (import du pipeline), cartes (éditeur avec aperçu en direct, import de brouillons), séries, modération (signalements, demandes de retrait), règles par pays, équilibrage (budget, simulations), journal d'audit. API : `apps/server/src/admin/` et `src/moderation/`. Accès : `ADMIN_EMAILS`.
@@ -105,7 +106,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `lib/api.ts`, `lib/session.svelte.ts` : API REST et session.
   - `lib/catalog.ts` : catalogue publié par le serveur (et versions passées pour les replays) ; `lib/viewer.svelte.ts` : ce que le joueur voit (cartes masquées ou bloquées, crédits).
   - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
-  - Pages : `collection`, `decks`, `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
+  - Pages : `collection` (boosters, trade-up), `decks`, `friends` (amis et échanges), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.
