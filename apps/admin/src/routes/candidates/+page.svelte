@@ -169,7 +169,7 @@
         </td>
         <td>
           <span class="tag {policyClass(c.policy?.status)}">{c.policy?.status ?? '—'}</span>
-          {#each c.policy?.reasons ?? [] as r (r)}<br /><span class="muted">{reason(r)}</span>{/each}
+          {#each c.policy?.reasons ?? [] as r, i (i)}<br /><span class="muted">{reason(r)}</span>{/each}
           {#if c.flags.adult}<br /><span class="tag bad">adulte</span>{/if}
           {#if c.flags.sensitive}<br /><span class="tag warn">sensible</span>{/if}
         </td>

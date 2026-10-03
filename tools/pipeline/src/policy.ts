@@ -52,5 +52,6 @@ export function evaluatePolicy(c: Candidate, now = new Date()): { status: Policy
   if (c.occupations.some((o) => POLICY.politicalOccupations.includes(o))) flags.politicallySensitive = true;
 
   const status: PolicyStatus = excluded.length ? 'excluded' : review.length ? 'needs_review' : 'ok';
-  return { status, reasons: [...excluded, ...review], flags };
+  // Sans doublon (ex. deux condamnations pour terrorisme).
+  return { status, reasons: [...new Set([...excluded, ...review])], flags };
 }

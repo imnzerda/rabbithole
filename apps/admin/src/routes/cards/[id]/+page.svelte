@@ -260,7 +260,7 @@
           <span class="tag {detail.policy.status === 'ok' || detail.policy.cleared ? 'ok' : detail.policy.status === 'excluded' ? 'bad' : 'warn'}">
             {detail.policy.status}{detail.policy.cleared ? ' · validée' : ''}
           </span>
-          {#each detail.policy.reasons as r (r)}<span class="tag">{r}</span>{/each}
+          {#each detail.policy.reasons as r, i (i)}<span class="tag">{r}</span>{/each}
         </p>
         {#if detail.policy.note}<p class="muted">Note : {detail.policy.note}</p>{/if}
         {#if detail.policy.status === 'needs_review' && !detail.policy.cleared}
