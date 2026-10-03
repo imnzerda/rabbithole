@@ -28,6 +28,7 @@ pnpm test        # tests unitaires (moteur, contenu, serveur, pipeline)
 pnpm typecheck   # tsc / svelte-check strict sur tous les packages
 pnpm test:e2e    # Playwright (lance les serveurs si besoin)
 pnpm --filter @rabbithole/pipeline pipeline all --series base_01   # pipeline de contenu
+pnpm --filter @rabbithole/server content:import -- --series base_01 --drafts … --decks … --publish [--sync]   # import d'une série (serveur arrêté)
 ```
 
 Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par exemple `ADMIN_EMAILS=…` pour l'accès à l'admin. En dev, PostgreSQL tourne en embarqué (PGlite, `apps/server/.data/`).

@@ -22,6 +22,12 @@
 
 ## Journal
 
+### 2026-10-03 — Set de base importé et publié en dev
+
+- Commande `pnpm --filter @rabbithole/server content:import` (serveur arrêté) : candidats, lots de brouillons, decks de référence, publication, et `--sync` pour aligner les cartes déjà présentes sur les lots. Mêmes fonctions que l'admin, actions notées dans le journal d'audit.
+- Base de dev : 85 cartes de `base_01` publiées (dont 5 Leaders), série publiée, 5 decks de référence ; les 4 cartes du lot 1 ajustées pour l'équilibre sont à jour. L'entraînement propose maintenant les decks réels.
+
+
 ### 2026-10-03 — Decks de référence en jeu
 
 - Table `series_decks` (migration `010`) : les decks de référence d'une série (`tools/pipeline/decks/<série>.json`) s'importent dans l'admin (page Séries), validés avec les cartes de la série.
@@ -309,9 +315,8 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 
 ## Prochaines étapes
 
-### Clore la phase 4 (à faire dans l'admin)
-1. Importer `tools/pipeline/out/base_01.json` (Candidats), puis les lots `tools/pipeline/drafts/base_01.json` et `base_01_lot2.json` (Cartes → Importer des brouillons), puis les decks `tools/pipeline/decks/base_01.json` (Séries → Decks de référence).
-2. Relire les 85 cartes (enlever celles qui ne conviennent pas), passer en relecture, publier ; publier la série `base_01`.
+### Clore la phase 4
+- Fait en dev : set de base importé et publié. Relire les cartes en jeu et dans l'admin, enlever celles qui ne conviennent pas.
 
 ### Set de base (suite)
 - Le reste des **250 cartes** (section 4.3 pour la courbe de coût, 4.2 pour les raretés), par lots de brouillons ; davantage de Leaders (plusieurs par paire de catégories).
