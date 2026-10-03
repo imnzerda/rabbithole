@@ -87,14 +87,6 @@
   }
 </script>
 
-{#snippet tradeButton(testid: string)}
-  <div class="actions">
-    <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid={testid} onclick={() => give && tradeUp(give)}>
-      {t('tradeup_btn', { n: required })}
-    </button>
-  </div>
-{/snippet}
-
 <main>
   <header class="top">
     <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
@@ -154,11 +146,13 @@
       {#if spareTotal < required}
         <p class="muted">{t('tradeup_missing', { n: required - spareTotal, r: t(`rarity_${rarity}`) })}</p>
       {:else}
-        {@render tradeButton('tu-go-top')}
         <p class="muted">{t('tradeup_pick_hint')}</p>
         <div class="tools">
           <button class="btn" disabled={pickedCount >= required} data-testid="tu-complete" onclick={() => (picked = completeSpares(spares, picked, required))}>{t('tradeup_complete')}</button>
           <button class="btn" disabled={pickedCount === 0} onclick={() => (picked = new Map())}>{t('tradeup_clear')}</button>
+          <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid="tu-go-top" onclick={() => give && tradeUp(give)}>
+            {t('tradeup_btn', { n: required })}
+          </button>
         </div>
       {/if}
       <div class="grid" data-testid="tu-spares">
@@ -169,7 +163,11 @@
           </div>
         {/each}
       </div>
-      {@render tradeButton('tu-go')}
+      <div class="actions">
+        <button class="btn btn-primary" disabled={busy || !give || !offer} data-testid="tu-go" onclick={() => give && tradeUp(give)}>
+          {t('tradeup_btn', { n: required })}
+        </button>
+      </div>
     </section>
   {/if}
 </main>
@@ -303,8 +301,16 @@
   }
   .tools {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .tools .btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .tools .btn-primary {
+    flex: 1;
   }
   .pick {
     position: relative;
@@ -333,7 +339,7 @@
   }
   .actions {
     display: flex;
-    margin: 14px 0;
+    margin-top: 14px;
   }
   .actions .btn {
     flex: 1;
