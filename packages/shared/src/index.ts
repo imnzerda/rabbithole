@@ -142,6 +142,8 @@ export interface ReplayData {
   seed: string;
   players: [ReplayPlayer, ReplayPlayer];
   actions: { player: PlayerIndex; action: GameAction }[];
+  /** Cartes en tendance pendant la partie (à rejouer à l'identique). */
+  trending: string[];
   result: MatchResult;
   createdAt: string;
 }
@@ -349,4 +351,16 @@ export interface AchievementsDto {
     reward: { coins: number; freeBoosters: number };
   };
   achievements: AchievementDto[];
+}
+
+// --- Tendance du jour (section 8) ---
+
+export interface TrendingCardDto {
+  cardId: string;
+  /** Vues de la veille / moyenne des 30 jours précédents. */
+  score: number;
+  views: number;
+  average: number;
+  /** Raison d'exclusion (admin uniquement) : watchlist, recent_death, admin. */
+  excluded: string | null;
 }

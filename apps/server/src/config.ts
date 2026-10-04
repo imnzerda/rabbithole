@@ -228,6 +228,34 @@ export const DEFAULT_ACHIEVEMENTS: AchievementsConfig = {
   collection: { pointsPerCard: 10, pointsPerGame: 2, pointsPerLevel: 200, reward: { coins: 50, freeBoosters: 1 } },
 };
 
+/**
+ * Tendance du jour (section 8) : chaque jour à `computeHour` UTC, vues Wikipédia de la veille comparées à
+ * la moyenne des 30 jours précédents ; les `count` meilleures cartes (au moins `minViews` vues) gagnent le
+ * bonus Tendance pour 24 h. Publication automatique à `publishHour`:`publishMinute` UTC, après une fenêtre où
+ * l'admin peut écarter une carte. Exclues d'office : liste de surveillance, décès depuis moins de `recentDeathDays` jours.
+ */
+export interface TrendingConfig {
+  /** false : aucun calcul (tests, ou `TRENDING=off`). */
+  enabled: boolean;
+  count: number;
+  minViews: number;
+  computeHour: number;
+  publishHour: number;
+  publishMinute: number;
+  recentDeathDays: number;
+  languages: string[];
+}
+
+export const DEFAULT_TRENDING: Omit<TrendingConfig, 'enabled'> = {
+  count: 10,
+  minViews: 1000,
+  computeHour: 6,
+  publishHour: 6,
+  publishMinute: 30,
+  recentDeathDays: 30,
+  languages: ['en', 'fr'],
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -266,6 +294,7 @@ export interface ServerConfig {
   pass: PassConfig;
   ranked: RankedConfig;
   achievements: AchievementsConfig;
+  trending: TrendingConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -347,6 +376,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     pass: DEFAULT_PASS,
     ranked: DEFAULT_RANKED,
     achievements: DEFAULT_ACHIEVEMENTS,
+    trending: { ...DEFAULT_TRENDING, enabled: env.TRENDING !== 'off' && env.NODE_ENV !== 'test' },
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };

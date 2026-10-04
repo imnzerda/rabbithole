@@ -371,6 +371,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 - Les **10 cartes** au score le plus élevé (avec un minimum de vues) reçoivent le mot-clé **Tendance** pour 24 h : **+1 puissance** et un cadre « En tendance ».
 - Affichage : page « Tendances » + notification du matin.
 - Exclure du bonus toute carte dont la tendance est liée à un décès ou un drame récent (liste de surveillance manuelle + vérification admin avant publication automatique à 06:30).
+- **Implémenté** (phase 6) : ordonnanceur serveur (calcul à 06:00, publication à 06:30 UTC), vues anglais + français, top 10 au-dessus de 1 000 vues, exclusion d'office des décès de moins de 30 jours et de la liste de surveillance, page admin (écarter, rétablir, liste de surveillance), page « Tendances » et annonce sur l'accueil (à la place d'une notification individuelle). Les cartes en tendance sont enregistrées avec chaque partie pour des replays identiques.
 
 ---
 

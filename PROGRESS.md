@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,22 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 5a : Tendance du jour
+
+- **Calcul quotidien** (cahier des charges, section 8), lancé par un ordonnanceur du serveur à **6 h UTC**.
+  - Vues Wikipédia de la veille, anglais et français additionnés, divisées par la moyenne des 30 jours précédents. Source : API MediaWiki par lots de 50 titres, comme le pipeline.
+  - Les **10 meilleures cartes** au-dessus de 1 000 vues gagnent le bonus **Tendance** (+1 puissance, déjà prévu par le moteur).
+- **Exclusions d'office** : la liste de surveillance, et les personnes décédées depuis moins de 30 jours (date de décès Wikidata). Les cartes exclues restent visibles pour l'admin, avec leur raison.
+- **Publication automatique à 6 h 30**, après une fenêtre où l'admin peut écarter une carte. Il peut aussi le faire après publication. La liste publiée vaut 24 h.
+- **En partie** : toutes les parties en ligne lancées pendant ces 24 h appliquent le bonus. La liste est enregistrée avec la partie (`matches.trending`) et rendue au replay, qui reste identique.
+- **Interface** :
+  - page **Tendances** (score, vues de la veille, moyenne) ;
+  - annonce sur l'accueil quand la liste du jour est publiée ;
+  - page **Tendances** de l'outil d'admin : liste du jour avec les exclusions, « Écarter / Rétablir », liste de surveillance.
+- **Configuration** : `DEFAULT_TRENDING` ; `TRENDING=off` désactive le calcul. Il est désactivé en test, et dans le serveur E2E (aucun appel à Wikimedia).
+- **Base** : migration 021 (`trending`, `trending_runs`, `trending_watchlist`, `matches.trending`).
+- **Tests** : 4 tests serveur avec une source de vues factice (calcul, exclusions, publication, heures de l'ordonnanceur, routes joueur et admin, partie et replay), les tests des parties, et 1 scénario E2E. Route de test `/api/test/trending`, interdite en production.
 
 ### 2026-10-04 — Phase 6, étape 4 : succès, titres et progression de collection
 

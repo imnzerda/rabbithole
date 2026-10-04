@@ -303,6 +303,19 @@ test('succès : collection, progression de collection, Spécialiste et titre aff
   expect(cosmetics.activeTitle).toBe('achievement_specialist_exploration');
 });
 
+test('Tendance du jour : annonce sur l’accueil, page Tendances', async ({ page }, info) => {
+  await signup(page, `trend-${info.project.name}`, '/');
+  const cards = (await (await page.request.get('/api/catalog')).json()).cards as { id: string; type: string }[];
+  const ids = cards.filter((c) => c.type !== 'leader').slice(0, 3).map((c) => c.id);
+  await page.request.post('/api/test/trending', { data: { cardIds: ids } });
+  await page.reload();
+  await expect(page.getByTestId('trending-banner')).toContainText('3 cartes ont +1 puissance');
+  await page.getByTestId('trending-banner').click();
+  await expect(page).toHaveURL(/\/trending$/);
+  await expect(page.getByTestId('trending').locator('li')).toHaveCount(3);
+  await expect(page.getByTestId('trending')).toContainText('×10');
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

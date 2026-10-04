@@ -26,6 +26,8 @@ export default defineConfig({
         SIGNUP_PER_SUBNET_PER_MINUTE: '1000',
         SMS_PER_IP_PER_HOUR: '1000',
         AUTH_RATE_LIMIT: '1000',
+        // Pas d'appel à Wikimedia pendant les tests (Tendance du jour).
+        TRENDING: 'off',
         // Compte administrateur des tests de l'outil d'admin.
         ADMIN_EMAILS: 'admin-e2e@example.com',
       },

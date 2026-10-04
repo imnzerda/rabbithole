@@ -19,6 +19,8 @@ import { registerPayments } from './payments/routes.js';
 import { registerNotices } from './notices/routes.js';
 import { registerRetention } from './retention/routes.js';
 import { registerRanked } from './ranked/routes.js';
+import { registerTrending } from './trending/routes.js';
+import { TrendingScheduler, wikimediaSource, type ViewsSource } from './trending/trending.js';
 import { MatchService } from './match/service.js';
 
 export interface App {
@@ -30,7 +32,7 @@ export interface App {
 }
 
 /** Construit le serveur (base, migrations, routes) sans l'ouvrir sur le réseau : utilisable tel quel dans les tests. */
-export async function buildApp(config: ServerConfig, services: Partial<Guard> = {}): Promise<App> {
+export async function buildApp(config: ServerConfig, services: Partial<Guard> & { trendingSource?: ViewsSource } = {}): Promise<App> {
   const db = config.databaseUrl ? createPgDb(config.databaseUrl) : await createPgliteDb(config.pgliteDir);
   await migrate(db);
   await syncAdminRoles(db, config.adminEmails);
@@ -40,7 +42,8 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   await app.register(rateLimit, { global: false });
   await app.register(websocket, { options: { maxPayload: 64 * 1024 } });
 
-  const guard = { ...createGuard(config.guard, (m) => app.log.info(m)), ...services };
+  const { trendingSource, ...guardServices } = services;
+  const guard = { ...createGuard(config.guard, (m) => app.log.info(m)), ...guardServices };
   guard.disposable.start((err) => app.log.warn({ err }, 'liste d’e-mails jetables injoignable'));
   const catalog = await Catalog.open(db);
   const deps = { db, config, guard, catalog };
@@ -56,10 +59,17 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   registerNotices(app, deps);
   registerRetention(app, deps);
   registerRanked(app, deps);
+  registerTrending(app, deps);
+  // Tendance du jour : calcul quotidien, puis publication après la fenêtre de vérification (section 8).
+  const trending = config.trending.enabled
+    ? new TrendingScheduler(db, config.trending, () => catalog.current, trendingSource ?? wikimediaSource, (msg, err) => (err ? app.log.warn({ err }, msg) : app.log.info(msg)))
+    : null;
+  trending?.start();
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {
     guard.disposable.stop();
+    trending?.stop();
     await matches.close();
     await db.close();
   });

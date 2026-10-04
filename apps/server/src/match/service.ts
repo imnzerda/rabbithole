@@ -9,6 +9,7 @@ import { awardMatchCoins } from '../economy/economy.js';
 import { recordMissionSafe } from '../retention/missions.js';
 import { addPassXpSafe, playerCosmetics } from '../retention/pass.js';
 import { applyRankedResult } from '../ranked/ranked.js';
+import { activeTrending } from '../trending/trending.js';
 import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
@@ -153,12 +154,14 @@ export class MatchService {
     // Seed issue du RNG cryptographique du serveur, enregistrée pour l'audit et les replays.
     const seed = randomBytes(16).toString('hex');
     const { version, ctx } = this.deps.catalog.current;
+    // Tendance du jour : bonus des cartes en tendance, enregistré pour rejouer la partie à l'identique.
+    const trending = (await activeTrending(this.deps.db).catch(() => [] as string[])).filter((cardId) => ctx.cards[cardId]);
     await this.deps.db.query(
-      `INSERT INTO matches (id, mode, player_a, player_b, ghost, players, seed, content_version)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [id, mode, seats[0].userId, seats[1].userId, ghost, JSON.stringify(seats), seed, version],
+      `INSERT INTO matches (id, mode, player_a, player_b, ghost, players, seed, content_version, trending)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [id, mode, seats[0].userId, seats[1].userId, ghost, JSON.stringify(seats), seed, version, trending],
     );
-    const room = new MatchRoom({ id, mode, seed, ctx, contentVersion: version, seats, timers: this.timers, onEnd: (r) => this.track(this.onEnd(r)) });
+    const room = new MatchRoom({ id, mode, seed, ctx, contentVersion: version, seats, trending, timers: this.timers, onEnd: (r) => this.track(this.onEnd(r)) });
     this.rooms.set(id, room);
     for (const s of seats) {
       if (!s.userId) continue;

@@ -453,6 +453,13 @@ const fr = {
   ach_friends_one: "Ajoute ton premier ami",
   ach_specialist: "Possède toutes les cartes {c}",
   collection_level: "Niveau {n}",
+  trending_title: "Tendances",
+  trending_hint: "Chaque matin, les cartes dont la page Wikipédia a explosé la veille (par rapport aux 30 jours précédents) gagnent le bonus Tendance : +1 puissance dans toutes les parties en ligne pendant 24 h.",
+  trending_empty: "Pas de tendance publiée pour le moment : la liste du jour arrive vers 6 h 30 (UTC).",
+  trending_date: "Tendances du {d}",
+  trending_views: "{v} vues hier, {a} en moyenne",
+  trending_bonus: "+1 puissance aujourd'hui",
+  trending_banner: "Tendances du jour : {n} cartes ont +1 puissance aujourd'hui",
 } as const;
 
 type Key = keyof typeof fr;
@@ -909,6 +916,13 @@ const en: Record<Key, string> = {
   ach_friends_one: "Add your first friend",
   ach_specialist: "Own every {c} card",
   collection_level: "Level {n}",
+  trending_title: "Trending",
+  trending_hint: "Every morning, the cards whose Wikipedia page blew up the day before (compared to the previous 30 days) get the Trending bonus: +1 power in every online game for 24 hours.",
+  trending_empty: "No trending list published yet: today's list arrives around 6:30 (UTC).",
+  trending_date: "Trending on {d}",
+  trending_views: "{v} views yesterday, {a} on average",
+  trending_bonus: "+1 power today",
+  trending_banner: "Trending today: {n} cards get +1 power",
 };
 
 export const locale: GlossaryLocale =

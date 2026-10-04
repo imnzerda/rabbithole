@@ -20,6 +20,7 @@
     ['/series', 'Séries'],
     ['/moderation', 'Modération'],
     ['/countries', 'Pays'],
+    ['/trending', 'Tendances'],
     ['/balance', 'Équilibrage'],
     ['/audit', 'Journal'],
   ] as const;

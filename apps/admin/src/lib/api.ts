@@ -1,5 +1,5 @@
 import type { BudgetReport, CardDef, CategoryId, SimulationResult } from '@rabbithole/engine';
-import type { PublicUser } from '@rabbithole/shared';
+import type { PublicUser, TrendingCardDto } from '@rabbithole/shared';
 
 /** Erreur de l'API : `code` = champ `error`, `details` = précisions (erreurs de validation, blocages…). */
 export class ApiError extends Error {
@@ -200,6 +200,14 @@ export const api = {
   takedowns: () => request<{ takedowns: TakedownRow[] }>('GET', '/admin/takedowns'),
   handleTakedown: (id: string, status: TakedownRow['status'], resolution: string, retireCard: boolean) =>
     request<{ ok: true }>('POST', `/admin/takedowns/${id}`, { status, resolution, retireCard }),
+  trending: (date?: string) =>
+    request<{ date: string; run: { computed_at: string; published_at: string | null } | null; cards: TrendingCardDto[]; watchlist: { cardId: string; reason: string }[] }>(
+      'GET',
+      `/admin/trending${date ? `?date=${date}` : ''}`,
+    ),
+  setTrendingExcluded: (date: string, cardId: string, excluded: boolean) => request<{ ok: true }>('POST', '/admin/trending/exclude', { date, cardId, excluded }),
+  addWatchlist: (cardId: string, reason: string) => request<{ ok: true }>('POST', '/admin/trending/watchlist', { cardId, reason }),
+  removeWatchlist: (cardId: string) => request<{ ok: true }>('DELETE', `/admin/trending/watchlist/${encodeURIComponent(cardId)}`),
   countryRules: () => request<{ rules: CountryRuleRow[] }>('GET', '/admin/country-rules'),
   setCountryRule: (country: string, rule: { allowAdult: boolean; allowPolitical: boolean; blockedCardIds: string[] }) =>
     request<{ ok: true }>('PUT', `/admin/country-rules/${country}`, rule),

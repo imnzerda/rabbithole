@@ -93,6 +93,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `src/economy/` : portefeuille, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, Leader de départ, pièces de fin de partie ; `compensation.ts` : retrait d'une carte publiée (pièces aux détenteurs, notification).
   - `src/notices/` : notifications aux joueurs.
   - `src/retention/` : missions quotidiennes et hebdomadaires (`missions.ts`, modèles dans `DEFAULT_MISSIONS`), pass saisonnier et cosmétiques (`pass.ts`, réglages dans `DEFAULT_PASS`, variantes dans `CARD_VARIANTS`), succès et progression de collection (`achievements.ts`, réglages dans `DEFAULT_ACHIEVEMENTS`).
+  - `src/trending/` : Tendance du jour (ordonnanceur quotidien, vues Wikimedia, exclusions, publication ; réglages dans `DEFAULT_TRENDING`, `TRENDING=off` pour désactiver).
   - `src/ranked/` : classé (saisons mensuelles, rangs, points × enjeu, reset partiel, récompenses de saison, classements ; réglages dans `DEFAULT_RANKED`).
   - `src/moderation/` : contenu sensible et règles par pays (`filter.ts`), signalements, demandes de retrait, crédits.
   - `src/catalog/` : catalogue de cartes publié, lu en base (versions conservées pour les replays).
@@ -101,7 +102,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `src/social/` : amis (code ami, demandes) et échanges libres entre amis (plusieurs cartes, dons compris, sans limite ; une carte donnée quitte les decks).
   - `src/match/` : `room.ts` (partie qui fait foi : vues, événements filtrés, minuteurs, fantôme), `service.ts` (matchmaking), `routes.ts` (`/ws`, historique, replays).
   - `test/` : tests REST (`inject`) et temps réel (client `ws`).
-- [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : tableau de bord, candidats (import du pipeline), cartes (éditeur avec aperçu en direct, import de brouillons), séries, modération (signalements, demandes de retrait), règles par pays, équilibrage (budget, simulations), journal d'audit. API : `apps/server/src/admin/` et `src/moderation/`. Accès : `ADMIN_EMAILS`.
+- [apps/admin/](apps/admin/) : outil d'administration (SvelteKit, port 5174) : tableau de bord, candidats (import du pipeline), cartes (éditeur avec aperçu en direct, import de brouillons), séries, modération (signalements, demandes de retrait), règles par pays, Tendance du jour (vérification, liste de surveillance), équilibrage (budget, simulations), journal d'audit. API : `apps/server/src/admin/` et `src/moderation/`. Accès : `ADMIN_EMAILS`.
 - [tools/pipeline/](tools/pipeline/) : pipeline de contenu (Wikidata, notoriété, politique de contenu, images Commons), avec un README. Réglages dans `src/config.ts` (sources, seuils, politique), résultats dans `out/` (hors dépôt). `drafts/<lot>.json` : lots de cartes en brouillon, vérifiés par un test (valides, dans le budget, textes FR/EN), à importer dans l'admin. `decks/<série>.json` : decks de référence, équilibrés par simulation (test `balance.test.ts`, 35–65 % de victoires). `pipeline add` : ajout manuel de sujets par identifiant Wikidata.
 - [apps/web/](apps/web/) : SvelteKit + PixiJS.
   - `lib/match/client.ts` : interface `MatchClient`. L'UI ne voit que des vues et des événements.
@@ -110,7 +111,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `lib/api.ts`, `lib/session.svelte.ts` : API REST et session.
   - `lib/catalog.ts` : catalogue publié par le serveur (et versions passées pour les replays) ; `lib/viewer.svelte.ts` : ce que le joueur voit (cartes masquées ou bloquées, crédits).
   - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
-  - Pages : `collection` (boosters, recyclage, fabrication), `trade-up`, `missions`, `pass`, `ranked` (classement), `achievements` (succès, titres, progression de collection), `decks`, `friends` (amis, code ami), `trades` (échanges), `shop` (gemmes, historique d'achats, plafond ; `shop/sandbox` : page de paiement factice), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
+  - Pages : `collection` (boosters, recyclage, fabrication), `trade-up`, `missions`, `pass`, `ranked` (classement), `achievements` (succès, titres, progression de collection), `trending` (Tendances), `decks`, `friends` (amis, code ami), `trades` (échanges), `shop` (gemmes, historique d'achats, plafond ; `shop/sandbox` : page de paiement factice), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.

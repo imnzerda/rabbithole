@@ -23,6 +23,7 @@ export class ReplayMatch extends BaseMatchClient implements MatchClient {
     super();
     const { state, events } = createMatch(ctx, {
       seed: replay.seed,
+      trendingCardIds: replay.trending ?? [],
       players: [
         { id: 'a', leader: replay.players[0].leader, deck: replay.players[0].deck },
         { id: 'b', leader: replay.players[1].leader, deck: replay.players[1].deck },

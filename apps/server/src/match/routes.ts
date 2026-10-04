@@ -43,6 +43,7 @@ interface MatchRow {
   seed: string;
   content_version: string;
   actions: { player: PlayerIndex; action: GameAction }[];
+  trending: string[] | null;
   result: MatchResult | null;
   created_at: string | Date;
 }
@@ -124,6 +125,7 @@ export function registerMatches(app: FastifyInstance, deps: AppDeps, service: Ma
       seed: row.seed,
       players: row.players.map((p) => ({ name: p.name, leader: p.leader, deck: p.deck, ghost: p.userId === null })) as ReplayData['players'],
       actions: row.actions,
+      trending: row.trending ?? [],
       result: row.result!,
       createdAt: iso(row.created_at),
     };

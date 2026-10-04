@@ -6,11 +6,17 @@
 
   /** Notifications non lues du joueur (ex. carte retirée du jeu et compensée en pièces). */
   let notices = $state.raw<NoticeDto[]>([]);
+  // Annonce du matin : la Tendance du jour est publiée (section 8).
+  let trending = $state(0);
 
   onMount(() => {
     api
       .notices()
       .then((r) => (notices = r.notices.filter((n) => !n.read)))
+      .catch(() => {});
+    api
+      .trending()
+      .then((r) => (trending = r.cards.length))
       .catch(() => {});
   });
 
@@ -32,6 +38,9 @@
   }
 </script>
 
+{#if trending}
+  <a class="notice trending" href="/trending" data-testid="trending-banner">🔥 {t('trending_banner', { n: trending })}</a>
+{/if}
 {#each notices.filter((n) => text(n)) as n (n.id)}
   <div class="notice" role="status" data-testid="notice">
     <span>{text(n)}</span>
@@ -51,6 +60,11 @@
     border: 1px solid var(--accent);
     border-radius: 14px;
     background: var(--bg-2);
+  }
+  .trending {
+    color: var(--text);
+    font-weight: 700;
+    border-color: #ff8a3d;
   }
   .notice span {
     flex: 1 1 220px;

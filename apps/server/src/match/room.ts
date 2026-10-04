@@ -43,6 +43,8 @@ export interface RoomOptions {
   /** Version du catalogue de la partie. */
   contentVersion: string;
   seats: [SeatInfo, SeatInfo];
+  /** Cartes en tendance pendant la partie (bonus Tendance, section 8). */
+  trending?: string[];
   timers: RoomTimers;
   onEnd: (room: MatchRoom) => void;
 }
@@ -85,6 +87,7 @@ export class MatchRoom {
     this.ghostRng = Rng.fromSeed(`${o.seed}:ghost`);
     const { state, events } = createMatch(o.ctx, {
       seed: o.seed,
+      trendingCardIds: o.trending ?? [],
       players: [
         { id: o.seats[0].userId ?? 'ghost', leader: o.seats[0].leader, deck: o.seats[0].deck },
         { id: o.seats[1].userId ?? 'ghost', leader: o.seats[1].leader, deck: o.seats[1].deck },
