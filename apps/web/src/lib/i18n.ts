@@ -612,6 +612,17 @@ const fr = {
   err_too_many_guild_requests: "Trop de demandes en attente : annules-en une d'abord.",
   err_request_not_found: "Demande introuvable.",
   err_not_in_guild: "Tu n'es dans aucune guilde.",
+  nav_main: "Navigation",
+  nav_play: "Jouer",
+  nav_matches: "Parties",
+  nav_boosters: "Boosters et cartes",
+  nav_social: "Social",
+  nav_progress: "Progression",
+  nav_more: "Plus",
+  notifications: "Notifications",
+  notices_all_read: "Tout marquer comme lu",
+  notices_empty: "Aucune notification.",
+  wallet: "Portefeuille",
 } as const;
 
 type Key = keyof typeof fr;
@@ -1227,6 +1238,17 @@ const en: Record<Key, string> = {
   err_too_many_guild_requests: "Too many pending requests: cancel one first.",
   err_request_not_found: "Request not found.",
   err_not_in_guild: "You're not in a guild.",
+  nav_main: "Navigation",
+  nav_play: "Play",
+  nav_matches: "Games",
+  nav_boosters: "Boosters & cards",
+  nav_social: "Social",
+  nav_progress: "Progress",
+  nav_more: "More",
+  notifications: "Notifications",
+  notices_all_read: "Mark all as read",
+  notices_empty: "No notifications.",
+  wallet: "Wallet",
 };
 
 export const locale: GlossaryLocale =

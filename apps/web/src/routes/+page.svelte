@@ -5,7 +5,7 @@
   import { loc, locale, t } from '$lib/i18n';
   import Notices from '$lib/ui/Notices.svelte';
   import RulesSheet from '$lib/ui/RulesSheet.svelte';
-  import { loadSession, logout, session } from '$lib/session.svelte';
+  import { loadSession, session } from '$lib/session.svelte';
   import { onMount, untrack } from 'svelte';
 
   onMount(() => {
@@ -28,31 +28,6 @@
 </script>
 
 <main>
-  <nav class="account" aria-label="Compte">
-    {#if session.user}
-      <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
-      <a href="/daily" data-testid="nav-daily">{t('daily_title')}</a>
-      <a href="/draft" data-testid="nav-draft">{t('draft_title')}</a>
-      <a href="/tournaments" data-testid="nav-tournaments">{t('tournament_title')}</a>
-      <a href="/missions" data-testid="nav-missions">{t('missions')}</a>
-      <a href="/pass" data-testid="nav-pass">{t('pass')}</a>
-      <a href="/ranked" data-testid="nav-ranked">{t('ranked_title')}</a>
-      <a href="/achievements" data-testid="nav-achievements">{t('achievements')}</a>
-      <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
-      <a href="/decks">{t('decks')}</a>
-      <a href="/friends" data-testid="nav-friends">{t('friends')}</a>
-      <a href="/guild" data-testid="nav-guild">{t('guild_title')}</a>
-      <a href="/trade-up" data-testid="nav-tradeup">{t('tradeup_title')}</a>
-      <a href="/trades" data-testid="nav-trades">{t('trades')}</a>
-      <a href="/shop" data-testid="nav-shop">{t('shop')}</a>
-      <a href="/replays">{t('history')}</a>
-      <a href="/settings" data-testid="nav-settings">{t('settings')}</a>
-      <button class="link" onclick={() => logout()}>{t('logout')}</button>
-    {:else if session.loaded}
-      <a href="/login">{t('login')}</a>
-      <a class="strong" href="/signup">{t('signup')}</a>
-    {/if}
-  </nav>
   {#if session.user}<Notices />{/if}
   <header>
     <div class="logo" aria-hidden="true">
@@ -122,29 +97,6 @@
   header {
     text-align: center;
     margin-bottom: 24px;
-  }
-  .account {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px 14px;
-    min-height: 24px;
-    font-size: 14px;
-  }
-  .account a,
-  .account .link {
-    color: var(--muted);
-    text-decoration: none;
-    background: none;
-    padding: 0;
-  }
-  .account .strong {
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .hello {
-    font-weight: 700;
   }
   .online {
     display: flex;

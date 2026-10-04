@@ -74,7 +74,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('tournament_title')}</h1>
   </header>
   {#if info}<p class="muted intro">{t('tournament_hint', { h: info.roundHours })}</p>{/if}
@@ -195,14 +194,6 @@
     font-size: 13px;
     text-transform: uppercase;
     color: var(--muted);
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   .intro {
     margin-top: 10px;

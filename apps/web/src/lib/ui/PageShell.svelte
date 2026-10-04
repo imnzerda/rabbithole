@@ -1,14 +1,12 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { t } from '../i18n';
 
-  /** Page de contenu simple (réglages, crédits, demande de retrait) : retour, titre, colonne lisible. */
+  /** Page de contenu simple (réglages, crédits, demande de retrait) : titre, colonne lisible. */
   let { title, children }: { title: string; children: Snippet } = $props();
 </script>
 
 <main>
   <header>
-    <button class="icon" aria-label={t('back')} onclick={() => (history.length > 1 ? history.back() : (location.href = '/'))}>←</button>
     <h1>{title}</h1>
   </header>
   {@render children()}
@@ -28,14 +26,6 @@
   }
   h1 {
     margin: 0;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   main :global(.panel) {
     background: var(--bg-2);

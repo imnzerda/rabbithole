@@ -20,7 +20,6 @@
 
 <main>
   <header>
-    <button class="icon" aria-label={t('back')} onclick={() => history.back()}>←</button>
     <h1>{t('history')}</h1>
   </header>
 

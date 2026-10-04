@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import type { PurchaseDto, ShopDto, WalletDto } from '@rabbithole/shared';
+  import type { PurchaseDto, ShopDto } from '@rabbithole/shared';
   import { onMount } from 'svelte';
   import { api, ApiError } from '$lib/api';
   import { loc, locale, t } from '$lib/i18n';
@@ -9,7 +9,6 @@
   import { loadSession, session } from '$lib/session.svelte';
 
   let shop = $state.raw<ShopDto | null>(null);
-  let wallet = $state.raw<WalletDto | null>(null);
   let purchases = $state.raw<PurchaseDto[]>([]);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let busy = $state(false);
@@ -18,9 +17,8 @@
   const price = (amount: number, currency: string) => formatPrice(amount, currency, locale);
 
   async function refresh(): Promise<void> {
-    const [s, w, p] = await Promise.all([api.shop(), api.wallet(), api.purchases()]);
+    const [s, p] = await Promise.all([api.shop(), api.purchases()]);
     shop = s;
-    wallet = w.wallet;
     purchases = p.purchases;
     capInput = s.spendCap === null ? '' : String(fromMinor(s.spendCap, s.currency));
   }
@@ -85,9 +83,7 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('shop')}</h1>
-    {#if wallet}<span class="gems" data-testid="gems" title={t('gems')}>💎 {wallet.gems}</span>{/if}
   </header>
 
   {#if message}<p class:error={message.error} class:ok={!message.error} role="status" data-testid="message">{message.text}</p>{/if}

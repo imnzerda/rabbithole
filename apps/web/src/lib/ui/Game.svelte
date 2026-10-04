@@ -11,6 +11,7 @@
   import EndScreen from './EndScreen.svelte';
   import { renderEndImage } from '../share/end-image';
   import { session } from '../session.svelte';
+  import { ui } from '../ui.svelte';
   import RulesSheet from './RulesSheet.svelte';
 
   interface Props {
@@ -137,6 +138,14 @@
     if (!view || view.phase === 'ended' || match.spectator) return;
     if (confirm(t('fold_confirm', { n: view.stake }))) match.act({ type: 'fold' });
   }
+
+  // Plein écran : la navigation du site est masquée tant qu'une partie est affichée.
+  onMount(() => {
+    ui.immersive += 1;
+    return () => {
+      ui.immersive -= 1;
+    };
+  });
 
   onMount(() => {
     const r = new GameRenderer(ctx, {

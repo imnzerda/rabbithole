@@ -43,7 +43,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('ranked_title')}</h1>
   </header>
 

@@ -121,7 +121,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('pass')}</h1>
   </header>
 

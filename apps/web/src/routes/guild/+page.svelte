@@ -128,7 +128,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('guild_title')}</h1>
   </header>
   {#if message}<p class="message" data-testid="message">{message}</p>{/if}

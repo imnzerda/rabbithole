@@ -7,16 +7,13 @@
   import { loadSession, session } from '$lib/session.svelte';
 
   let friends = $state.raw<FriendsDto | null>(null);
-  let incomingTrades = $state(0);
   let target = $state('');
   let message = $state<{ text: string; error: boolean } | null>(null);
   let busy = $state(false);
   let copied = $state(false);
 
   async function refresh(): Promise<void> {
-    const [f, tr] = await Promise.all([api.friends(), api.trades()]);
-    friends = f;
-    incomingTrades = tr.incoming.length;
+    friends = await api.friends();
   }
 
   onMount(() => {
@@ -68,12 +65,8 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('friends')}</h1>
   </header>
-  <nav class="tabs">
-    <a href="/trades" data-testid="to-trades">{t('trades')}{#if incomingTrades}<span class="badge">{incomingTrades}</span>{/if} →</a>
-  </nav>
 
   {#if message}<p class:error={message.error} class:ok={!message.error} role="status" data-testid="message">{message.text}</p>{/if}
 
@@ -160,33 +153,6 @@
   h3 {
     margin: 16px 0 8px;
     font-size: 16px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
-  }
-  .tabs {
-    text-align: right;
-    margin: 6px 0 0;
-  }
-  .tabs a {
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .badge {
-    display: inline-block;
-    margin-left: 6px;
-    min-width: 20px;
-    padding: 0 6px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 12px;
-    text-align: center;
   }
   .panel {
     margin-top: 18px;

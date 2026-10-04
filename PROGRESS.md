@@ -22,6 +22,28 @@
 
 ## Journal
 
+### 2026-10-04 — Refonte de la navigation du site
+
+- **Rubriques** : les pages voisines sont regroupées, avec des onglets en haut de page.
+
+  | Rubrique | Onglets |
+  |---|---|
+  | Jouer | Parties (accueil, en ligne, entraînement), Défi du jour, Draft, Tournoi, Historique |
+  | Collection | Boosters et cartes, Decks, Trade-up |
+  | Social | Amis, Échanges (avec le nombre d'échanges reçus), Guilde |
+  | Progression | Missions, Pass, Succès, Classement |
+  | Boutique | — |
+  | Tendances | — |
+  | Réglages | Réglages, Crédits, Demande de retrait |
+
+- **PC** (900 px et plus) : barre latérale avec le logo, la cloche des notifications, les 7 rubriques (rubrique active surlignée) et le compte (pseudo, déconnexion). Le portefeuille (🪙 et 💎) est en haut à droite.
+- **Téléphone** : barre du bas avec Jouer, Collection, Social, Progression et « Plus » (Boutique, Tendances, Réglages, Déconnexion). Le portefeuille et la cloche sont dans la barre du haut.
+- **Notifications** : elles passent dans la cloche (nombre de non lues, « OK » ou « Tout marquer comme lu »). L'annonce de la Tendance du jour reste sur l'accueil.
+- **Portefeuille** : rafraîchi après chaque action réussie et à chaque changement de page. Les pages n'affichent plus les pièces et gemmes en double ; la Collection garde les boosters gratuits et prévisualisés.
+- **Plein écran** : la navigation disparaît pendant une partie (entraînement, en ligne, replay) et sur les pages de connexion, d'inscription et de paiement factice.
+- Les boutons retour et les liens entre pages (Collection ↔ Decks ↔ Trade-up, Amis ↔ Échanges) sont remplacés par les onglets.
+- **Tests** : la suite E2E complète (48 scénarios sur mobile et PC) passe. Les tests utilisent désormais les onglets (`nav-*`), les rubriques (`group-*`), la cloche (`bell`) et le portefeuille de la navigation (`shell-wallet`).
+
 ### 2026-10-04 — Phase 7, étape 1 : guildes (base)
 
 - **Plan de la phase 7** :

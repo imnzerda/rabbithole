@@ -62,7 +62,7 @@ async function signup(page: Page, label: string, next = '/'): Promise<void> {
 
 test('nouveau compte : aucune carte, Leader de départ, booster gratuit, achat bloqué sans pièces', async ({ page }, info) => {
   await signup(page, `eco-${info.project.name}`, '/collection');
-  await expect(page.getByTestId('wallet')).toContainText('🪙 0');
+  await expect(page.getByTestId('shell-wallet')).toContainText('🪙 0');
   await expect(page.getByTestId('wallet')).toContainText('🎁 6');
 
   await page.getByTestId('choose-proto_l_influenceuse').click();
@@ -92,7 +92,7 @@ test('trade-up : rubrique dédiée, doublons choisis par le joueur, probabilité
   await page.request.post('/api/test/set-card', { data: { cardId: 'proto_garde', quantity: 4 } });
   // Depuis la Collection, le lien mène à la rubrique Trade-up.
   await page.reload();
-  await page.getByTestId('to-tradeup').click();
+  await page.getByTestId('nav-tradeup').click();
   await expect(page).toHaveURL(/\/trade-up$/);
   await expect(page.getByTestId('tu-basique')).toContainText('7 doublons');
   await expect(page.getByTestId('tu-odds')).toContainText(/Tendance : \d+ cartes possibles, [\d.]+ % chacune/);
@@ -163,8 +163,8 @@ test('amis et échange : ajout par code ami, plusieurs cartes de raretés diffé
 
   // Bob voit la proposition signalée depuis ses amis, puis dans ses échanges.
   await bob.reload();
-  await expect(bob.getByTestId('to-trades')).toContainText('1');
-  await bob.getByTestId('to-trades').click();
+  await expect(bob.getByTestId('nav-trades')).toContainText('1');
+  await bob.getByTestId('nav-trades').click();
   await expect(bob.getByTestId('trade-incoming')).toHaveCount(1);
   await bob.getByTestId('trade-accept').click();
   await expect(bob.getByTestId('message')).toHaveText('Échange effectué !');
@@ -178,13 +178,13 @@ test('amis et échange : ajout par code ami, plusieurs cartes de raretés diffé
 
 test('boutique : pack de gemmes payé en sandbox, crédité par webhook, historique ; paiement annulé', async ({ page }, info) => {
   await signup(page, `shop-${info.project.name}`, '/shop');
-  await expect(page.getByTestId('gems')).toHaveText('💎 0');
+  await expect(page.getByTestId('shell-wallet')).toContainText('💎 0');
 
   await page.getByTestId('pack-gems_80').getByRole('button').click();
   await expect(page).toHaveURL(/\/shop\/sandbox\?session=sbx_/);
   await page.getByTestId('sandbox-pay').click();
   await expect(page).toHaveURL(/\/shop\?status=success$/);
-  await expect(page.getByTestId('gems')).toHaveText('💎 80');
+  await expect(page.getByTestId('shell-wallet')).toContainText('💎 80');
   await expect(page.getByTestId('purchase')).toHaveCount(1);
   await expect(page.getByTestId('purchase')).toContainText('Payé');
   await expect(page.getByTestId('message')).toHaveText('Merci ! Tes gemmes ont été ajoutées.');
@@ -193,7 +193,7 @@ test('boutique : pack de gemmes payé en sandbox, crédité par webhook, histori
   await page.getByTestId('pack-gems_170').getByRole('button').click();
   await page.getByTestId('sandbox-cancel').click();
   await expect(page.getByTestId('message')).toHaveText("Paiement annulé : rien n'a été débité.");
-  await expect(page.getByTestId('gems')).toHaveText('💎 80');
+  await expect(page.getByTestId('shell-wallet')).toContainText('💎 80');
   await expect(page.getByTestId('purchase')).toHaveCount(1);
 });
 
@@ -247,7 +247,7 @@ test('pass : achat direct du premium, récompenses réclamées, booster à aper�
   expect((await opened.getByRole('button').allTextContents()).slice(0, 5).map((s) => s.replace('Nouveau', ''))).toEqual(preview.map((s) => s.replace('Nouveau', '')));
   await opened.getByRole('button', { name: 'Fermer' }).click();
   await expect(page.getByTestId('preview-boosters')).toHaveCount(0);
-  await expect(page.getByTestId('wallet')).toContainText('🪙 0');
+  await expect(page.getByTestId('shell-wallet')).toContainText('🪙 0');
 });
 
 test('classé : partie classée (fantôme après l’attente), points en fin de partie, page Classement', async ({ page }, info) => {
@@ -501,6 +501,7 @@ test('tournoi de la semaine : inscription avec un deck, changement de deck, dés
 test('guilde : création payante, réglages, recherche, départ et dissolution', async ({ page }, info) => {
   await signup(page, `guilde-${info.project.name}`, '/');
   await page.request.post('/api/test/coins', { data: { coins: 500 } });
+  await page.getByTestId('group-social').click();
   await page.getByTestId('nav-guild').click();
 
   const name = `Terrier ${info.project.name} ${Date.now() % 100000}`;

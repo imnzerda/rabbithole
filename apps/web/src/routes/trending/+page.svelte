@@ -33,7 +33,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>🔥 {t('trending_title')}</h1>
   </header>
 
@@ -82,14 +81,6 @@
   h1 {
     margin: 0;
     flex: 1;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   .panel {
     margin-top: 18px;

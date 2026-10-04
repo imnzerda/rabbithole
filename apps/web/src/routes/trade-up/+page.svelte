@@ -89,10 +89,8 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('tradeup_title')}</h1>
   </header>
-  <nav class="tabs"><a href="/collection">{t('collection')} →</a></nav>
 
   {#if message}<p class="error" role="alert">{message}</p>{/if}
 
@@ -213,22 +211,6 @@
   h2 {
     margin: 14px 0 6px;
     font-size: 18px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
-  }
-  .tabs {
-    text-align: right;
-    margin: 6px 0 0;
-  }
-  .tabs a {
-    color: var(--accent);
-    font-weight: 700;
   }
   .panel {
     margin-top: 18px;

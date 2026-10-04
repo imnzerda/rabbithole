@@ -81,7 +81,6 @@
 {:else}
   <main>
     <header>
-      <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
       <h1>{t('online')}</h1>
     </header>
 
@@ -168,14 +167,6 @@
     letter-spacing: 0.12em;
     color: var(--muted);
     margin: 24px 0 10px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   .panel {
     margin-top: 24px;

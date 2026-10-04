@@ -10,15 +10,12 @@
 
   /** Missions quotidiennes et hebdomadaires (section 13) : progression comptée par le serveur. */
   let missions = $state.raw<MissionsDto | null>(null);
-  let coins = $state<number | null>(null);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let busy = $state(false);
   let now = $state(Date.now());
 
   async function refresh(): Promise<void> {
-    const [m, w] = await Promise.all([api.missions(), api.wallet()]);
-    missions = m;
-    coins = w.wallet.coins;
+    missions = await api.missions();
   }
 
   onMount(() => {
@@ -52,7 +49,6 @@
     message = null;
     try {
       const r = await api.claimMission(m.id);
-      coins = r.wallet.coins;
       message = { text: t('mission_claimed', { n: r.reward.coins }), error: false };
     } catch {
       message = { text: t('err_generic'), error: true };
@@ -91,9 +87,7 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('missions')}</h1>
-    {#if coins !== null}<span class="coins" data-testid="coins">🪙 {coins}</span>{/if}
   </header>
 
   {#if message}<p class:error={message.error} class:ok={!message.error} role="status" data-testid="message">{message.text}</p>{/if}
@@ -123,21 +117,6 @@
   h2 {
     margin: 0;
     font-size: 20px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
-  }
-  .coins {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-weight: 700;
   }
   .panel {
     margin-top: 18px;

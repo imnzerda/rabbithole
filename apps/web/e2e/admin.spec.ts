@@ -105,8 +105,12 @@ test('admin : import des candidats, carte créée, éditée, publiée, jouable ;
   await expect(page.getByText('Ses détenteurs ont reçu son prix de fabrication en pièces')).toBeVisible();
   expect((await (await page.request.get(`${ADMIN}/api/admin/cards/${encodeURIComponent(cardId)}`)).json()).status).toBe('retired');
   await playerPage.goto('/');
+  // Notifications : dans la cloche de la navigation.
+  await expect(playerPage.getByTestId('bell-count')).toHaveText('1');
+  await playerPage.getByTestId('bell').click();
   await expect(playerPage.getByTestId('notice')).toContainText('a été retirée du jeu : tu as reçu 40 🪙 pour 2 exemplaire(s).');
   await playerPage.getByTestId('notice').getByRole('button', { name: 'OK' }).click();
   await expect(playerPage.getByTestId('notice')).toHaveCount(0);
+  await expect(playerPage.getByTestId('bell-count')).toHaveCount(0);
   await player.close();
 });

@@ -66,7 +66,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('daily_title')}</h1>
   </header>
 
@@ -150,14 +149,6 @@
   h2 {
     margin: 0 0 10px;
     font-size: 20px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   .panel {
     margin-top: 18px;

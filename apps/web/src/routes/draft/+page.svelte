@@ -64,7 +64,6 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('draft_title')}</h1>
   </header>
   {#if draft}<p class="muted intro">{t('draft_hint', { w: draft.maxWins, l: draft.maxLosses })}</p>{/if}
@@ -170,14 +169,6 @@
   h2 {
     margin: 0 0 8px;
     font-size: 20px;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
   }
   .intro {
     margin-top: 10px;

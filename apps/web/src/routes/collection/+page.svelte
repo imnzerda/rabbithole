@@ -140,18 +140,14 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('collection')}</h1>
     {#if wallet}
       <div class="wallet" data-testid="wallet">
-        <span title={t('coins')}>🪙 {wallet.coins}</span>
-        <span title={t('gems')}>💎 {wallet.gems}</span>
         <span title={t('free_boosters')}>🎁 {wallet.freeBoosters}</span>
         {#if wallet.previewBoosters}<span title={t('preview_boosters')} data-testid="preview-boosters">📦 {wallet.previewBoosters}</span>{/if}
       </div>
     {/if}
   </header>
-  <nav class="tabs"><a href="/trade-up" data-testid="to-tradeup">{t('tradeup_title')} →</a> <a href="/decks">{t('decks')} →</a></nav>
 
   {#if message}<p class="error" role="alert">{message}</p>{/if}
 
@@ -295,14 +291,6 @@
     margin: 0 0 6px;
     font-size: 20px;
   }
-  .icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    font-weight: 700;
-  }
   .wallet {
     display: flex;
     gap: 10px;
@@ -313,17 +301,6 @@
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 6px 12px;
-  }
-  .tabs {
-    text-align: right;
-    margin: 6px 0 0;
-  }
-  .tabs a {
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .tabs a + a {
-    margin-left: 14px;
   }
   .panel {
     margin-top: 18px;

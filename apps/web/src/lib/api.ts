@@ -21,7 +21,17 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   });
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) throw new ApiError(res.status, String(json.error ?? 'error'), json);
+  // Toute action réussie peut changer le portefeuille ou les notifications : on prévient la navigation.
+  if (method !== 'GET') for (const fn of mutationListeners) fn();
   return json as T;
+}
+
+const mutationListeners = new Set<() => void>();
+
+/** Appelé après chaque requête d'écriture réussie ; renvoie de quoi se désabonner. */
+export function onMutation(fn: () => void): () => void {
+  mutationListeners.add(fn);
+  return () => mutationListeners.delete(fn);
 }
 
 export interface SignupInput {

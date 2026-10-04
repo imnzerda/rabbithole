@@ -141,9 +141,8 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => (draft ? (draft = null) : goto('/'))}>←</button>
+    {#if draft}<button class="icon" aria-label={t('back')} onclick={() => (draft = null)}>←</button>{/if}
     <h1>{t('decks')}</h1>
-    <a class="link" href="/collection">{t('collection')} →</a>
   </header>
 
   {#if !draft}
@@ -242,7 +241,6 @@
     border: 1px solid var(--line);
     font-weight: 700;
   }
-  .link,
   .panel a {
     color: var(--accent);
     font-weight: 700;

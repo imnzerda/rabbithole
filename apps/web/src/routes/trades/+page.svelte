@@ -161,10 +161,8 @@
 
 <main>
   <header class="top">
-    <button class="icon" aria-label={t('back')} onclick={() => goto('/')}>←</button>
     <h1>{t('trades')}</h1>
   </header>
-  <nav class="tabs"><a href="/friends">{t('friends')} →</a></nav>
 
   {#if message}<p class:error={message.error} class:ok={!message.error} role="status" data-testid="message">{message.text}</p>{/if}
 
@@ -301,10 +299,6 @@
   .tabs {
     text-align: right;
     margin: 6px 0 0;
-  }
-  .tabs a {
-    color: var(--accent);
-    font-weight: 700;
   }
   .highlight {
     border-color: var(--accent);
