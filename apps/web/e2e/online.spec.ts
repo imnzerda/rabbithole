@@ -284,6 +284,25 @@ test('classé : partie classée (fantôme après l’attente), points en fin de 
   await expect(page.getByTestId('leaderboard').locator('li.you')).toHaveCount(1);
 });
 
+test('succès : collection, progression de collection, Spécialiste et titre affiché', async ({ page }, info) => {
+  await signup(page, `ach-${info.project.name}`, '/achievements');
+  await page.request.post('/api/test/grant-kit');
+  await page.reload();
+
+  await page.getByTestId('claim-cards_25').click();
+  await expect(page.getByTestId('message')).toHaveText('+50 🪙 !');
+  await page.getByTestId('claim-collection').click();
+  await expect(page.getByTestId('message')).toContainText('niveau(x) réclamé(s)');
+  await expect(page.getByTestId('claim-collection')).toBeDisabled();
+
+  await page.getByTestId('claim-specialist_exploration').click();
+  await expect(page.getByTestId('message')).toContainText('et le titre « Spécialiste');
+  await page.getByTestId('titles').getByRole('button', { name: /Spécialiste/ }).click();
+  await expect(page.getByTestId('message')).toContainText('Titre affiché : « Spécialiste');
+  const cosmetics = (await (await page.request.get('/api/cosmetics')).json()) as { activeTitle: string };
+  expect(cosmetics.activeTitle).toBe('achievement_specialist_exploration');
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');

@@ -177,6 +177,57 @@ export const DEFAULT_RANKED: RankedConfig = {
   leaderboardSize: 1000,
 };
 
+/** Ce que mesure un succès (section 13), toujours calculé côté serveur à partir des données du joueur. */
+export type AchievementMetric = 'games' | 'wins' | 'ranked_wins' | 'best_rank_points' | 'cards' | 'goats' | 'boosters' | 'trade_ups' | 'trades' | 'friends';
+
+export interface AchievementDef {
+  id: string;
+  metric: AchievementMetric;
+  target: number;
+  coins: number;
+  /** Titre de profil débloqué (les succès les plus durs). */
+  title?: Record<string, string>;
+}
+
+/**
+ * Succès et progression de collection (section 13). Les succès « Spécialiste » (posséder toutes les cartes
+ * d'une catégorie) sont générés pour chaque catégorie (`specialist`). Progression de collection : chaque
+ * carte nouvelle et chaque partie en ligne font avancer une barre ; chaque niveau donne une récompense.
+ */
+export interface AchievementsConfig {
+  list: AchievementDef[];
+  specialist: { coins: number };
+  collection: { pointsPerCard: number; pointsPerGame: number; pointsPerLevel: number; reward: { coins: number; freeBoosters: number } };
+}
+
+export const DEFAULT_ACHIEVEMENTS: AchievementsConfig = {
+  list: [
+    { id: 'games_1', metric: 'games', target: 1, coins: 20 },
+    { id: 'games_10', metric: 'games', target: 10, coins: 60 },
+    { id: 'games_100', metric: 'games', target: 100, coins: 300, title: { fr: 'Accro du terrier', en: 'Rabbit hole regular' } },
+    { id: 'wins_1', metric: 'wins', target: 1, coins: 30 },
+    { id: 'wins_25', metric: 'wins', target: 25, coins: 150 },
+    { id: 'wins_100', metric: 'wins', target: 100, coins: 500, title: { fr: 'Cent victoires', en: 'Hundred wins' } },
+    { id: 'ranked_wins_25', metric: 'ranked_wins', target: 25, coins: 250 },
+    { id: 'rank_legend', metric: 'best_rank_points', target: 1500, coins: 500, title: { fr: 'Au sommet', en: 'At the top' } },
+    { id: 'cards_25', metric: 'cards', target: 25, coins: 50 },
+    { id: 'cards_100', metric: 'cards', target: 100, coins: 200 },
+    { id: 'cards_200', metric: 'cards', target: 200, coins: 500, title: { fr: 'Encyclopédiste', en: 'Encyclopedist' } },
+    { id: 'goats_1', metric: 'goats', target: 1, coins: 100 },
+    { id: 'goats_5', metric: 'goats', target: 5, coins: 400, title: { fr: 'Chasse aux GOAT', en: 'GOAT hunter' } },
+    { id: 'boosters_10', metric: 'boosters', target: 10, coins: 50 },
+    { id: 'boosters_50', metric: 'boosters', target: 50, coins: 200 },
+    { id: 'trade_ups_1', metric: 'trade_ups', target: 1, coins: 40 },
+    { id: 'trade_ups_10', metric: 'trade_ups', target: 10, coins: 150 },
+    { id: 'trades_1', metric: 'trades', target: 1, coins: 40 },
+    { id: 'trades_10', metric: 'trades', target: 10, coins: 150, title: { fr: 'Marché aux puces', en: 'Flea market' } },
+    { id: 'friends_1', metric: 'friends', target: 1, coins: 30 },
+    { id: 'friends_5', metric: 'friends', target: 5, coins: 100 },
+  ],
+  specialist: { coins: 300 },
+  collection: { pointsPerCard: 10, pointsPerGame: 2, pointsPerLevel: 200, reward: { coins: 50, freeBoosters: 1 } },
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -214,6 +265,7 @@ export interface ServerConfig {
   missions: MissionsConfig;
   pass: PassConfig;
   ranked: RankedConfig;
+  achievements: AchievementsConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -294,6 +346,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     missions: DEFAULT_MISSIONS,
     pass: DEFAULT_PASS,
     ranked: DEFAULT_RANKED,
+    achievements: DEFAULT_ACHIEVEMENTS,
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };

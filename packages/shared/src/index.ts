@@ -323,3 +323,30 @@ export interface LeaderboardEntryDto {
   rank: string;
   you: boolean;
 }
+
+// --- Succès et progression de collection (section 13) ---
+
+export interface AchievementDto {
+  id: string;
+  metric: string;
+  /** Succès « Spécialiste » : catégorie dont il faut posséder toutes les cartes. */
+  category: string | null;
+  target: number;
+  progress: number;
+  coins: number;
+  title: Record<string, string> | null;
+  unlocked: boolean;
+  claimed: boolean;
+}
+
+export interface AchievementsDto {
+  collection: {
+    points: number;
+    level: number;
+    pointsPerLevel: number;
+    /** Niveaux atteints et pas encore réclamés. */
+    claimable: number;
+    reward: { coins: number; freeBoosters: number };
+  };
+  achievements: AchievementDto[];
+}

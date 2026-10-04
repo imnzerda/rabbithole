@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,20 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 4 : succès, titres et progression de collection
+
+- **Succès** (config `DEFAULT_ACHIEVEMENTS`) : 21 succès, plus un « Spécialiste » par catégorie (posséder toutes ses cartes), soit 31 au total. Ils portent sur :
+  - les parties jouées, les victoires, les victoires en classé et le rang Légende ;
+  - les cartes différentes, les GOAT et les boosters ouverts ;
+  - les trade-up, les échanges et les amis.
+- **Récompenses** : chaque succès donne des pièces (20 à 500). Les plus durs et les « Spécialiste » donnent aussi un **titre**.
+- **Calcul** : tout se calcule à partir des données existantes (parties, collection, boosters, trade-up, échanges, amis, classé), sans compteur à maintenir. Seules les réclamations sont enregistrées, une fois chacune.
+- **Progression de collection** : 10 points par carte différente possédée, 2 par partie en ligne, un niveau tous les 200 points. Chaque niveau rapporte 50 pièces et un booster gratuit. On réclame tous les niveaux atteints d'un coup, avec un garde-fou contre la double réclamation.
+- **Titres** : la page Succès permet enfin de choisir le titre affiché, parmi ceux gagnés au pass, au classé et aux succès. Il s'affiche chez les adversaires et dans les classements.
+- **Base** : migration 020 (`user_achievements`, `users.collection_level_claimed`). **API** : `GET /api/achievements`, `POST /api/achievements/:id/claim`, `POST /api/achievements/collection/claim`.
+- **Interface** : page **Succès** (lien sur l'accueil) : progression de collection, titres, succès (à réclamer d'abord).
+- **Tests** : 4 tests serveur (verrous, réclamation unique, niveaux de collection, Spécialiste et titre, parties comptées) et 1 scénario E2E sur smartphone et PC.
 
 ### 2026-10-03 — Phase 6, étape 3 : classé
 

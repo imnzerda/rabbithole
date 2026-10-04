@@ -5,6 +5,7 @@ import { CARD_VARIANTS } from '../config.js';
 import type { AppDeps } from '../deps.js';
 import { EconomyError, getWallet } from '../economy/economy.js';
 import { listOffers } from '../payments/payments.js';
+import { claimAchievement, claimCollectionLevels, listAchievements } from './achievements.js';
 import { claimMission, listMissions } from './missions.js';
 import { addPassXp, addPassXpSafe, claimTier, getPass } from './pass.js';
 
@@ -23,6 +24,29 @@ export function registerRetention(app: FastifyInstance, { db, config, catalog }:
     try {
       const reward = await claimMission(db, request.user!.id, id.data);
       await addPassXpSafe(db, request.user!.id, reward.xp, config.pass);
+      return { reward, wallet: await getWallet(db, request.user!.id) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  /** Succès (pièces, titres) et progression de collection (chaque carte nouvelle, chaque partie). */
+  app.get('/api/achievements', { preHandler: requireUser }, async (request) => listAchievements(db, request.user!.id, config.achievements, catalog.current));
+
+  app.post('/api/achievements/collection/claim', { preHandler: requireUser }, async (request, reply) => {
+    try {
+      const reward = await claimCollectionLevels(db, request.user!.id, config.achievements, catalog.current);
+      return { reward, wallet: await getWallet(db, request.user!.id) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/achievements/:id/claim', { preHandler: requireUser }, async (request, reply) => {
+    const id = z.string().min(1).max(80).safeParse((request.params as { id?: string }).id);
+    if (!id.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const reward = await claimAchievement(db, request.user!.id, id.data, config.achievements, catalog.current);
       return { reward, wallet: await getWallet(db, request.user!.id) };
     } catch (error) {
       return fail(reply, error);

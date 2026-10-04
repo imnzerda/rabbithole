@@ -454,7 +454,7 @@ Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, �
 - **Amis** : code ami, amicaux, échanges, comparaison de collections.
 - **Missions** quotidiennes et hebdomadaires (alimentent le pass). **Implémenté** (phase 6) : 3 par jour et 3 par semaine, tirées par le serveur parmi les modèles de la config, progression comptée côté serveur, récompense en pièces (et points de pass enregistrés), page Missions.
 - **Progression de collection** : chaque carte nouvelle et chaque partie font avancer une barre de récompenses.
-- **Succès et titres**.
+- **Succès et titres**. **Implémenté** (phase 6) : 21 succès + un « Spécialiste » par catégorie, calculés à partir des données du joueur, récompensés en pièces et pour les plus durs par un titre ; progression de collection (10 points par carte nouvelle, 2 par partie, un niveau tous les 200 points : 50 pièces et un booster gratuit) ; choix du titre affiché.
 - **Partage** : génération d'un clip vertical (format 9:16) ou d'une image de fin de partie à partager en un tap.
 - **Rappels de pause** optionnels après 2 h de jeu continu.
 

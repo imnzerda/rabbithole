@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AchievementsDto, AuthConfigDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -84,6 +84,9 @@ export const api = {
     request<{ trade: TradeDto }>('POST', '/trades', { toUserId, offered, requested }),
   tradeAction: (id: string, action: 'accept' | 'decline' | 'cancel') => request<{ trade?: TradeDto }>('POST', `/trades/${id}/${action}`),
 
+  achievements: () => request<AchievementsDto>('GET', '/achievements'),
+  claimAchievement: (id: string) => request<{ reward: { coins: number; title: Record<string, string> | null }; wallet: WalletDto }>('POST', `/achievements/${id}/claim`),
+  claimCollection: () => request<{ reward: { levels: number; coins: number; freeBoosters: number }; wallet: WalletDto }>('POST', '/achievements/collection/claim'),
   ranked: () => request<RankedDto>('GET', '/ranked'),
   leaderboard: (country: string) => request<{ entries: LeaderboardEntryDto[] }>('GET', `/ranked/leaderboard?country=${country}`),
   missions: () => request<MissionsDto>('GET', '/missions'),
