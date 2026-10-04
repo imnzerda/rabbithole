@@ -531,3 +531,50 @@ test('guilde : création payante, réglages, recherche, départ et dissolution',
   await page.getByRole('button', { name: 'Chercher' }).click();
   await expect(page.getByText('Aucune guilde trouvée.')).toBeVisible();
 });
+
+test('vie de guilde : adhésion, demande de carte et don, annonce du tableau, échange entre membres', async ({ page, browser, viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL }, info) => {
+  // Le chef crée une guilde ouverte.
+  await signup(page, `chef-${info.project.name}`, '/guild');
+  await page.request.post('/api/test/coins', { data: { coins: 500 } });
+  await page.reload();
+  const name = `Entraide ${info.project.name} ${Date.now() % 100000}`;
+  await page.getByTestId('guild-create').click();
+  await page.getByTestId('guild-name').fill(name);
+  await page.getByTestId('guild-submit').click();
+  await expect(page.getByTestId('guild-progress')).toContainText('0 / 250 XP');
+
+  // Un membre, sur un autre appareil, la rejoint et demande une carte.
+  const other = await browser.newContext({ viewport, isMobile, hasTouch, userAgent, deviceScaleFactor, baseURL, locale: 'fr-FR' });
+  await asDevice(other, device + 1);
+  const member = await other.newPage();
+  await signup(member, `membre-${info.project.name}`, '/guild');
+  await member.getByTestId('guild-search').fill(name);
+  await member.getByRole('button', { name: 'Chercher' }).click();
+  await member.getByTestId('guild-result').filter({ hasText: name }).getByTestId('guild-join').click();
+  await expect(member.getByTestId('message')).toHaveText(`Bienvenue dans ${name} !`);
+  await member.getByTestId('guild-ask-card').click();
+  await member.getByTestId('guild-pick').getByRole('button').first().click();
+  await expect(member.getByTestId('message')).toHaveText('Demande envoyée à la guilde.');
+  await expect(member.getByTestId('guild-ask-card')).toHaveCount(0);
+
+  // Le chef possède la carte demandée et en donne un exemplaire.
+  const mine = (await (await page.request.get('/api/guilds/me')).json()) as { guild: { cardRequests: { cardId: string }[] } };
+  await page.request.post('/api/test/set-card', { data: { cardId: mine.guild.cardRequests[0]!.cardId, quantity: 3 } });
+  await page.reload();
+  await expect(page.getByTestId('guild-donate')).toHaveText('Donner (tu en as 3)');
+  await page.getByTestId('guild-donate').click();
+  await expect(page.getByTestId('message')).toHaveText(/Merci ! \+\d+ 🪙 · \+\d+ 🎟️/);
+  await expect(page.getByTestId('guild-card-request')).toContainText('1 /');
+  await expect(page.getByTestId('guild-progress')).toContainText('10 / 250 XP');
+
+  // Le membre publie une annonce ; le chef lui propose un échange (membres de la même guilde, sans être amis).
+  await member.getByTestId('guild-post-seek').click();
+  await member.getByTestId('guild-pick').getByRole('button').first().click();
+  await expect(member.getByTestId('message')).toHaveText('Annonce publiée.');
+  await page.reload();
+  await expect(page.getByTestId('guild-post')).toContainText('Cherche');
+  await page.getByTestId('guild-trade').click();
+  await expect(page).toHaveURL(/\/trades\?with=/);
+  await expect(page.getByTestId('proposal')).toBeVisible();
+  await other.close();
+});

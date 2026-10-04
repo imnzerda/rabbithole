@@ -363,6 +363,25 @@ export interface GuildsConfig {
   maxPendingRequests: number;
   /** Langues proposées pour une guilde. */
   languages: string[];
+  /** XP de guilde apportée par l'activité des membres, plafonnée par membre et par jour. */
+  xp: { matchWin: number; matchLoss: number; donation: number; dailyCapPerMember: number };
+  /** XP pour passer du niveau n au niveau n + 1 : `xpPerLevel × n`. */
+  xpPerLevel: number;
+  maxLevel: number;
+  /** Bonus de pièces de fin de partie (%) à partir d'un niveau (le plus haut atteint s'applique). */
+  coinBonus: { level: number; pct: number }[];
+  /** Demandes de cartes : une ouverte à la fois, renouvelable après `cooldownHours`, valable `expiryHours`. */
+  requests: {
+    cooldownHours: number;
+    expiryHours: number;
+    /** Exemplaires demandables selon la rareté (0 = carte non demandable). */
+    maxByRarity: Record<Rarity, number>;
+    /** Récompense du donneur, par exemplaire donné. */
+    donorCoins: Record<Rarity, number>;
+    donorTokens: Record<Rarity, number>;
+  };
+  /** Annonces du tableau d'échanges par membre. */
+  maxBoardPosts: number;
 }
 
 export const DEFAULT_GUILDS: GuildsConfig = {
@@ -370,6 +389,22 @@ export const DEFAULT_GUILDS: GuildsConfig = {
   creationCoins: 200,
   maxPendingRequests: 5,
   languages: ['fr', 'en'],
+  xp: { matchWin: 20, matchLoss: 10, donation: 10, dailyCapPerMember: 200 },
+  xpPerLevel: 250,
+  maxLevel: 20,
+  coinBonus: [
+    { level: 3, pct: 5 },
+    { level: 7, pct: 10 },
+    { level: 15, pct: 15 },
+  ],
+  requests: {
+    cooldownHours: 8,
+    expiryHours: 24,
+    maxByRarity: { basique: 8, tendance: 4, viral: 2, iconique: 1, goat: 0 },
+    donorCoins: { basique: 5, tendance: 10, viral: 25, iconique: 50, goat: 0 },
+    donorTokens: { basique: 1, tendance: 2, viral: 5, iconique: 10, goat: 0 },
+  },
+  maxBoardPosts: 5,
 };
 
 /** Configuration du serveur, lue depuis l'environnement. */

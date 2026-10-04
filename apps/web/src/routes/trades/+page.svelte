@@ -17,7 +17,8 @@
   const rarityRank = (id: string) => RARITIES.indexOf(ctx.cards[id]!.rarity);
 
   type Trades = Awaited<ReturnType<typeof api.trades>>;
-  let friends = $state.raw<FriendDto[] | null>(null);
+  // Amis, et membres de ma guilde (`guild`) : on peut échanger avec les deux.
+  let friends = $state.raw<(FriendDto & { guild?: boolean })[] | null>(null);
   let trades = $state.raw<Trades | null>(null);
   let mine = $state.raw(new Map<string, number>());
   let message = $state<{ text: string; error: boolean } | null>(null);
@@ -48,8 +49,10 @@
   const items = (m: Map<string, number>) => [...m].map(([cardId, quantity]) => ({ cardId, quantity }));
 
   async function refresh(): Promise<void> {
-    const [f, tr, c] = await Promise.all([api.friends(), api.trades(), api.collection()]);
-    friends = f.friends;
+    const [f, tr, c, g] = await Promise.all([api.friends(), api.trades(), api.collection(), api.myGuild().catch(() => null)]);
+    // Partenaires : amis, puis membres de ma guilde qui ne sont pas déjà amis.
+    const members = (g?.guild?.roster ?? []).filter((m) => !m.you && !f.friends.some((x) => x.id === m.userId));
+    friends = [...f.friends, ...members.map((m) => ({ id: m.userId, name: m.name, since: null, guild: true }))];
     trades = tr;
     mine = new Map(c.cards.map((x) => [x.cardId, x.quantity]));
   }
@@ -60,7 +63,7 @@
       const user = session.loaded ? session.user : await loadSession();
       if (!user) return goto('/login?next=/trades');
       await refresh();
-      // Venu de la page Amis (« Proposer un échange ») : la proposition s'ouvre directement.
+      // Venu de la page Amis ou du tableau de guilde (« Proposer un échange ») : la proposition s'ouvre directement.
       const target = friends?.find((f) => f.id === page.url.searchParams.get('with'));
       if (target) void openProposal(target);
     })();
@@ -183,7 +186,7 @@
       {/if}
       {#each friends as f (f.id)}
         <div class="row" data-testid="friend">
-          <span class="name">{f.name}</span>
+          <span class="name">{f.name}{#if f.guild} <span class="tag">{t('trades_guild_member')}</span>{/if}</span>
           <button class="btn btn-primary" disabled={busy} data-testid="propose-trade" onclick={() => openProposal(f)}>{t('propose_trade')}</button>
         </div>
       {/each}
@@ -259,6 +262,14 @@
 {/if}
 
 <style>
+  .tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--accent);
+  }
   main {
     max-width: 900px;
     margin: 0 auto;

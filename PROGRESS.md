@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 7 — Social** : en cours (phase 6 validée le 2026-10-04). Fait : guildes (création, adhésion, rôles). **Phase 6 — Rétention** : validée. Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 7 — Social** : en cours (phase 6 validée le 2026-10-04). Fait : guildes (création, adhésion, rôles), vie de guilde (niveaux, demandes de cartes et dons, tableau, échanges entre membres). **Phase 6 — Rétention** : validée. Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,31 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 7, étape 2 : vie de guilde
+
+- **XP et niveaux** :
+  - chaque partie en ligne d'un membre rapporte de l'XP à la guilde (victoire 20, défaite 10), chaque don aussi (10) ;
+  - plafond de 200 XP par membre et par jour ;
+  - passer du niveau n au niveau n + 1 coûte 250 × n XP, jusqu'au niveau 20 ;
+  - l'XP apportée par chaque membre est affichée.
+- **Bonus**, sans aucun avantage de jeu :
+  - pièces de fin de partie : +5 % au niveau 3, +10 % au niveau 7, +15 % au niveau 15 ;
+  - 40 membres au niveau 10.
+- **Demandes de cartes** :
+  - une demande ouverte par membre, renouvelable toutes les 8 h, valable 24 h ;
+  - exemplaires demandables selon la rareté : 8 basiques, 4 tendances, 2 virales, 1 iconique, aucune GOAT ;
+  - les autres membres donnent un exemplaire à la fois ; la carte donnée quitte leurs decks si besoin, comme dans un échange ;
+  - le donneur gagne des pièces (5 à 50) et des **jetons de guilde** (1 à 10) selon la rareté. Les jetons serviront à la boutique de guilde (étape 4).
+- **Tableau d'échanges** :
+  - annonces « je cherche » et « je propose », 5 au plus par membre ;
+  - le chef et les adjoints peuvent retirer n'importe quelle annonce ;
+  - « Proposer un échange » ouvre la proposition sur la page Échanges.
+- **Échanges entre membres** d'une même guilde, comme entre amis. Les membres apparaissent dans la page Échanges avec l'étiquette « Guilde ».
+- **Départ ou exclusion** : les annonces et la demande en cours du membre disparaissent.
+- **Page Guilde** : barre de niveau et paliers de bonus, jetons, XP par membre, demandes de cartes (choix de la carte avec recherche), dons, tableau.
+- **Configuration** : `DEFAULT_GUILDS` (`xp`, `xpPerLevel`, `coinBonus`, `requests`, `maxBoardPosts`). **Base** : migration 026.
+- **Tests** : 3 nouveaux tests serveur (niveaux et bonus ; XP plafonnée et montée de niveau ; demandes, dons, decks, échange entre membres, tableau, départ), les tests des échanges et des parties, et 1 nouveau scénario E2E à deux joueurs.
 
 ### 2026-10-04 — Refonte de la navigation du site
 

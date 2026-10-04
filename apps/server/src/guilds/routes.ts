@@ -2,8 +2,13 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { requireUser } from '../auth/routes.js';
 import type { AppDeps } from '../deps.js';
+import { contentFilterFor } from '../moderation/filter.js';
 import {
   cancelJoinRequest,
+  donateCard,
+  postOnBoard,
+  removeBoardPost,
+  requestCards,
   createGuild,
   decideRequest,
   GuildError,
@@ -17,8 +22,8 @@ import {
   updateGuild,
 } from './guilds.js';
 
-/** Guildes : recherche, création, adhésion, départ, rôles, réglages. */
-export function registerGuilds(app: FastifyInstance, { db, config }: AppDeps): void {
+/** Guildes : recherche, création, adhésion, départ, rôles, réglages ; demandes de cartes et dons ; tableau d'échanges. */
+export function registerGuilds(app: FastifyInstance, { db, config, catalog }: AppDeps): void {
   const cfg = config.guilds;
   const fail = (reply: FastifyReply, error: unknown) => {
     if (error instanceof GuildError) return reply.code(error.status).send({ error: error.code });
@@ -128,6 +133,53 @@ export function registerGuilds(app: FastifyInstance, { db, config }: AppDeps): v
     if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
     try {
       await updateGuild(db, request.user!.id, body.data, cfg);
+      return me(request.user!.id);
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  const cardId = z.string().min(1).max(120);
+
+  app.post('/api/guilds/card-requests', { preHandler: requireUser }, async (request, reply) => {
+    const body = z.object({ cardId }).safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const { blocked } = await contentFilterFor(db, request.user!, catalog.current);
+      await requestCards(db, request.user!.id, body.data.cardId, catalog.current, blocked, cfg);
+      return me(request.user!.id);
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/guilds/card-requests/:id/donate', { preHandler: requireUser }, async (request, reply) => {
+    const id = param(request.params, 'id');
+    if (!id.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const reward = await donateCard(db, request.user!.id, id.data, catalog.current, cfg);
+      return { reward, ...(await me(request.user!.id)) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/guilds/board', { preHandler: requireUser }, async (request, reply) => {
+    const body = z.object({ kind: z.enum(['seek', 'offer']), cardId }).safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      await postOnBoard(db, request.user!.id, body.data.kind, body.data.cardId, catalog.current, cfg);
+      return me(request.user!.id);
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/guilds/board/:id/remove', { preHandler: requireUser }, async (request, reply) => {
+    const id = param(request.params, 'id');
+    if (!id.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      await removeBoardPost(db, request.user!.id, id.data);
       return me(request.user!.id);
     } catch (error) {
       return fail(reply, error);

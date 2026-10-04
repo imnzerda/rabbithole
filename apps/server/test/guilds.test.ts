@@ -92,3 +92,87 @@ describe('guildes', () => {
     expect(updated.guild).toMatchObject({ emblem: 'science', open: false, you: 'leader' });
   });
 });
+
+describe('vie de guilde', () => {
+  it('niveaux : coût croissant, bonus de pièces et capacité', async () => {
+    const { levelFor, coinBonusFor } = await import('../src/guilds/guilds.js');
+    const c = DEFAULT_GUILDS;
+    expect(levelFor(0, c)).toEqual({ level: 1, levelXp: 0, nextXp: c.xpPerLevel });
+    expect(levelFor(c.xpPerLevel, c)).toEqual({ level: 2, levelXp: c.xpPerLevel, nextXp: c.xpPerLevel * 3 });
+    expect(levelFor(1e9, c)).toMatchObject({ level: c.maxLevel, nextXp: null });
+    expect([1, 3, 6, 7, 20].map((l) => coinBonusFor(l, c))).toEqual([0, 5, 5, 10, 15]);
+  });
+
+  it('XP de guilde plafonnée par membre et par jour, montée de niveau', async () => {
+    t = await startApp();
+    const { addGuildXp, guildCoinBonus } = await import('../src/guilds/guilds.js');
+    const chef = await richPlayer('chef');
+    await post('/api/guilds', chef.token, { name: 'Montée', ...settings });
+    const day = new Date('2026-10-05T10:00:00Z');
+    expect(await addGuildXp(t.db, chef.id, 150, DEFAULT_GUILDS, day)).toBe(150);
+    expect(await addGuildXp(t.db, chef.id, 150, DEFAULT_GUILDS, day)).toBe(DEFAULT_GUILDS.xp.dailyCapPerMember - 150);
+    expect(await addGuildXp(t.db, chef.id, 10, DEFAULT_GUILDS, day)).toBe(0);
+    // Le lendemain, le plafond repart à zéro.
+    for (let d = 6; d <= 12; d++) await addGuildXp(t.db, chef.id, 200, DEFAULT_GUILDS, new Date(`2026-10-${String(d).padStart(2, '0')}T10:00:00Z`));
+    const g = (await get('/api/guilds/me', chef.token)).json().guild;
+    expect(g.progress.xp).toBe(1600);
+    expect(g.level).toBe(4); // 250 + 500 + 750 = 1500 ≤ 1600 < 2500
+    expect(g.progress).toMatchObject({ levelXp: 1500, nextXp: 2500, coinBonus: 5 });
+    expect(g.roster[0].xp).toBe(1600);
+    expect(await guildCoinBonus(t.db, chef.id, DEFAULT_GUILDS)).toBe(5);
+  });
+
+  it('demandes de cartes et dons : rareté, délai, récompense, carte retirée des decks, échanges entre membres, tableau', async () => {
+    t = await startApp();
+    const chef = await richPlayer('chef');
+    const guildId = (await post('/api/guilds', chef.token, { name: 'Entraide', ...settings })).json().guild.id as string;
+    const a = await signup(t.app, 'alice');
+    await post(`/api/guilds/${guildId}/join`, a.token);
+    const cards = t.catalog.current.collectibles;
+    const basic = cards.find((c) => c.rarity === 'basique')!;
+    const goat = cards.find((c) => c.rarity === 'goat');
+
+    if (goat) expect((await post('/api/guilds/card-requests', a.token, { cardId: goat.id })).json().error).toBe('not_requestable');
+    const asked = (await post('/api/guilds/card-requests', a.token, { cardId: basic.id })).json().guild;
+    expect(asked.cardRequests[0]).toMatchObject({ cardId: basic.id, wanted: DEFAULT_GUILDS.requests.maxByRarity.basique, received: 0, you: true });
+    expect(asked.nextRequestAt).not.toBeNull();
+    expect((await post('/api/guilds/card-requests', a.token, { cardId: basic.id })).json().error).toBe('request_cooldown');
+
+    // Le chef donne : il en possède 2, dont un dans un deck.
+    await t.db.query('INSERT INTO collections (user_id, card_id, quantity) VALUES ($1, $2, 2)', [chef.id, basic.id]);
+    await t.db.query("INSERT INTO decks (user_id, name, leader_id, card_ids) VALUES ($1, 'Deck', $2, $3)", [chef.id, t.catalog.current.leaders[0]!.id, [basic.id, basic.id]]);
+    const requestId = asked.cardRequests[0].id as string;
+    expect((await post(`/api/guilds/card-requests/${requestId}/donate`, a.token)).json().error).toBe('self');
+    const coinsBefore = (await get('/api/wallet', chef.token)).json().wallet.coins;
+    const donated = (await post(`/api/guilds/card-requests/${requestId}/donate`, chef.token)).json();
+    expect(donated.reward).toEqual({ coins: DEFAULT_GUILDS.requests.donorCoins.basique, tokens: DEFAULT_GUILDS.requests.donorTokens.basique });
+    expect(donated.guild.tokens).toBe(DEFAULT_GUILDS.requests.donorTokens.basique);
+    expect(donated.guild.cardRequests[0]).toMatchObject({ received: 1, owned: 1 });
+    expect(donated.guild.progress.xp).toBe(DEFAULT_GUILDS.xp.donation);
+    expect((await get('/api/wallet', chef.token)).json().wallet.coins).toBe(coinsBefore + DEFAULT_GUILDS.requests.donorCoins.basique);
+    const [aliceCard] = await t.db.query<{ quantity: number }>('SELECT quantity FROM collections WHERE user_id = $1 AND card_id = $2', [a.id, basic.id]);
+    expect(aliceCard!.quantity).toBe(1);
+    const [deck] = await t.db.query<{ card_ids: string[] }>('SELECT card_ids FROM decks WHERE user_id = $1', [chef.id]);
+    expect(deck!.card_ids).toEqual([basic.id]);
+    await post(`/api/guilds/card-requests/${requestId}/donate`, chef.token);
+    expect((await post(`/api/guilds/card-requests/${requestId}/donate`, chef.token)).json().error).toBe('not_owned');
+
+    // Échange entre membres sans être amis.
+    const trade = await post('/api/trades', chef.token, { toUserId: a.id, offered: [], requested: [{ cardId: basic.id, quantity: 1 }] });
+    expect(trade.statusCode).toBe(200);
+
+    // Tableau : 5 annonces au plus ; un membre ne retire que les siennes, le chef toutes.
+    for (let i = 0; i < DEFAULT_GUILDS.maxBoardPosts; i++) await post('/api/guilds/board', a.token, { kind: i % 2 ? 'seek' : 'offer', cardId: basic.id });
+    expect((await post('/api/guilds/board', a.token, { kind: 'seek', cardId: basic.id })).json().error).toBe('board_full');
+    const chefPost = (await post('/api/guilds/board', chef.token, { kind: 'seek', cardId: basic.id })).json().guild.board[0];
+    expect((await post(`/api/guilds/board/${chefPost.id}/remove`, a.token)).json().error).toBe('forbidden');
+    const board = (await get('/api/guilds/me', chef.token)).json().guild.board as { id: string; you: boolean }[];
+    expect((await post(`/api/guilds/board/${board.find((p) => !p.you)!.id}/remove`, chef.token)).json().guild.board).toHaveLength(5);
+
+    // Départ : annonces et demande d'Alice disparaissent.
+    await post('/api/guilds/leave', a.token);
+    const after = (await get('/api/guilds/me', chef.token)).json().guild;
+    expect(after.board.every((p: { you: boolean }) => p.you)).toBe(true);
+    expect(after.cardRequests).toHaveLength(0);
+  });
+});

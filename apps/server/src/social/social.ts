@@ -3,6 +3,7 @@ import type { EconomyConfig } from '../config.js';
 import type { Db } from '../db/db.js';
 import type { FriendDto, FriendsDto, TradeDto } from '@rabbithole/shared';
 import { EconomyError } from '../economy/economy.js';
+import { sameGuild } from '../guilds/guilds.js';
 
 /**
  * Amis et échanges entre joueurs (section 6.5). Amitié : demande puis acceptation, sans délai avant
@@ -101,9 +102,14 @@ export async function removeFriend(db: Db, userId: string, otherId: string): Pro
   });
 }
 
-/** Cartes d'un ami, pour lui proposer un échange (amis uniquement). */
+/** Échanges permis entre amis et entre membres d'une même guilde. */
+export async function canTrade(db: Db, a: string, b: string): Promise<boolean> {
+  return (await areFriends(db, a, b)) || (await sameGuild(db, a, b));
+}
+
+/** Cartes d'un ami ou d'un membre de ma guilde, pour lui proposer un échange. */
 export async function friendCollection(db: Db, userId: string, friendId: string): Promise<{ cardId: string; quantity: number }[]> {
-  if (!(await areFriends(db, userId, friendId))) throw new EconomyError('not_friends', 403);
+  if (!(await canTrade(db, userId, friendId))) throw new EconomyError('not_friends', 403);
   const rows = await db.query<{ card_id: string; quantity: number }>('SELECT card_id, quantity FROM collections WHERE user_id = $1 AND quantity > 0 ORDER BY card_id', [
     friendId,
   ]);
@@ -200,7 +206,7 @@ async function checkOwnership(db: Db, fromUser: string, toUser: string, offered:
 }
 
 /**
- * Proposition d'échange entre amis : des cartes données et des cartes demandées, raretés libres ;
+ * Proposition d'échange entre amis (ou membres d'une même guilde) : des cartes données et des cartes demandées, raretés libres ;
  * l'un des deux côtés peut être vide (don, ou demande de don). Rien ne bouge avant l'acceptation.
  */
 export async function proposeTrade(
@@ -211,7 +217,7 @@ export async function proposeTrade(
   catalogs: { mine: CatalogSnapshot; theirs: CatalogSnapshot },
 ): Promise<TradeDto> {
   if (input.toUserId === userId) throw new EconomyError('self');
-  if (!(await areFriends(db, userId, input.toUserId))) throw new EconomyError('not_friends', 403);
+  if (!(await canTrade(db, userId, input.toUserId))) throw new EconomyError('not_friends', 403);
   const offered = merge(input.offered);
   const requested = merge(input.requested);
   if (offered.length + requested.length === 0) throw new EconomyError('empty_trade');
@@ -270,7 +276,7 @@ async function move(db: Db, from: string, to: string, item: TradeItem, tradeId: 
  * Une carte donnée quitte les decks de son ancien propriétaire : on retire les exemplaires qu'il n'a plus.
  * Un Leader donné reste en tête du deck, qui ne sera jouable qu'avec un autre Leader.
  */
-async function trimDecks(db: Db, userId: string, cardIds: string[]): Promise<void> {
+export async function trimDecks(db: Db, userId: string, cardIds: string[]): Promise<void> {
   const decks = await db.query<{ id: string; card_ids: string[] }>('SELECT id, card_ids FROM decks WHERE user_id = $1 AND card_ids && $2::text[]', [userId, cardIds]);
   for (const deck of decks) {
     const left = new Map<string, number>();
@@ -289,7 +295,7 @@ export async function acceptTrade(db: Db, userId: string, tradeId: string, catal
   return db.transaction(async (tx) => {
     const t = await pendingTrade(tx, tradeId);
     if (t.toUser.id !== userId) throw new EconomyError('not_your_trade', 403);
-    if (!(await areFriends(tx, t.fromUser.id, t.toUser.id))) throw new EconomyError('not_friends', 403);
+    if (!(await canTrade(tx, t.fromUser.id, t.toUser.id))) throw new EconomyError('not_friends', 403);
     for (const i of [...t.offered, ...t.requested]) checkTradable(i.cardId, [catalogs.mine, catalogs.theirs]);
     await checkOwnership(tx, t.fromUser.id, t.toUser.id, t.offered, t.requested);
     for (const i of t.offered) await move(tx, t.fromUser.id, t.toUser.id, i, t.id);

@@ -13,6 +13,7 @@ import { activeTrending } from '../trending/trending.js';
 import { dailyChallenge, dailyKey, hasPlayedDaily, recordDaily } from '../retention/daily.js';
 import { draftDeck, recentDraftDecks, recordDraftResult } from '../retention/draft.js';
 import { markLiveStart, pendingTournamentMatch, recordTournamentMatch } from '../tournament/tournament.js';
+import { addGuildXpSafe, guildCoinBonus } from '../guilds/guilds.js';
 import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
@@ -272,10 +273,16 @@ export class MatchService {
         const reward = run ? await recordDraftResult(this.deps.db, userId, run, result.winner === p, this.deps.config.draft).catch(() => null) : null;
         rewards[p] = reward ? reward.coins : null;
       } else {
-        const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
+        // Bonus de pièces de la guilde du joueur (niveau de guilde).
+        const base = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
+        const bonus = await guildCoinBonus(this.deps.db, userId, this.deps.config.guilds).catch(() => 0);
+        const amount = Math.round(base * (1 + bonus / 100));
         rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
       }
       await this.recordMissions(room, p, userId);
+      // XP de guilde : toute partie en ligne d'un membre (plafonnée par jour).
+      const gx = this.deps.config.guilds.xp;
+      await addGuildXpSafe(this.deps.db, userId, result.winner === p ? gx.matchWin : gx.matchLoss, this.deps.config.guilds);
       // Partie classée (contre un fantôme aussi, quand l'attente dépasse le délai) : points de classement.
       if (room.mode === 'ranked') {
         const outcome = result.winner === null ? 'draw' : result.winner === p ? 'win' : 'loss';

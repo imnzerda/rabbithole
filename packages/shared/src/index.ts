@@ -442,6 +442,32 @@ export interface GuildMemberDto {
   name: string;
   role: GuildRole;
   joinedAt: string;
+  /** XP de guilde apportée. */
+  xp: number;
+  you: boolean;
+}
+
+/** Demande de cartes d'un membre : les autres membres donnent des exemplaires. */
+export interface GuildCardRequestDto {
+  id: string;
+  userId: string;
+  name: string;
+  cardId: string;
+  wanted: number;
+  received: number;
+  expiresAt: string;
+  you: boolean;
+  /** Exemplaires que je possède (0 : je ne peux pas donner). */
+  owned: number;
+}
+
+export interface GuildBoardPostDto {
+  id: string;
+  userId: string;
+  name: string;
+  kind: 'seek' | 'offer';
+  cardId: string;
+  at: string;
   you: boolean;
 }
 
@@ -450,6 +476,17 @@ export interface GuildDto extends GuildSummaryDto {
   roster: GuildMemberDto[];
   requests: { userId: string; name: string; at: string }[];
   you: GuildRole;
+  /** Niveau : XP totale, XP au début du niveau et au niveau suivant (null au maximum), bonus de pièces actuel. */
+  progress: { xp: number; levelXp: number; nextXp: number | null; coinBonus: number; perks: { level: number; kind: 'coins' | 'capacity'; value: number }[] };
+  /** Mes jetons de guilde. */
+  tokens: number;
+  cardRequests: GuildCardRequestDto[];
+  /** Prochaine demande de cartes possible (null : tout de suite). */
+  nextRequestAt: string | null;
+  board: GuildBoardPostDto[];
+  maxBoardPosts: number;
+  /** Exemplaires demandables selon la rareté (0 : rareté non demandable). */
+  requestMax: Record<string, number>;
 }
 
 export interface MyGuildDto {
