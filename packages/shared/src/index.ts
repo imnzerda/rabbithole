@@ -5,14 +5,16 @@ import type { CardDef, GameAction, MatchEvent, MatchResult, PlayerIndex, PlayerV
  * et réponses de l'API REST. Le serveur valide toujours ce qu'il reçoit.
  */
 
-export type QueueMode = 'casual' | 'ranked' | 'ghost';
+/** Modes de file ; `daily` : défi du jour (deck imposé contre l'IA, lancé par le message `daily`). */
+export type QueueMode = 'casual' | 'ranked' | 'ghost' | 'daily';
 
 /** Messages client → serveur. */
 export type ClientMessage =
   | { t: 'queue'; deckId: string; mode: QueueMode }
   | { t: 'cancel' }
   | { t: 'action'; action: GameAction }
-  | { t: 'resume' };
+  | { t: 'resume' }
+  | { t: 'daily' };
 
 /** Cosmétiques d'un joueur visibles en partie : variante affichée par carte, titre actif. */
 export interface PlayerCosmetics {
@@ -363,4 +365,27 @@ export interface TrendingCardDto {
   average: number;
   /** Raison d'exclusion (admin uniquement) : watchlist, recent_death, admin. */
   excluded: string | null;
+}
+
+// --- Défi du jour (section 7) ---
+
+export interface DailyResultDto {
+  won: boolean;
+  turns: number;
+  livesLeft: number;
+  livesTaken: number;
+  score: number;
+  /** Vies de départ des deux Leaders, pour le partage. */
+  lives: number;
+  opponentLives: number;
+}
+
+export interface DailyDto {
+  date: string;
+  deck: { name: Record<string, string>; leader: string; cards: string[] };
+  opponent: { name: Record<string, string>; leader: string };
+  result: DailyResultDto | null;
+  leaderboard: { position: number; name: string; score: number; won: boolean; turns: number; you: boolean }[];
+  position: number | null;
+  players: number;
 }

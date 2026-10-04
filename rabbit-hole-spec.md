@@ -356,7 +356,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 | **Classé** | Saisons mensuelles, rangs : Lurker → Normie → Posteur → Influenceur → Viral → Légende (+ classement top 1000 par pays et mondial). Reset partiel en fin de saison, récompenses de fin de saison. **Implémenté** (phase 6) : +25 / −15 / +5 × enjeu (Hype), protection de rang, moitié des points conservée, pièces et titres de fin de saison, page Classement. |
 | **Casual** | Sans enjeu de rang. |
 | **Asynchrone / fantôme** | Partie instantanée contre le deck enregistré d'un vrai joueur piloté par une IA. Utilisé aussi quand le matchmaking dépasse 15 s. |
-| **Défi du jour** | Deck imposé, même pour tous, score partagé en image (style Wordle). |
+| **Défi du jour** | Deck imposé, même adversaire et même seed pour tous, une tentative comptée par jour, score partagé en texte à emojis (style Wordle). |
 | **Draft du week-end** | Construction d'un deck à partir de cartes proposées, entrée gratuite (1 par week-end) ou en pièces. |
 | **Tournois** | Hebdomadaires, brackets automatiques. |
 | **Amical** | Entre amis et membres de guilde. |

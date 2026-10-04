@@ -10,6 +10,7 @@ import { recordMissionSafe } from '../retention/missions.js';
 import { addPassXpSafe, playerCosmetics } from '../retention/pass.js';
 import { applyRankedResult } from '../ranked/ranked.js';
 import { activeTrending } from '../trending/trending.js';
+import { dailyChallenge, dailyKey, hasPlayedDaily, recordDaily } from '../retention/daily.js';
 import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
@@ -149,10 +150,25 @@ export class MatchService {
     await this.startMatch(mode, [seat, ghost], true);
   }
 
-  private async startMatch(mode: QueueMode, seats: [SeatInfo, SeatInfo], ghost: boolean): Promise<void> {
+  /**
+   * Défi du jour : deck imposé contre l'IA, même seed pour tous (partie identique à coups identiques).
+   * Une seule tentative comptée par jour ; le deck imposé n'a pas à être possédé.
+   */
+  async startDaily(user: User): Promise<void> {
+    if (this.roomFor(user.id)) throw new ServiceError('already_in_match', 'Tu as déjà une partie en cours.');
+    if (await hasPlayedDaily(this.deps.db, user.id)) throw new ServiceError('daily_done', 'Tu as déjà joué le défi du jour.');
+    const challenge = await dailyChallenge(this.deps.db, this.ctx);
+    if (!challenge) throw new ServiceError('no_daily', 'Pas de défi disponible.');
+    this.leaveQueue(user.id);
+    const seat: SeatInfo = { userId: user.id, name: user.displayName, leader: challenge.deck.leader, deck: challenge.deck.cards, cosmetics: await playerCosmetics(this.deps.db, user.id) };
+    const ai: SeatInfo = { userId: null, name: challenge.opponent.name.fr ?? 'RABBIT HOLE', leader: challenge.opponent.leader, deck: challenge.opponent.cards };
+    await this.startMatch('daily', [seat, ai], true, challenge.seed);
+  }
+
+  private async startMatch(mode: QueueMode, seats: [SeatInfo, SeatInfo], ghost: boolean, fixedSeed?: string): Promise<void> {
     const id = randomUUID();
-    // Seed issue du RNG cryptographique du serveur, enregistrée pour l'audit et les replays.
-    const seed = randomBytes(16).toString('hex');
+    // Seed issue du RNG cryptographique du serveur (ou celle du défi du jour), enregistrée pour l'audit et les replays.
+    const seed = fixedSeed ?? randomBytes(16).toString('hex');
     const { version, ctx } = this.deps.catalog.current;
     // Tendance du jour : bonus des cartes en tendance, enregistré pour rejouer la partie à l'identique.
     const trending = (await activeTrending(this.deps.db).catch(() => [] as string[])).filter((cardId) => ctx.cards[cardId]);
@@ -181,8 +197,14 @@ export class MatchService {
     for (const p of [0, 1] as const) {
       const userId = room.seats[p].userId;
       if (!userId) continue;
-      const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
-      rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
+      if (room.mode === 'daily') {
+        // Défi du jour : score et récompense du défi (première tentative du jour seulement).
+        const opponentLeader = room.seats[p === 0 ? 1 : 0].leader;
+        rewards[p] = await recordDaily(this.deps.db, userId, dailyKey(), room.id, result, p, this.ctx.cards[opponentLeader]?.life ?? 5, this.deps.config.daily).catch(() => null);
+      } else {
+        const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
+        rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
+      }
       await this.recordMissions(room, p, userId);
       // Partie classée (contre un fantôme aussi, quand l'attente dépasse le délai) : points de classement.
       if (room.mode === 'ranked') {

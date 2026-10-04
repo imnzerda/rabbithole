@@ -256,6 +256,22 @@ export const DEFAULT_TRENDING: Omit<TrendingConfig, 'enabled'> = {
   languages: ['en', 'fr'],
 };
 
+/**
+ * Défi du jour (section 7) : deck imposé et adversaire IA identiques pour tous, même seed, une tentative
+ * comptée par jour. Score : victoire, Vies restantes, Vies prises à l'adversaire, moins les tours joués.
+ */
+export interface DailyConfig {
+  score: { win: number; lifeLeft: number; lifeTaken: number; perTurn: number };
+  reward: { win: number; loss: number };
+  leaderboardSize: number;
+}
+
+export const DEFAULT_DAILY: DailyConfig = {
+  score: { win: 1000, lifeLeft: 100, lifeTaken: 50, perTurn: 10 },
+  reward: { win: 60, loss: 20 },
+  leaderboardSize: 20,
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -295,6 +311,7 @@ export interface ServerConfig {
   ranked: RankedConfig;
   achievements: AchievementsConfig;
   trending: TrendingConfig;
+  daily: DailyConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -376,6 +393,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     pass: DEFAULT_PASS,
     ranked: DEFAULT_RANKED,
     achievements: DEFAULT_ACHIEVEMENTS,
+    daily: DEFAULT_DAILY,
     trending: { ...DEFAULT_TRENDING, enabled: env.TRENDING !== 'off' && env.NODE_ENV !== 'test' },
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),

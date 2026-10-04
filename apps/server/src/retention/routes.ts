@@ -6,6 +6,7 @@ import type { AppDeps } from '../deps.js';
 import { EconomyError, getWallet } from '../economy/economy.js';
 import { listOffers } from '../payments/payments.js';
 import { claimAchievement, claimCollectionLevels, listAchievements } from './achievements.js';
+import { getDaily } from './daily.js';
 import { claimMission, listMissions } from './missions.js';
 import { addPassXp, addPassXpSafe, claimTier, getPass } from './pass.js';
 
@@ -51,6 +52,13 @@ export function registerRetention(app: FastifyInstance, { db, config, catalog }:
     } catch (error) {
       return fail(reply, error);
     }
+  });
+
+  /** Défi du jour : deck imposé, adversaire, mon résultat, classement du jour. */
+  app.get('/api/daily', { preHandler: requireUser }, async (request, reply) => {
+    const daily = await getDaily(db, request.user!.id, catalog.current.ctx, config.daily);
+    if (!daily) return reply.code(404).send({ error: 'no_daily' });
+    return daily;
   });
 
   /** Pass de la saison en cours, avec le prix des pistes payantes (achat direct, pas en gemmes). */

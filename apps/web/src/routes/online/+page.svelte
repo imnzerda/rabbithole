@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { CATEGORY_NAMES } from '@rabbithole/engine';
   import type { DeckDto, QueueMode } from '@rabbithole/shared';
   import { onMount, untrack } from 'svelte';
@@ -22,6 +23,17 @@
   let now = $state(Date.now());
 
   const MODES: QueueMode[] = ['casual', 'ranked', 'ghost'];
+  // Venu de la page Défi du jour : la partie du défi démarre dès la connexion.
+  let dailyPending = untrack(() => page.url.searchParams.get('daily') === '1');
+  let dailyStarted = $state(false);
+  const isDaily = $derived(lobbyState.kind === 'playing' && dailyStarted);
+  $effect(() => {
+    if (dailyPending && lobbyState.kind === 'idle' && lobby) {
+      dailyPending = false;
+      dailyStarted = true;
+      lobby.daily();
+    }
+  });
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
   const ghostIn = $derived(lobbyState.kind === 'queued' && lobbyState.ghostAt ? Math.max(0, Math.ceil((lobbyState.ghostAt - now) / 1000)) : null);
 
@@ -53,7 +65,11 @@
 {#if lobbyState.kind === 'playing'}
   <div class="screen">
     {#key lobbyState.match}
-      <Game client={lobbyState.match} onexit={() => lobby?.leaveMatch()} onagain={() => lobby?.leaveMatch()} />
+      <Game
+        client={lobbyState.match}
+        onexit={() => (isDaily ? goto('/daily') : lobby?.leaveMatch())}
+        onagain={isDaily ? undefined : () => lobby?.leaveMatch()}
+      />
     {/key}
   </div>
 {:else}

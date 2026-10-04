@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,16 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 5b : défi du jour
+
+- **Le défi** (cahier des charges, section 7) : chaque jour (UTC), un deck imposé et un adversaire IA tirés parmi les decks de référence publiés. Deck, adversaire et seed (`daily:<date>`) sont les mêmes pour tous : même mélange, même IA, donc la même partie au départ. Le joueur n'a pas besoin de posséder les cartes.
+- **Une tentative comptée par jour** : une seconde demande est refusée (`daily_done`). Lancement par le message WebSocket `{ t: 'daily' }`.
+- **Score** : victoire, Vies restantes, Vies prises à l'adversaire, moins un malus par tour (`DEFAULT_DAILY`). Un abandon pendant le mulligan vaut 0. La récompense du défi (60 🪙 en victoire, 20 en défaite) remplace les pièces de partie.
+- **Page Défi du jour** : deck et Leaders face à face, bouton « Jouer le défi », puis résultat, **texte à partager façon Wordle** (Vies en emojis, partage natif ou presse-papiers) et classement du jour (20 premiers, ta place). En fin de défi, « Menu » ramène à cette page ; pas de « Rejouer ».
+- **Accueil** : lien « Défi du jour ». La barre de liens passe désormais à la ligne sur téléphone (les premiers liens sortaient de l'écran).
+- **Base** : migration 022 (`daily_results`).
+- **Tests** : 3 tests serveur (tirage stable dans la journée, score, partie complète avec récompense, classement et seconde tentative refusée) et 1 scénario E2E.
 
 ### 2026-10-04 — Phase 6, étape 5a : Tendance du jour
 

@@ -150,6 +150,11 @@ export class Lobby {
     this.send({ t: 'cancel' });
   }
 
+  /** Défi du jour : partie contre l'IA avec le deck imposé (une tentative comptée par jour). */
+  daily(): void {
+    this.send({ t: 'daily' });
+  }
+
   /** Retour au salon après une partie. */
   leaveMatch(): void {
     this.match = null;

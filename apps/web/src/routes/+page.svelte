@@ -31,6 +31,7 @@
   <nav class="account" aria-label="Compte">
     {#if session.user}
       <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
+      <a href="/daily" data-testid="nav-daily">{t('daily_title')}</a>
       <a href="/missions" data-testid="nav-missions">{t('missions')}</a>
       <a href="/pass" data-testid="nav-pass">{t('pass')}</a>
       <a href="/ranked" data-testid="nav-ranked">{t('ranked_title')}</a>
@@ -121,9 +122,10 @@
   }
   .account {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
-    gap: 14px;
+    gap: 8px 14px;
     min-height: 24px;
     font-size: 14px;
   }

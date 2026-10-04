@@ -404,3 +404,32 @@ test('VPN détecté : vérification du numéro par SMS, puis compte créé', asy
   await expect(page).toHaveURL(/\/collection$/);
   await expect(page.getByTestId('wallet')).toContainText('🎁 6');
 });
+
+test('défi du jour : deck imposé sans collection, une tentative, score à partager, classement du jour', async ({ page }, info) => {
+  await signup(page, `daily-${info.project.name}`, '/');
+  await page.getByTestId('nav-daily').click();
+  await page.getByTestId('daily-play').click();
+
+  // Le défi démarre tout de suite contre l'IA, avec le deck du jour (le compte n'a aucune carte) ; on lâche dès que possible.
+  const fold = page.getByRole('button', { name: 'Lâcher' });
+  for (let i = 0; i < 50; i++) {
+    const v = await waitDecision(page);
+    if (v.phase === 'ended') break;
+    if (await fold.isEnabled()) {
+      page.once('dialog', (d) => void d.accept());
+      await fold.click();
+      break;
+    }
+    await autoStep(page);
+  }
+  await expect(page.getByTestId('end-screen')).toBeVisible();
+  await expect(page.getByTestId('replay')).toHaveCount(0);
+  await page.getByTestId('end-screen').getByRole('button', { name: 'Menu' }).click();
+
+  await expect(page).toHaveURL(/\/daily$/);
+  await expect(page.getByTestId('daily-result')).toContainText('Défaite');
+  await expect(page.getByTestId('daily-share')).toContainText('RABBIT HOLE · Défi du');
+  await expect(page.getByTestId('daily-share')).toContainText('#RabbitHole');
+  await expect(page.getByTestId('daily-play')).toHaveCount(0);
+  await expect(page.getByTestId('daily-board').locator('li.you')).toHaveCount(1);
+});
