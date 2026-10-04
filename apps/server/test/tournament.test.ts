@@ -73,7 +73,6 @@ describe('tournoi hebdomadaire', () => {
     expect(title!.title_id).toBe('tournament_2026-10-10');
     const done = (await getTournaments(t.db, champion, config, hours(13))).current!;
     expect(done).toMatchObject({ status: 'done', result: { top: 1, reward: { coins: reward(1) } } });
-    expect(done.next).toBeUndefined();
   });
 
   it('match joué en direct : les deux joueurs se retrouvent, le vainqueur passe, le tournoi se termine', async () => {

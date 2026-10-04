@@ -353,6 +353,25 @@ export const DEFAULT_TOURNAMENT: Omit<TournamentConfig, 'enabled'> = {
   liveGraceMinutes: 30,
 };
 
+/** Guildes (section 13) : capacité selon le niveau, coût de création, demandes d'adhésion. */
+export interface GuildsConfig {
+  /** Membres au maximum ; `boosted` à partir du niveau `boostLevel`. */
+  capacity: { base: number; boosted: number; boostLevel: number };
+  /** Coût de création, en pièces (freine les guildes jetables). */
+  creationCoins: number;
+  /** Demandes d'adhésion en attente, par joueur. */
+  maxPendingRequests: number;
+  /** Langues proposées pour une guilde. */
+  languages: string[];
+}
+
+export const DEFAULT_GUILDS: GuildsConfig = {
+  capacity: { base: 30, boosted: 40, boostLevel: 10 },
+  creationCoins: 200,
+  maxPendingRequests: 5,
+  languages: ['fr', 'en'],
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -395,6 +414,7 @@ export interface ServerConfig {
   daily: DailyConfig;
   draft: DraftConfig;
   tournament: TournamentConfig;
+  guilds: GuildsConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -477,6 +497,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     ranked: DEFAULT_RANKED,
     achievements: DEFAULT_ACHIEVEMENTS,
     daily: DEFAULT_DAILY,
+    guilds: DEFAULT_GUILDS,
     tournament: { ...DEFAULT_TOURNAMENT, enabled: env.TOURNAMENTS !== 'off' && env.NODE_ENV !== 'test' },
     draft: { ...DEFAULT_DRAFT, alwaysOpen: env.DRAFT_OPEN === 'always' || env.NODE_ENV === 'test' },
     trending: { ...DEFAULT_TRENDING, enabled: env.TRENDING !== 'off' && env.NODE_ENV !== 'test' },

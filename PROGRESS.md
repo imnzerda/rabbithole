@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 7 — Social** : à démarrer (phase 6 validée le 2026-10-04). **Phase 6 — Rétention** : validée. Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 7 — Social** : en cours (phase 6 validée le 2026-10-04). Fait : guildes (création, adhésion, rôles). **Phase 6 — Rétention** : validée. Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -13,7 +13,7 @@
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
 | 5. Économie | ✅ Validée (2026-10-03) |
 | 6. Rétention | ✅ Validée (2026-10-04) |
-| 7. Social | 🟡 À démarrer |
+| 7. Social | 🟡 En cours |
 | 8. International et lancement | — |
 
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` : serveur de jeu (port 3000), site (http://localhost:5173) et outil d'admin (http://localhost:5174). `pnpm dev:lan` rend le site accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). Les réglages locaux (dont `ADMIN_EMAILS=neil.zerda@gmail.com`) sont dans `apps/server/.env`, non versionné. `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
@@ -21,6 +21,29 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 7, étape 1 : guildes (base)
+
+- **Plan de la phase 7** :
+  1. guildes (base) ;
+  2. vie de guilde : niveaux et bonus, demandes de cartes et dons, tableau d'échanges, échanges entre membres ;
+  3. chat de guilde ;
+  4. amicaux, tournoi de guilde, boutique en jetons ;
+  5. spectateur.
+- **Une guilde par joueur.**
+  - Création pour 200 🪙, réglable : un coût choisi pour freiner les guildes jetables.
+  - Nom unique, sans tenir compte de la casse ni des espaces.
+  - Emblème : une des 10 catégories du jeu (couleur et symbole). Langue au choix (français, anglais). Entrée libre ou sur demande.
+- **Capacité** : 30 membres, 40 à partir du niveau 10. Les niveaux arrivent à l'étape 2.
+- **Rôles** :
+  - le chef gère tout : réglages, nommer ou rétrograder un adjoint, passer la main, exclure ;
+  - un adjoint accepte ou refuse les demandes, et exclut les simples membres.
+- **Départ** : si le chef part, la direction passe au plus ancien adjoint, sinon au plus ancien membre. Le dernier qui part dissout la guilde.
+- **Demandes d'adhésion** : 5 au plus en attente par joueur, annulables. Elles sont effacées quand le joueur entre dans une guilde.
+- **Notifications** : demande acceptée, exclusion, nouveau rôle.
+- **Page Guilde** : recherche par nom et par langue, création, ma guilde (membres, rôles, demandes, réglages, départ). Lien sur l'accueil.
+- **Configuration** : `DEFAULT_GUILDS`. **Base** : migration 025 (`guilds`, `guild_members`, `guild_join_requests`).
+- **Tests** : 3 tests serveur (création, unicité, coût, recherche ; adhésion libre et sur demande, rôles, exclusion, succession, dissolution ; passation, réglages, guilde pleine) et 1 scénario E2E. Nouvelle route de test `/api/test/coins`, interdite en production.
 
 ### 2026-10-04 — Phase 6, étape 6c : partage de fin de partie
 

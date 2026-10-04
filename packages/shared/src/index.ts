@@ -420,6 +420,46 @@ export interface TournamentsDto {
   rewards: { top: number; coins: number; freeBoosters: number }[];
 }
 
+export type GuildRole = 'leader' | 'officer' | 'member';
+
+/** Guilde vue de l'extérieur (recherche). */
+export interface GuildSummaryDto {
+  id: string;
+  name: string;
+  description: string;
+  /** Catégorie du jeu servant d'emblème. */
+  emblem: string;
+  language: string;
+  /** Entrée libre (sinon sur demande). */
+  open: boolean;
+  level: number;
+  members: number;
+  capacity: number;
+}
+
+export interface GuildMemberDto {
+  userId: string;
+  name: string;
+  role: GuildRole;
+  joinedAt: string;
+  you: boolean;
+}
+
+/** Ma guilde : membres, et demandes d'adhésion pour le chef et les adjoints. */
+export interface GuildDto extends GuildSummaryDto {
+  roster: GuildMemberDto[];
+  requests: { userId: string; name: string; at: string }[];
+  you: GuildRole;
+}
+
+export interface MyGuildDto {
+  guild: GuildDto | null;
+  /** Guildes auxquelles j'ai demandé à entrer. */
+  pending: string[];
+  creationCoins: number;
+  languages: string[];
+}
+
 export interface DraftRewardDto {
   coins: number;
   freeBoosters: number;

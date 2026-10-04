@@ -497,3 +497,36 @@ test('tournoi de la semaine : inscription avec un deck, changement de deck, dés
   await expect(page.getByTestId('tournament-registered')).toHaveCount(0);
   await expect(page.getByTestId('tournament-register')).toHaveText("S'inscrire");
 });
+
+test('guilde : création payante, réglages, recherche, départ et dissolution', async ({ page }, info) => {
+  await signup(page, `guilde-${info.project.name}`, '/');
+  await page.request.post('/api/test/coins', { data: { coins: 500 } });
+  await page.getByTestId('nav-guild').click();
+
+  const name = `Terrier ${info.project.name} ${Date.now() % 100000}`;
+  await page.getByTestId('guild-create').click();
+  await page.getByTestId('guild-name').fill(name);
+  await page.getByTestId('guild-description').fill('On creuse ensemble.');
+  await page.getByRole('radio', { name: 'Science et technologie' }).click();
+  await page.getByTestId('guild-submit').click();
+  await expect(page.getByTestId('message')).toHaveText('Guilde créée !');
+  const mine = page.getByTestId('my-guild');
+  await expect(mine).toContainText(name);
+  await expect(mine).toContainText('Niveau 1 · 1 / 30 membres · Français · entrée libre');
+  await expect(page.getByTestId('guild-roster')).toContainText('Chef');
+
+  // Réglages : guilde sur demande.
+  await page.getByTestId('guild-edit').click();
+  await page.getByLabel('Entrée libre (sinon sur demande)').uncheck();
+  await page.getByTestId('guild-submit').click();
+  await expect(page.getByTestId('message')).toHaveText('Réglages enregistrés.');
+  await expect(mine).toContainText('sur demande');
+
+  // Départ du dernier membre : la guilde est dissoute, on revient à la recherche.
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('guild-leave').click();
+  await expect(page.getByTestId('message')).toHaveText('Tu as quitté la guilde.');
+  await page.getByTestId('guild-search').fill(name);
+  await page.getByRole('button', { name: 'Chercher' }).click();
+  await expect(page.getByText('Aucune guilde trouvée.')).toBeVisible();
+});

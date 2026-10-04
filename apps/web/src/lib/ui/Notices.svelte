@@ -29,6 +29,14 @@
       const p = n.payload as { season: string; rank: string; coins: number; title: Record<string, string> | null };
       return t(p.title ? 'notice_ranked_title' : 'notice_ranked', { s: p.season, r: t(`rank_${p.rank as 'lurker'}`), n: p.coins, title: p.title ? loc(p.title) : '' });
     }
+    if (n.kind === 'guild_joined' || n.kind === 'guild_kicked') {
+      const p = n.payload as { guild: string };
+      return t(`notice_${n.kind}`, { guild: p.guild });
+    }
+    if (n.kind === 'guild_role') {
+      const p = n.payload as { guild: string; role: 'leader' | 'officer' | 'member' };
+      return t('notice_guild_role', { guild: p.guild, role: t(`guild_role_${p.role}`) });
+    }
     return '';
   }
 

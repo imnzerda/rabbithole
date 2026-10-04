@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AchievementsDto, AuthConfigDto, DailyDto, DraftDto, DraftRewardDto, TournamentsDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AchievementsDto, AuthConfigDto, DailyDto, DraftDto, DraftRewardDto, GuildRole, GuildSummaryDto, MyGuildDto, TournamentsDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -90,6 +90,16 @@ export const api = {
   daily: () => request<DailyDto>('GET', '/daily'),
   draft: () => request<DraftDto>('GET', '/draft'),
   tournaments: () => request<TournamentsDto>('GET', '/tournaments'),
+  myGuild: () => request<MyGuildDto>('GET', '/guilds/me'),
+  guilds: (q: string, lang: string) => request<{ guilds: GuildSummaryDto[] }>('GET', `/guilds?q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}`),
+  guildCreate: (g: { name: string; description: string; emblem: string; language: string; open: boolean }) => request<MyGuildDto>('POST', '/guilds', g),
+  guildJoin: (id: string) => request<MyGuildDto & { status: 'joined' | 'requested' }>('POST', `/guilds/${id}/join`),
+  guildCancel: (id: string) => request<MyGuildDto>('POST', `/guilds/${id}/cancel`),
+  guildLeave: () => request<MyGuildDto>('POST', '/guilds/leave'),
+  guildDecide: (userId: string, accept: boolean) => request<MyGuildDto>('POST', `/guilds/requests/${userId}`, { accept }),
+  guildRole: (userId: string, role: GuildRole) => request<MyGuildDto>('POST', `/guilds/members/${userId}/role`, { role }),
+  guildKick: (userId: string) => request<MyGuildDto>('POST', `/guilds/members/${userId}/kick`),
+  guildSettings: (s: { description: string; emblem: string; language: string; open: boolean }) => request<MyGuildDto>('POST', '/guilds/settings', s),
   tournamentRegister: (deckId: string) => request<TournamentsDto>('POST', '/tournaments/register', { deckId }),
   tournamentUnregister: () => request<TournamentsDto>('POST', '/tournaments/unregister'),
   draftStart: (pay: 'free' | 'coins') => request<{ draft: DraftDto; wallet: WalletDto }>('POST', '/draft/start', { pay }),

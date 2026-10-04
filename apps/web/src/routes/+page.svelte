@@ -41,6 +41,7 @@
       <a href="/collection" data-testid="nav-collection">{t('collection')}</a>
       <a href="/decks">{t('decks')}</a>
       <a href="/friends" data-testid="nav-friends">{t('friends')}</a>
+      <a href="/guild" data-testid="nav-guild">{t('guild_title')}</a>
       <a href="/trade-up" data-testid="nav-tradeup">{t('tradeup_title')}</a>
       <a href="/trades" data-testid="nav-trades">{t('trades')}</a>
       <a href="/shop" data-testid="nav-shop">{t('shop')}</a>

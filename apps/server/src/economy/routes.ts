@@ -167,6 +167,12 @@ export function registerEconomy(app: FastifyInstance, { db, config, catalog }: A
       await grantTestKit(db, request.user!.id, cat());
       return { ok: true };
     });
+    app.post('/api/test/coins', { preHandler: requireUser }, async (request, reply) => {
+      const body = z.object({ coins: z.number().int().min(0).max(1_000_000) }).safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+      await db.query('UPDATE wallets SET coins = $2 WHERE user_id = $1', [request.user!.id, body.data.coins]);
+      return { ok: true };
+    });
     app.post('/api/test/set-card', { preHandler: requireUser }, async (request, reply) => {
       const body = z.object({ cardId, quantity: z.number().int().min(0).max(50) }).safeParse(request.body);
       if (!body.success) return reply.code(400).send({ error: 'invalid_input' });

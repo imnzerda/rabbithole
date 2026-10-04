@@ -19,6 +19,7 @@ import { registerPayments } from './payments/routes.js';
 import { registerNotices } from './notices/routes.js';
 import { registerRetention } from './retention/routes.js';
 import { registerTournaments } from './tournament/routes.js';
+import { registerGuilds } from './guilds/routes.js';
 import { TournamentScheduler } from './tournament/tournament.js';
 import { registerRanked } from './ranked/routes.js';
 import { registerTrending } from './trending/routes.js';
@@ -63,6 +64,7 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> & 
   registerRanked(app, deps);
   registerTrending(app, deps);
   registerTournaments(app, deps);
+  registerGuilds(app, deps);
   // Tendance du jour : calcul quotidien, puis publication après la fenêtre de vérification (section 8).
   const trending = config.trending.enabled
     ? new TrendingScheduler(db, config.trending, () => catalog.current, trendingSource ?? wikimediaSource, (msg, err) => (err ? app.log.warn({ err }, msg) : app.log.info(msg)))
