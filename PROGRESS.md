@@ -41,6 +41,7 @@
 - **Notifications** : elles passent dans la cloche (nombre de non lues, « OK » ou « Tout marquer comme lu »). L'annonce de la Tendance du jour reste sur l'accueil.
 - **Portefeuille** : rafraîchi après chaque action réussie et à chaque changement de page. Les pages n'affichent plus les pièces et gemmes en double ; la Collection garde les boosters gratuits et prévisualisés.
 - **Plein écran** : la navigation disparaît pendant une partie (entraînement, en ligne, replay) et sur les pages de connexion, d'inscription et de paiement factice.
+- **Onglets sur téléphone** : ils passent à la ligne au lieu de défiler, pour rester tous visibles ; libellés courts (Draft, Tournoi, Historique).
 - Les boutons retour et les liens entre pages (Collection ↔ Decks ↔ Trade-up, Amis ↔ Échanges) sont remplacés par les onglets.
 - **Tests** : la suite E2E complète (48 scénarios sur mobile et PC) passe. Les tests utilisent désormais les onglets (`nav-*`), les rubriques (`group-*`), la cloche (`bell`) et le portefeuille de la navigation (`shell-wallet`).
 

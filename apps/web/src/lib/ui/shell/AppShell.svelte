@@ -374,9 +374,16 @@
   .tabs::-webkit-scrollbar {
     display: none;
   }
+  /* Téléphone : tous les onglets visibles, sur plusieurs lignes si besoin (pas de défilement caché). */
   .shell:not(.wide) .tabs {
-    justify-content: flex-start;
-    padding-top: 4px;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 10px 0;
+    overflow: visible;
+  }
+  .shell:not(.wide) .tabs a {
+    padding: 6px 11px;
+    font-size: 13px;
   }
   .bottombar {
     position: fixed;

@@ -35,9 +35,9 @@ export const NAV: NavGroup[] = [
     tabs: [
       { href: '/', label: 'nav_matches', testid: 'nav-home', also: ['/online'] },
       { href: '/daily', label: 'daily_title', testid: 'nav-daily' },
-      { href: '/draft', label: 'draft_title', testid: 'nav-draft' },
-      { href: '/tournaments', label: 'tournament_title', testid: 'nav-tournaments' },
-      { href: '/replays', label: 'history', testid: 'nav-replays' },
+      { href: '/draft', label: 'nav_draft', testid: 'nav-draft' },
+      { href: '/tournaments', label: 'nav_tournament', testid: 'nav-tournaments' },
+      { href: '/replays', label: 'nav_history', testid: 'nav-replays' },
     ],
   },
   {
