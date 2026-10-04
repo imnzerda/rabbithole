@@ -19,6 +19,10 @@
       const p = n.payload as { name: Record<string, string>; quantity: number; coins: number };
       return t('notice_card_retired', { name: loc(p.name), coins: p.coins, n: p.quantity });
     }
+    if (n.kind === 'ranked_season') {
+      const p = n.payload as { season: string; rank: string; coins: number; title: Record<string, string> | null };
+      return t(p.title ? 'notice_ranked_title' : 'notice_ranked', { s: p.season, r: t(`rank_${p.rank as 'lurker'}`), n: p.coins, title: p.title ? loc(p.title) : '' });
+    }
     return '';
   }
 

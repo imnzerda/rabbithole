@@ -1,5 +1,5 @@
 import type { GameAction, MatchContext, MatchEvent, PlayerView } from '@rabbithole/engine';
-import type { PlayerCosmetics } from '@rabbithole/shared';
+import type { PlayerCosmetics, RankedResultDto } from '@rabbithole/shared';
 
 /** Une étape de jeu : les événements à animer, puis la vue qui fait foi. */
 export interface MatchStep {
@@ -32,6 +32,8 @@ export interface MatchClient {
   onStep(listener: (step: MatchStep) => void): () => void;
   onError(listener: (error: MatchError) => void): () => void;
   onReward(listener: (coins: number | null) => void): () => void;
+  /** Points de classement de la partie (partie classée en ligne uniquement). */
+  onRanked(listener: (ranked: RankedResultDto) => void): () => void;
   /** Envoie une action ; le résultat arrive sous forme d'étapes. */
   act(action: GameAction): void;
   /** Commence à émettre les étapes (après l'abonnement de l'UI). */
@@ -44,6 +46,16 @@ export abstract class BaseMatchClient {
   private stepListeners = new Set<(step: MatchStep) => void>();
   private errorListeners = new Set<(error: MatchError) => void>();
   private rewardListeners = new Set<(coins: number | null) => void>();
+  private rankedListeners = new Set<(ranked: RankedResultDto) => void>();
+
+  onRanked(listener: (ranked: RankedResultDto) => void): () => void {
+    this.rankedListeners.add(listener);
+    return () => this.rankedListeners.delete(listener);
+  }
+
+  protected emitRanked(ranked: RankedResultDto): void {
+    for (const l of this.rankedListeners) l(ranked);
+  }
 
   /** Pièces gagnées en fin de partie (en ligne uniquement). */
   onReward(listener: (coins: number | null) => void): () => void {

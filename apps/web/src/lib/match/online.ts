@@ -1,5 +1,5 @@
 import type { GameAction, MatchContext, PlayerIndex } from '@rabbithole/engine';
-import type { ClientMessage, OpponentInfo, PlayerCosmetics, QueueMode, ServerMessage } from '@rabbithole/shared';
+import type { ClientMessage, OpponentInfo, PlayerCosmetics, QueueMode, RankedResultDto, ServerMessage } from '@rabbithole/shared';
 import { BaseMatchClient, type MatchClient, type MatchStep } from './client';
 
 /** Partie en ligne : le serveur fait foi, ce client ne fait qu'envoyer des actions et relayer les étapes. */
@@ -35,7 +35,8 @@ export class OnlineMatch extends BaseMatchClient implements MatchClient {
     else this.buffered.push(step);
   }
 
-  receiveEnd(reward: number | null): void {
+  receiveEnd(reward: number | null, ranked: RankedResultDto | null = null): void {
+    if (ranked) this.emitRanked(ranked);
     this.emitReward(reward);
   }
 
@@ -132,7 +133,7 @@ export class Lobby {
         if (this.match?.matchId === m.matchId) this.match.receive({ events: m.events, view: m.view, deadline: m.deadline });
         break;
       case 'match_end':
-        if (this.match?.matchId === m.matchId) this.match.receiveEnd(m.reward);
+        if (this.match?.matchId === m.matchId) this.match.receiveEnd(m.reward, m.ranked);
         break;
       case 'error':
         if (this.match && this.state.kind === 'playing') this.match.receiveError(m.code, m.message);

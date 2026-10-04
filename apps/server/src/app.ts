@@ -18,6 +18,7 @@ import { registerSocial } from './social/routes.js';
 import { registerPayments } from './payments/routes.js';
 import { registerNotices } from './notices/routes.js';
 import { registerRetention } from './retention/routes.js';
+import { registerRanked } from './ranked/routes.js';
 import { MatchService } from './match/service.js';
 
 export interface App {
@@ -54,6 +55,7 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> = 
   registerPayments(app, deps);
   registerNotices(app, deps);
   registerRetention(app, deps);
+  registerRanked(app, deps);
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {

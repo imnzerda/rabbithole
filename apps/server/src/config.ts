@@ -144,6 +144,39 @@ export const DEFAULT_PASS: PassConfig = {
   deluxeVariants: ['glitch', 'negative', 'vhs'],
 };
 
+/**
+ * Classé (section 7) : saisons mensuelles (mois UTC), rangs par points de classement (multipliés par l'enjeu
+ * de la partie : Hype, section 3.4). Une défaite ne fait
+ * jamais redescendre sous le seuil du rang atteint. Nouvelle saison : une part des points est conservée
+ * (reset partiel), et le meilleur rang de la saison passée donne une récompense.
+ */
+export interface RankedConfig {
+  ranks: { id: string; min: number; reward: { coins: number; title: boolean } }[];
+  win: number;
+  loss: number;
+  draw: number;
+  /** Part des points conservée d'une saison à la suivante. */
+  carry: number;
+  /** Taille des classements (top N mondial et par pays). */
+  leaderboardSize: number;
+}
+
+export const DEFAULT_RANKED: RankedConfig = {
+  ranks: [
+    { id: 'lurker', min: 0, reward: { coins: 0, title: false } },
+    { id: 'normie', min: 100, reward: { coins: 100, title: false } },
+    { id: 'posteur', min: 300, reward: { coins: 250, title: false } },
+    { id: 'influenceur', min: 600, reward: { coins: 500, title: false } },
+    { id: 'viral', min: 1000, reward: { coins: 1000, title: true } },
+    { id: 'legende', min: 1500, reward: { coins: 2000, title: true } },
+  ],
+  win: 25,
+  loss: 15,
+  draw: 5,
+  carry: 0.5,
+  leaderboardSize: 1000,
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -180,6 +213,7 @@ export interface ServerConfig {
   economy: EconomyConfig;
   missions: MissionsConfig;
   pass: PassConfig;
+  ranked: RankedConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -259,6 +293,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     economy: DEFAULT_ECONOMY,
     missions: DEFAULT_MISSIONS,
     pass: DEFAULT_PASS,
+    ranked: DEFAULT_RANKED,
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),
   };

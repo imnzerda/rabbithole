@@ -8,6 +8,8 @@ import type { CategoryId } from '@rabbithole/engine';
 import { awardMatchCoins } from '../economy/economy.js';
 import { recordMissionSafe } from '../retention/missions.js';
 import { addPassXpSafe, playerCosmetics } from '../retention/pass.js';
+import { applyRankedResult } from '../ranked/ranked.js';
+import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
 import { MatchRoom, type Send, type SeatInfo } from './room.js';
@@ -172,12 +174,18 @@ export class MatchService {
     // Pièces de fin de partie (plafonnées par jour), pour les joueurs humains uniquement.
     const { rewards: table } = this.deps.config.economy;
     const rewards: [number | null, number | null] = [null, null];
+    const ranked: [RankedResultDto | null, RankedResultDto | null] = [null, null];
     for (const p of [0, 1] as const) {
       const userId = room.seats[p].userId;
       if (!userId) continue;
       const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
       rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);
       await this.recordMissions(room, p, userId);
+      // Partie classée (contre un fantôme aussi, quand l'attente dépasse le délai) : points de classement.
+      if (room.mode === 'ranked') {
+        const outcome = result.winner === null ? 'draw' : result.winner === p ? 'win' : 'loss';
+        ranked[p] = await applyRankedResult(this.deps.db, userId, outcome, result.stake, this.deps.config.ranked).catch(() => null);
+      }
     }
     await this.deps.db.query(`UPDATE matches SET actions = $1, result = $2, rewards = $3, ended_at = now() WHERE id = $4`, [
       JSON.stringify(room.actions),
@@ -185,7 +193,7 @@ export class MatchService {
       JSON.stringify(rewards),
       room.id,
     ]);
-    room.announceEnd(rewards);
+    room.announceEnd(rewards, ranked);
     this.rooms.delete(room.id);
     for (const s of room.seats) if (s.userId && this.roomOfUser.get(s.userId) === room.id) this.roomOfUser.delete(s.userId);
   }

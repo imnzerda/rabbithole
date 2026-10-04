@@ -14,7 +14,7 @@ import {
   type MatchState,
   type PlayerIndex,
 } from '@rabbithole/engine';
-import type { PlayerCosmetics, QueueMode, ServerMessage } from '@rabbithole/shared';
+import type { PlayerCosmetics, QueueMode, RankedResultDto, ServerMessage } from '@rabbithole/shared';
 
 export type Send = (message: ServerMessage) => void;
 
@@ -70,6 +70,7 @@ export class MatchRoom {
   private closed = false;
   /** Pièces créditées à chaque joueur, connues après l'enregistrement de la partie. */
   private rewards: [number | null, number | null] = [null, null];
+  private ranked: [RankedResultDto | null, RankedResultDto | null] = [null, null];
   private announced = false;
 
   constructor(o: RoomOptions) {
@@ -123,7 +124,7 @@ export class MatchRoom {
     });
     const events = this.initialEvents.length ? eventsFor(this.initialEvents, p) : [];
     send({ t: 'step', matchId: this.id, events, view: getPlayerView(this.ctx, this.state, p), deadline: this.deadline });
-    if (this.announced && this.state.result) send({ t: 'match_end', matchId: this.id, result: this.state.result, reward: this.rewards[p] });
+    if (this.announced && this.state.result) send({ t: 'match_end', matchId: this.id, result: this.state.result, reward: this.rewards[p], ranked: this.ranked[p] });
   }
 
   detach(userId: string, send: Send): void {
@@ -206,11 +207,12 @@ export class MatchRoom {
   }
 
   /** Fin de partie annoncée une fois la partie enregistrée et les récompenses créditées. */
-  announceEnd(rewards: [number | null, number | null]): void {
+  announceEnd(rewards: [number | null, number | null], ranked: [RankedResultDto | null, RankedResultDto | null] = [null, null]): void {
     this.rewards = rewards;
+    this.ranked = ranked;
     this.announced = true;
     const result = this.state.result!;
-    this.sends.forEach((send, p) => send?.({ t: 'match_end', matchId: this.id, result, reward: rewards[p] ?? null }));
+    this.sends.forEach((send, p) => send?.({ t: 'match_end', matchId: this.id, result, reward: rewards[p] ?? null, ranked: ranked[p] ?? null }));
   }
 
   /** Arrêt du serveur : on coupe les minuteurs. */

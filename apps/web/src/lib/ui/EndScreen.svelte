@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MatchResult, PlayerIndex } from '@rabbithole/engine';
+  import type { RankedResultDto } from '@rabbithole/shared';
   import { t } from '../i18n';
   import ReportDialog from './ReportDialog.svelte';
 
@@ -13,8 +14,10 @@
     reward?: number | null;
     /** Partie en ligne contre un humain : on peut signaler l'adversaire. */
     reportMatchId?: string | null;
+    /** Points de classement (partie classée) : évolution et rang. */
+    ranked?: RankedResultDto | null;
   }
-  let { result, you, onreplay, onmenu, reward = null, reportMatchId = null }: Props = $props();
+  let { result, you, onreplay, onmenu, reward = null, reportMatchId = null, ranked = null }: Props = $props();
   let reporting = $state(false);
 
   const opp = $derived(you === 0 ? 1 : 0);
@@ -22,14 +25,20 @@
   const reason = $derived(
     result.reason === 'fold' ? (result.winner === you ? t('reason_fold_them') : t('reason_fold_you')) : t(`reason_${result.reason}`),
   );
-  const points = $derived(outcome === 'draw' ? '±0' : `${outcome === 'victory' ? '+' : '−'}${result.stake}`);
+  const points = $derived(ranked ? (ranked.delta > 0 ? `+${ranked.delta}` : ranked.delta < 0 ? `−${-ranked.delta}` : '±0') : '');
+  const rankUp = $derived(ranked !== null && ranked.rank !== ranked.rankBefore);
 </script>
 
 <div class="sheet-backdrop">
   <div class="sheet end {outcome}" role="dialog" aria-modal="true" aria-label={t(outcome)} data-testid="end-screen">
     <p class="kicker">{reason}</p>
     <h2>{t(outcome)}</h2>
-    <p class="points">{points} <span>{t('rank_points')}</span></p>
+    {#if ranked}
+      <p class="points" data-testid="ranked-points">{points} <span>{t('rank_points')}{result.stake > 1 ? ` · ${t('stake_x', { n: result.stake })}` : ''}</span></p>
+      <p class="rank" class:up={rankUp} data-testid="ranked-rank">
+        {rankUp ? t('rank_new', { r: t(`rank_${ranked.rank as 'lurker'}`) }) : t('rank_now', { r: t(`rank_${ranked.rank as 'lurker'}`), n: ranked.after })}
+      </p>
+    {/if}
     {#if reward !== null}<p class="reward" data-testid="reward">{t('reward', { n: reward })}</p>{/if}
     <p class="stats">
       {t('lives_left', { me: result.life[you], them: result.life[opp] })} · {t('turns_played', { n: result.turns })}
@@ -75,6 +84,15 @@
     margin: 0;
     font-size: 22px;
     font-weight: 700;
+  }
+  .rank {
+    margin: 4px 0 0;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .rank.up {
+    color: var(--win);
+    font-size: 18px;
   }
   .points span {
     font-size: 14px;

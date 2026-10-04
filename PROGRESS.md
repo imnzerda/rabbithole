@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,18 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-03 — Phase 6, étape 3 : classé
+
+- **Saisons mensuelles** (mois UTC, clé ). **Rangs** : Lurker (0), Normie (100), Posteur (300), Influenceur (600), Viral (1 000), Légende (1 500).
+- **Points de classement** : victoire +25, défaite −15, nul +5, multipliés par l'**enjeu de la partie** (Hype ×1, ×2, ×4, cahier des charges section 3.4). Lâcher fait perdre l'enjeu en cours. Une défaite ne fait jamais redescendre sous le seuil du rang atteint. Les parties classées contre un fantôme (quand l'attente dépasse le délai) comptent aussi.
+- **Reset partiel** : une nouvelle saison repart avec la moitié des points de la précédente. **Récompense de fin de saison** selon le meilleur rang atteint : des pièces (de 100 à 2 000), plus un titre pour Viral et Légende, versées automatiquement à la première visite de la saison suivante avec une notification.
+- **Classements** : top 1 000 mondial et par pays (), avec la position du joueur. Seuls les joueurs ayant joué en classé y figurent.
+- **Fin de partie** :  porte l'évolution des points (). L'écran de fin affiche « +25 points de classement · enjeu ×2 » et le nouveau rang. L'ancienne ligne « points de rang », calculée sur la mise de toute partie, ne s'affiche plus qu'en classé, avec les vrais points.
+- **Interface** : page **Classement** (rang, progression, bilan, positions, échelle des rangs, classement mondial ou du pays), rang affiché sur le bouton de la file classée, notification de fin de saison.
+- **Base** : migration 019 (). Toutes les valeurs sont dans la config ().
+- **Tests** : 5 tests serveur (saisons, rangs, Hype, protection de rang, reset partiel, récompense unique, partie classée entre deux joueurs, classements) et 1 scénario E2E. Les tests serveur ont un délai de démarrage plus long (), car 15 fichiers démarrent chacun leur base en parallèle.
+- **À noter** : l'interface ne propose « Lâcher » que pendant les décisions du joueur, pas pendant le tour adverse, alors que le cahier des charges dit « à tout moment ». À trancher.
 
 ### 2026-10-03 — Phase 6, étape 2 : pass saisonnier et premiers cosmétiques
 

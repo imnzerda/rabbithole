@@ -2,6 +2,7 @@
   import type { GameAction, PlayerView } from '@rabbithole/engine';
   import { onMount, untrack } from 'svelte';
   import { GameRenderer, type RenderOptions } from '../game/renderer';
+  import type { RankedResultDto } from '@rabbithole/shared';
   import { loc, t } from '../i18n';
   import type { MatchClient, MatchStep } from '../match/client';
   import CardDetail from './CardDetail.svelte';
@@ -39,6 +40,7 @@
   let showRules = $state(false);
   let toast = $state<string | null>(null);
   let reward = $state<number | null>(null);
+  let ranked = $state.raw<RankedResultDto | null>(null);
   /** Aperçu au survol (PC, écran large uniquement). */
   let hovered = $state<{ defId: string; power: number | null } | null>(null);
   let wide = $state(false);
@@ -136,6 +138,7 @@
           void pump();
         }),
         match.onReward((coins) => (reward = coins)),
+        match.onRanked((r) => (ranked = r)),
         match.onError((e) => {
           // Action refusée (par le serveur ou le moteur) : on resynchronise l'affichage.
           waiting = false;
@@ -237,7 +240,7 @@
 {/if}
 
 {#if view?.result && !busy}
-  <EndScreen result={view.result} you={view.you} {reward} {reportMatchId} onreplay={onagain} onmenu={onexit} />
+  <EndScreen result={view.result} you={view.you} {reward} {ranked} {reportMatchId} onreplay={onagain} onmenu={onexit} />
 {/if}
 
 <style>

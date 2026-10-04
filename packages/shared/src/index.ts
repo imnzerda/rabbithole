@@ -36,7 +36,7 @@ export type ServerMessage =
   | { t: 'match_start'; matchId: string; you: PlayerIndex; opponent: OpponentInfo; contentVersion: string; cosmetics: [PlayerCosmetics, PlayerCosmetics] }
   | { t: 'step'; matchId: string; events: MatchEvent[]; view: PlayerView; deadline: number | null }
   /** `reward` : pièces gagnées (plafonnées par jour) ; null pour un spectateur ou une reprise. */
-  | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null }
+  | { t: 'match_end'; matchId: string; result: MatchResult; reward: number | null; ranked: RankedResultDto | null }
   | { t: 'error'; code: string; message: string };
 
 /** Catalogue publié : définitions des cartes, règles, et cartes à collectionner (Leaders compris). */
@@ -281,4 +281,45 @@ export interface CosmeticsDto {
   variants: { cardId: string; variant: string; equipped: boolean }[];
   titles: { id: string; name: Record<string, string> }[];
   activeTitle: string | null;
+}
+
+// --- Classé (section 7) ---
+
+/** Évolution des points de classement à la fin d'une partie classée. */
+export interface RankedResultDto {
+  before: number;
+  after: number;
+  delta: number;
+  rankBefore: string;
+  rank: string;
+}
+
+export interface RankedDto {
+  season: string;
+  endsAt: string;
+  points: number;
+  bestPoints: number;
+  rank: string;
+  /** Rang suivant et son seuil, ou null au rang maximal. */
+  next: { rank: string; min: number } | null;
+  rankMin: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  /** Positions dans les classements (null sans partie classée cette saison). */
+  position: number | null;
+  countryPosition: number | null;
+  country: string;
+  /** Seuils de tous les rangs, pour l'affichage. */
+  ranks: { id: string; min: number }[];
+}
+
+export interface LeaderboardEntryDto {
+  position: number;
+  name: string;
+  title: Record<string, string> | null;
+  country: string;
+  points: number;
+  rank: string;
+  you: boolean;
 }

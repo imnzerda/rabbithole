@@ -16,6 +16,8 @@
   let lobby: Lobby | null = null;
   let lobbyState = $state.raw<LobbyState>({ kind: 'connecting' });
   let decks = $state.raw<DeckDto[]>([]);
+  // Rang actuel (classé), affiché sur le bouton de la file classée.
+  let rank = $state<{ id: string; points: number } | null>(null);
   let deckId = $state<string | null>(null);
   let now = $state(Date.now());
 
@@ -29,6 +31,10 @@
       const user = session.loaded ? session.user : await loadSession();
       if (!user) return;
       decks = (await api.decks()).decks;
+      api
+        .ranked()
+        .then((r) => (rank = { id: r.rank, points: r.points }))
+        .catch(() => {});
       deckId = decks[0]?.id ?? null;
       lobby = new Lobby(ctx, version, (next) => (lobbyState = next));
       lobby.connect();
@@ -107,10 +113,11 @@
           <button class="mode" class:primary={mode === 'casual'} disabled={!deckId} data-testid="mode-{mode}" onclick={() => queue(mode)}>
             <strong>{t(`mode_${mode}`)}</strong>
             <span>{t(`mode_${mode}_hint`)}</span>
+            {#if mode === 'ranked' && rank}<span class="rank" data-testid="my-rank-badge">{t('rank_now', { r: t(`rank_${rank.id as 'lurker'}`), n: rank.points })}</span>{/if}
           </button>
         {/each}
       </div>
-      <p class="links"><a href="/replays">{t('history')}</a></p>
+      <p class="links"><a href="/ranked">{t('ranked_title')}</a> · <a href="/replays">{t('history')}</a></p>
     {/if}
   </main>
 {/if}
@@ -254,6 +261,10 @@
   }
   .mode strong {
     font-size: 18px;
+  }
+  .mode .rank {
+    color: var(--accent);
+    font-weight: 700;
   }
   .mode span {
     color: var(--muted);

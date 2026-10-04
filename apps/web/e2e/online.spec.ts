@@ -250,6 +250,40 @@ test('pass : achat direct du premium, récompenses réclamées, booster à aper�
   await expect(page.getByTestId('wallet')).toContainText('🪙 0');
 });
 
+test('classé : partie classée (fantôme après l’attente), points en fin de partie, page Classement', async ({ page }, info) => {
+  await signup(page, `ranked-${info.project.name}`, '/online');
+  await page.request.post('/api/test/grant-kit');
+  await page.reload();
+  await expect(page.getByTestId('my-rank-badge')).toHaveText('Lurker · 0 points');
+
+  // File classée : un fantôme après l'attente, ou l'autre navigateur de test s'il est en file au même moment.
+  // On lâche dès que possible ; si l'adversaire lâche avant, la partie est gagnée.
+  await page.getByTestId('mode-ranked').click();
+  const fold = page.getByRole('button', { name: 'Lâcher' });
+  for (let i = 0; i < 50; i++) {
+    const v = await waitDecision(page);
+    if (v.phase === 'ended') break;
+    if (await fold.isEnabled()) {
+      page.once('dialog', (d) => void d.accept());
+      await fold.click();
+      break;
+    }
+    await autoStep(page);
+  }
+  await expect(page.getByTestId('end-screen')).toBeVisible();
+  const won = (await page.getByTestId('end-screen').textContent())!.includes('Victoire');
+  // Défaite au rang Lurker : jamais sous 0 ; victoire : +25.
+  await expect(page.getByTestId('ranked-points')).toContainText(won ? '+25 points de classement' : '±0 points de classement');
+  await expect(page.getByTestId('ranked-rank')).toHaveText(won ? 'Lurker · 25 points' : 'Lurker · 0 points');
+
+  await page.goto('/ranked');
+  await expect(page.getByTestId('my-rank')).toContainText('Lurker');
+  await expect(page.getByTestId('my-rank')).toContainText(won ? '1 V · 0 D · 0 N' : '0 V · 1 D · 0 N');
+  await expect(page.getByTestId('leaderboard').locator('li.you')).toHaveCount(1);
+  await page.getByTestId('tab-country').click();
+  await expect(page.getByTestId('leaderboard').locator('li.you')).toHaveCount(1);
+});
+
 test('éditeur de decks : Leader, complétion automatique, enregistrement', async ({ page }, info) => {
   await signup(page, `deck-${info.project.name}`, '/decks');
   await page.request.post('/api/test/grant-kit');
