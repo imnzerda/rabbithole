@@ -297,7 +297,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 |---|---|---|---|
 | Pièces | Oui (parties, recyclage des doublons) | Non | Boosters standards, crafting de cartes au choix |
 | Gemmes | Un peu (succès, pass) | Oui | Boosters premium, cosmétiques, pass |
-| Jetons de guilde | Activité de guilde | **Non** | Boutique de guilde |
+| Jetons de guilde | Activité de guilde (dons de cartes aux membres) | **Non** | Boutique de guilde |
 
 > L'essence a été **fusionnée dans les pièces** le 2026-10-03 : une seule monnaie gagnée en jeu. Le recyclage rapporte des pièces et le crafting en coûte.
 
@@ -330,13 +330,13 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 
 ### 6.5 Échanges entre joueurs
 - **Échange libre entre amis** (décision du 2026-10-03) : cartes uniquement, autant que voulu de chaque côté, raretés libres, et **dons** compris (un côté vide). Aucune limite par jour ni par semaine.
-- Entre amis (demande puis acceptation, **sans délai**, décision du 2026-10-03), et plus tard entre membres d'une même guilde (phase 7). Les pseudos n'étant pas uniques, on ajoute un ami par son **code ami** (8 caractères), ou par pseudo s'il est unique.
+- Entre amis (demande puis acceptation, **sans délai**, décision du 2026-10-03), et entre membres d'une même guilde (phase 7). Les pseudos n'étant pas uniques, on ajoute un ami par son **code ami** (8 caractères), ou par pseudo s'il est unique.
 - Aucune monnaie, aucun objet dans un échange. Les CGU interdisent la vente de cartes ou de comptes contre de l'argent.
-- Tableau d'échanges de guilde (« je cherche / je propose »).
+- Tableau d'échanges de guilde (« je cherche / je propose ») : 5 annonces au plus par membre, « Proposer un échange » ouvre la proposition.
 - **Decks** : on peut donner un exemplaire qu'on utilise dans un deck ; la carte quitte alors ce deck, et la page le signale. Un Leader donné reste en tête du deck, qui demande alors un autre Leader.
-- **Acceptation** : le serveur revérifie tout (amitié, possession, cartes autorisées dans les deux pays), puis les cartes changent de main d'un coup. Une proposition expire après 72 h (config).
+- **Acceptation** : le serveur revérifie tout (amitié ou même guilde, possession, cartes autorisées dans les deux pays), puis les cartes changent de main d'un coup. Une proposition expire après 72 h (config).
 - Les comptes liés (même empreinte numérique, cookie d'appareil ou IP, section 14) peuvent échanger : ils restent signalés pour revue (décision du 2026-10-03).
-- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges libres (proposition, acceptation, refus, annulation, expiration). Rubriques « Amis » (`/friends`) et « Échanges » (`/trades`). Reste : tableau de guilde (phase 7).
+- **Implémenté** (phase 5) : amis (code ami, demandes, acceptation, retrait) et échanges libres (proposition, acceptation, refus, annulation, expiration). Rubriques « Amis » (`/friends`) et « Échanges » (`/trades`). **Implémenté** (phase 7) : échanges entre membres d'une même guilde et tableau d'échanges de guilde.
 
 ### 6.6 Monétisation
 - **Gemmes** : 6 paliers de prix, prix régionaux (table `price_tiers` par pays).
@@ -359,8 +359,8 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 | **Défi du jour** | Deck imposé, même adversaire et même seed pour tous, une tentative comptée par jour, score partagé en texte à emojis (style Wordle). |
 | **Draft du week-end** | Choix d'un Leader puis d'une carte par proposition jusqu'au deck complet, entrée gratuite (1 par week-end) ou en pièces ; parties jusqu'à 5 victoires ou 2 défaites, récompense selon les victoires ; les cartes du draft ne sont pas gardées. |
 | **Tournois** | Hebdomadaires (début le samedi à 12 h UTC), élimination directe tirée au sort, tours de 6 h joués en direct ; un match non joué à l'échéance est tranché par une simulation IA contre IA des deux decks. Récompenses au classement, titre du champion. |
-| **Amical** | Entre amis et membres de guilde. |
-| **Spectateur / replays** | Regarder les parties des meilleurs joueurs, rediffusion de ses propres parties. |
+| **Amical** | Entre amis et membres de guilde. **À faire** (phase 7, étape 4). |
+| **Spectateur / replays** | Regarder les parties des meilleurs joueurs, rediffusion de ses propres parties. **Implémenté** : replays (phase 3). **À faire** : spectateur en direct (phase 7, étape 5). |
 
 ---
 
@@ -452,11 +452,27 @@ Premier passage sur le set de base (2026-10-02) : 3 672 candidats (55 sources, �
 ## 13. Social et rétention
 
 - **Guildes** (30 membres, 40 au niveau 10) : rôles chef / adjoints / membres, niveaux et bonus, demandes de cartes et dons, tableau d'échanges, tournoi de guilde hebdomadaire, amicaux, boutique de guilde en jetons. Chat : réactions et messages prédéfinis traduits ; chat libre optionnel avec filtre et signalement.
-- **Amis** : code ami, amicaux, échanges, comparaison de collections.
+  - **Implémenté** (phase 7, étape 1) :
+    - une guilde par joueur, création pour 200 pièces (config) ;
+    - nom unique (casse et espaces ignorés), emblème (une des 10 catégories), langue, entrée libre ou sur demande ;
+    - rôles : le chef gère tout, un adjoint accepte les demandes et exclut les simples membres ;
+    - succession : plus ancien adjoint, sinon plus ancien membre ; une guilde vide est dissoute ;
+    - notifications : demande acceptée, exclusion, nouveau rôle.
+  - **Implémenté** (phase 7, étape 2) :
+    - XP de guilde : partie en ligne d'un membre (victoire 20, défaite 10) et don (10), plafond de 200 par membre et par jour ;
+    - niveaux : passer du niveau n au niveau n + 1 coûte 250 × n XP, jusqu'au niveau 20 ;
+    - bonus : pièces de fin de partie +5 % au niveau 3, +10 % au niveau 7, +15 % au niveau 15 ; 40 membres au niveau 10 ;
+    - demandes de cartes : une ouverte par membre, renouvelable toutes les 8 h, valable 24 h ; 8 basiques, 4 tendances, 2 virales, 1 iconique, aucune GOAT ;
+    - dons : un exemplaire à la fois, la carte quitte les decks du donneur ; il reçoit des pièces (5 à 50) et des jetons de guilde (1 à 10) selon la rareté ;
+    - tableau d'échanges, échanges entre membres ;
+    - un membre qui part emporte ses annonces et sa demande en cours.
+  - **À faire** : chat (étape 3), amicaux, tournoi de guilde et boutique en jetons (étape 4).
+- **Amis** : code ami, amicaux, échanges, comparaison de collections. **Implémenté** (phase 5) : code ami, demandes, échanges libres, collection de l'ami visible pour lui proposer un échange.
 - **Missions** quotidiennes et hebdomadaires (alimentent le pass). **Implémenté** (phase 6) : 3 par jour et 3 par semaine, tirées par le serveur parmi les modèles de la config, progression comptée côté serveur, récompense en pièces (et points de pass enregistrés), page Missions.
 - **Progression de collection** : chaque carte nouvelle et chaque partie font avancer une barre de récompenses.
 - **Succès et titres**. **Implémenté** (phase 6) : 21 succès + un « Spécialiste » par catégorie, calculés à partir des données du joueur, récompensés en pièces et pour les plus durs par un titre ; progression de collection (10 points par carte nouvelle, 2 par partie, un niveau tous les 200 points : 50 pièces et un booster gratuit) ; choix du titre affiché.
-- **Partage** : génération d'un clip vertical (format 9:16) ou d'une image de fin de partie à partager en un tap.
+- **Partage** : génération d'un clip vertical (format 9:16) ou d'une image de fin de partie à partager en un tap. **Implémenté** (phase 6) : image verticale 1080 × 1920 (résultat, Leaders et Vies, Personnages en jeu), partage natif du fichier ou téléchargement ; le clip vidéo n'est pas fait.
+- **Navigation du site** (2026-10-04) : rubriques Jouer, Collection, Social, Progression, Boutique, Tendances, Réglages, avec des onglets pour les pages regroupées ; barre latérale sur PC, barre du bas et « Plus » sur téléphone ; portefeuille et cloche des notifications toujours visibles ; navigation masquée pendant une partie.
 - **Rappels de pause** optionnels après 2 h de jeu continu.
 
 ---
@@ -514,7 +530,7 @@ country_rules(country, allow_adult, allow_political, blocked_card_ids TEXT[])
 collections(user_id, card_id, quantity, variants JSONB)
 decks(id, user_id, name, leader_id, card_ids TEXT[], updated_at)
 series_decks(id, series_id, name JSONB, description JSONB, leader_id, card_ids TEXT[])   -- decks de référence
-wallets(user_id, coins, gems /*peut être négatif après un remboursement*/, guild_tokens, free_boosters)
+wallets(user_id, coins, gems /*peut être négatif après un remboursement*/, free_boosters, preview_boosters)
 coin_ledger(id, user_id, currency, delta, reason, ref, created_at)
 booster_openings(id, user_id, booster_type, card_ids TEXT[], seed, paid, created_at)
 booster_previews(user_id, booster_type, card_ids TEXT[], seed, generated_at, refresh_at)
@@ -525,11 +541,21 @@ trades(id, from_user, to_user, status /*pending|accepted|declined|cancelled|expi
 trade_items(trade_id, side /*offered|requested*/, card_id, quantity)
 matches(id, mode, player_a, player_b, leader_a, leader_b, ghost BOOLEAN, seed, actions JSONB,
         result, hype_level, created_at)
-ranked(user_id, season_id, rank, points, country)
-trending(date, card_id, score)
-guilds(id, name, emblem JSONB, language, level, xp) / guild_members(guild_id, user_id, role, tokens)
-guild_requests(id, guild_id, user_id, card_id, filled, expires_at)
-passes(user_id, season_id, tier, points, claimed JSONB)
+ranked(user_id, season, points, best_points, wins, losses, draws, rewarded)
+user_missions / user_achievements / user_titles / user_card_variants   -- missions, succès, titres, variantes
+pass_seasons / user_pass(user_id, season, xp, track /*free|premium|deluxe*/, claimed JSONB)
+trending(date, card_id, score, views, average, excluded_reason) / trending_runs(date, computed_at, published_at) / trending_watchlist(card_id, reason)
+matches.trending TEXT[]   -- cartes en tendance au début de la partie (replays)
+daily_results(user_id, date, match_id, won, turns, lives_left, lives_taken, score)
+draft_runs(id, user_id, week, entry /*free|coins*/, seed, leader_choices, leader_id, offer, picks, wins, losses, status, reward_coins, reward_boosters)
+tournaments(id, start_date, starts_at, status /*registering|running|done|cancelled*/, seed, round, rounds, round_ends_at)
+tournament_players(tournament_id, user_id, leader_id, card_ids /*copie figée*/, top, reward_coins, reward_boosters)
+tournament_matches(tournament_id, round, slot, player_a, player_b, winner, how /*bye|played|simulated*/, match_id, live_started_at)
+guilds(id, name, name_key UNIQUE, description, emblem /*catégorie*/, language, open, level, xp)
+guild_members(guild_id, user_id PRIMARY KEY /*une guilde par joueur*/, role /*leader|officer|member*/, tokens, xp, xp_day, xp_today, joined_at)
+guild_join_requests(guild_id, user_id, created_at)
+guild_card_requests(id, guild_id, user_id, card_id, wanted, received, created_at, expires_at) / guild_card_donations(request_id, donor_id, created_at)
+guild_board_posts(id, guild_id, user_id, kind /*seek|offer*/, card_id, created_at)
 products(id, type, name JSONB, contents JSONB, sort, active) / price_tiers(product_id, country /* * = défaut */, currency, amount /*unité mineure*/)
 transactions(id, user_id, product_id, contents JSONB, provider, provider_session_id, provider_transaction_id UNIQUE, amount,
              currency, status /*pending|completed|cancelled|refunded|chargeback|mismatch*/, created_at, completed_at, refunded_at)
@@ -555,9 +581,16 @@ POST /craft  POST /recycle  POST /trade-up
 GET/POST /friends  POST /friends/:id/accept  DELETE /friends/:id  GET /friends/:id/collection
 GET/POST /trades  POST /trades/:id/accept|decline|cancel
 GET  /trending
-GET  /ranked/leaderboard?country=FR
+GET  /missions  POST /missions/:id/claim  GET /pass  POST /pass/claim  GET /achievements
+GET  /ranked  GET /ranked/leaderboard?scope=country
+GET  /daily   WS { t: 'daily' }
+GET  /draft  POST /draft/start|pick|retire   WS { t: 'draft' }
+GET  /tournaments  POST /tournaments/register|unregister   WS { t: 'tournament' }
+GET  /guilds?q=&lang=  GET /guilds/me  GET /guilds/:id  POST /guilds  POST /guilds/:id/join|cancel  POST /guilds/leave
+POST /guilds/requests/:userId  POST /guilds/members/:userId/role|kick  POST /guilds/settings
+POST /guilds/card-requests  POST /guilds/card-requests/:id/donate  POST /guilds/board  POST /guilds/board/:id/remove
 GET  /shop  POST /shop/checkout  POST /webhooks/payment/:provider  GET /purchases  POST /me/spend-cap
-GET/POST /guilds ...  WS /guilds/:id/chat
+WS   /guilds/:id/chat   (à faire, phase 7, étape 3)
 POST /takedown
 ```
 
@@ -602,9 +635,11 @@ POST /takedown
 
 ### Phase 6 — Rétention
 - Classé et saisons, missions, pass (3 pistes), progression de collection, succès, défi du jour, draft, tournois, Tendance du jour, partage de clips.
+- **État : validée le 2026-10-04.** Tout est fait ; le partage se fait par image (pas de clip vidéo).
 
 ### Phase 7 — Social
 - Guildes complètes, amis, chat, spectateur.
+- **État : en cours.** Plan : 1. guildes (base) ✅, 2. vie de guilde (niveaux, demandes de cartes et dons, tableau, échanges entre membres) ✅, 3. chat de guilde, 4. amicaux, tournoi de guilde, boutique en jetons, 5. spectateur. Les amis sont faits depuis la phase 5.
 
 ### Phase 8 — International et lancement
 - i18n complète, filtrage par pays, première série pays (États-Unis), événement Coupe du monde d'internet, analytics, hébergement production, page Crédits, page de retrait.

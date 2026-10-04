@@ -662,8 +662,16 @@ Le modèle précédent (3 terrains, tours simultanés) est remplacé. Le cahier 
 - Les **250 cartes** sont là (6 lots, Leaders comptés à part) et 15 Leaders couvrent 10 paires de catégories sur 45. Reste à faire : d'autres Leaders, pour que plus de paires forment un deck jouable (section 4.3).
 - **Illustrations** sur les cartes en jeu : recadrage, teinte par catégorie, stockage Cloudflare R2 (section 10.3). Pour l'instant, les cartes restent typographiques en jeu ; la photo n'apparaît que sur la fiche.
 
-### Phase 5 — Économie (suite)
-Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, crafting, trade-up, amis et échanges, gemmes et `PaymentProvider` en sandbox (webhooks idempotents, prix régionaux), compensation des cartes retirées. Reste pour la mise en ligne : brancher le prestataire de paiement réel.
+### Phase 7 — Social (suite)
+1. ✅ Guildes (base) : création, recherche, adhésion, rôles.
+2. ✅ Vie de guilde : niveaux et bonus, demandes de cartes et dons, tableau d'échanges, échanges entre membres.
+3. Chat de guilde : réactions et messages prédéfinis traduits, chat libre optionnel avec filtre et signalement ; signalement des noms et descriptions de guilde.
+4. Amicaux (amis et membres de guilde), tournoi de guilde hebdomadaire, boutique de guilde en jetons.
+5. Spectateur : regarder en direct la partie d'un ami ou d'un membre de guilde, sans information cachée.
+
+### Avant la mise en ligne
+- Brancher le prestataire de paiement réel (la boutique tourne en sandbox).
+- Illustrations des cartes en jeu (R2), hébergement de production (phase 8).
 
 ### Questions ouvertes
 - Faut-il réintroduire les terrains sous forme de cartes **Lieu** dans une prochaine série ?
@@ -674,3 +682,6 @@ Déjà fait : pièces, aperçus de boosters, boosters gratuits, recyclage, craft
 - Politique de confidentialité : mentionner l'empreinte d'appareil et la vérification d'IP (intérêt légitime, lutte contre la fraude).
 - Réglages de l'économie (6 boosters de bienvenue, 100 pièces le booster, gains par partie) à confirmer après de vraies parties.
 - Règles par pays (contenu adulte, politique) : reportées, à définir plus tard.
+- Draft du week-end : les cartes choisies ne sont pas gardées (pour qu'une entrée payée en pièces ne donne jamais de cartes au hasard). À confirmer.
+- Création d'une guilde : 200 pièces (pour freiner les guildes jetables). À confirmer.
+- Partage de fin de partie : faut-il un clip vidéo en plus de l'image ?
