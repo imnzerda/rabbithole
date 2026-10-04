@@ -357,7 +357,7 @@ Dans l'outil d'admin, les raisons « à revoir » sont affichées pour informati
 | **Casual** | Sans enjeu de rang. |
 | **Asynchrone / fantôme** | Partie instantanée contre le deck enregistré d'un vrai joueur piloté par une IA. Utilisé aussi quand le matchmaking dépasse 15 s. |
 | **Défi du jour** | Deck imposé, même adversaire et même seed pour tous, une tentative comptée par jour, score partagé en texte à emojis (style Wordle). |
-| **Draft du week-end** | Construction d'un deck à partir de cartes proposées, entrée gratuite (1 par week-end) ou en pièces. |
+| **Draft du week-end** | Choix d'un Leader puis d'une carte par proposition jusqu'au deck complet, entrée gratuite (1 par week-end) ou en pièces ; parties jusqu'à 5 victoires ou 2 défaites, récompense selon les victoires ; les cartes du draft ne sont pas gardées. |
 | **Tournois** | Hebdomadaires, brackets automatiques. |
 | **Amical** | Entre amis et membres de guilde. |
 | **Spectateur / replays** | Regarder les parties des meilleurs joueurs, rediffusion de ses propres parties. |

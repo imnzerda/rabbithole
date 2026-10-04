@@ -28,6 +28,8 @@ export default defineConfig({
         AUTH_RATE_LIMIT: '1000',
         // Pas d'appel à Wikimedia pendant les tests (Tendance du jour).
         TRENDING: 'off',
+        // Draft ouvert tous les jours (pas seulement le week-end).
+        DRAFT_OPEN: 'always',
         // Compte administrateur des tests de l'outil d'admin.
         ADMIN_EMAILS: 'admin-e2e@example.com',
       },

@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,24 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 6a : draft du week-end
+
+- **Ouverture** : samedi et dimanche (UTC). Un draft commencé se termine même après la fermeture.
+- **Entrée** : gratuite une fois par week-end, sinon 150 🪙. Un seul draft en cours à la fois.
+- **Choix** : le serveur tire une seed (RNG cryptographique) à l'entrée, et toutes les propositions en dérivent, ce qui permet de les auditer.
+  - D'abord 3 Leaders, puis 20 fois 3 cartes.
+  - Les cartes sont toujours dans les catégories du Leader, sans dépasser le maximum d'exemplaires, et hors cartes bloquées dans le pays du joueur : le deck obtenu est valide par construction.
+  - La rareté est tirée avec les poids des boosters.
+- **Parties** : file « draft » contre un autre joueur en draft, sinon un fantôme qui joue le deck de draft d'un autre joueur (repli : un deck de référence).
+  - Le draft s'arrête à 5 victoires ou 2 défaites ; un nul compte comme une défaite. On peut aussi l'arrêter à tout moment.
+  - Pas de pièces par partie : la récompense tombe à la fin, selon les victoires (de 30 🪙 à 250 🪙, plus 1 ou 2 boosters gratuits à partir de 3 victoires).
+  - Missions et XP du pass comptent normalement.
+- **Les cartes du draft ne sont pas gardées.** Une entrée payée en pièces ne donne donc jamais de cartes au hasard.
+- **Page Draft** : entrée, choix (carte lisible en entier au toucher), deck en construction, bilan victoires et défaites, bouton « Jouer une partie », arrêt du draft, barème des récompenses. Lien sur l'accueil.
+- **Configuration** : `DEFAULT_DRAFT` ; `DRAFT_OPEN=always` l'ouvre tous les jours (tests et E2E).
+- **Base** : migration 023 (`draft_runs`).
+- **Tests** : 3 tests serveur (ouverture et semaine, entrée gratuite puis en pièces, propositions et deck valide, abandon, parties contre un fantôme jusqu'à la fin du draft et récompense), les tests des parties et du défi, 1 scénario E2E.
 
 ### 2026-10-04 — Phase 6, étape 5b : défi du jour
 

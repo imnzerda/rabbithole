@@ -155,6 +155,11 @@ export class Lobby {
     this.send({ t: 'daily' });
   }
 
+  /** Draft du week-end : file draft avec le deck du draft en cours (fantôme après l'attente). */
+  draft(): void {
+    this.send({ t: 'draft' });
+  }
+
   /** Retour au salon après une partie. */
   leaveMatch(): void {
     this.match = null;

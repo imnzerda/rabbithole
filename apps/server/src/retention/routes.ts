@@ -7,6 +7,8 @@ import { EconomyError, getWallet } from '../economy/economy.js';
 import { listOffers } from '../payments/payments.js';
 import { claimAchievement, claimCollectionLevels, listAchievements } from './achievements.js';
 import { getDaily } from './daily.js';
+import { getDraft, pickDraft, retireDraft, startDraft } from './draft.js';
+import { contentFilterFor } from '../moderation/filter.js';
 import { claimMission, listMissions } from './missions.js';
 import { addPassXp, addPassXpSafe, claimTier, getPass } from './pass.js';
 
@@ -59,6 +61,42 @@ export function registerRetention(app: FastifyInstance, { db, config, catalog }:
     const daily = await getDaily(db, request.user!.id, catalog.current.ctx, config.daily);
     if (!daily) return reply.code(404).send({ error: 'no_daily' });
     return daily;
+  });
+
+  /** Draft du week-end : état, entrée (gratuite ou en pièces), choix, abandon. */
+  app.get('/api/draft', { preHandler: requireUser }, async (request) => getDraft(db, request.user!.id, catalog.current, config.draft));
+
+  app.post('/api/draft/start', { preHandler: requireUser }, async (request, reply) => {
+    const body = z.object({ pay: z.enum(['free', 'coins']) }).safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const { blocked } = await contentFilterFor(db, request.user!, catalog.current);
+      await startDraft(db, request.user!.id, body.data.pay, catalog.current, blocked, config.draft);
+      return { draft: await getDraft(db, request.user!.id, catalog.current, config.draft), wallet: await getWallet(db, request.user!.id) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/draft/pick', { preHandler: requireUser }, async (request, reply) => {
+    const body = z.object({ cardId: z.string().min(1).max(120) }).safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid_input' });
+    try {
+      const { blocked } = await contentFilterFor(db, request.user!, catalog.current);
+      await pickDraft(db, request.user!.id, body.data.cardId, catalog.current, blocked, config.draft, config.economy);
+      return { draft: await getDraft(db, request.user!.id, catalog.current, config.draft) };
+    } catch (error) {
+      return fail(reply, error);
+    }
+  });
+
+  app.post('/api/draft/retire', { preHandler: requireUser }, async (request, reply) => {
+    try {
+      const reward = await retireDraft(db, request.user!.id, config.draft);
+      return { reward, draft: await getDraft(db, request.user!.id, catalog.current, config.draft), wallet: await getWallet(db, request.user!.id) };
+    } catch (error) {
+      return fail(reply, error);
+    }
   });
 
   /** Pass de la saison en cours, avec le prix des pistes payantes (achat direct, pas en gemmes). */

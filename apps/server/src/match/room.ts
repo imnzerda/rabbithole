@@ -28,6 +28,8 @@ export interface SeatInfo {
   deck: string[];
   /** Variantes et titre affichés (fantôme : ceux du joueur dont il joue le deck). */
   cosmetics?: PlayerCosmetics;
+  /** Draft dont ce deck est issu (mode draft) : le résultat y est compté. */
+  draftRun?: string;
 }
 
 export interface RoomTimers {

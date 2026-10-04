@@ -428,3 +428,41 @@ test('défi du jour : deck imposé sans collection, une tentative, score à part
   await expect(page.getByTestId('daily-play')).toHaveCount(0);
   await expect(page.getByTestId('daily-board').locator('li.you')).toHaveCount(1);
 });
+
+test('draft du week-end : entrée gratuite, Leader puis cartes, partie de draft, bilan', async ({ page }, info) => {
+  await signup(page, `draft-${info.project.name}`, '/');
+  await page.getByTestId('nav-draft').click();
+  await page.getByTestId('draft-free').click();
+
+  // Leader parmi les propositions, puis une carte par proposition jusqu'au deck complet (20).
+  const take = page.getByTestId('draft-offer').getByTestId('draft-take');
+  await expect(page.getByRole('heading', { name: 'Choisis ton Leader' })).toBeVisible();
+  await take.first().click();
+  for (let n = 1; n <= 20; n++) {
+    await expect(page.getByRole('heading', { name: `Choix ${n} / 20` })).toBeVisible();
+    await take.first().click();
+  }
+  await expect(page.getByRole('heading', { name: 'Ton deck (20 / 20)' })).toBeVisible();
+  await expect(page.getByTestId('draft-free')).toHaveCount(0);
+
+  // Partie de draft : un fantôme après l'attente, ou l'autre navigateur de test s'il est en file draft au même moment.
+  // On abandonne tout de suite ; si l'adversaire abandonne avant, la partie est gagnée.
+  await page.getByTestId('draft-play').click();
+  const fold = page.getByTestId('fold');
+  await expect(fold).toBeEnabled({ timeout: 30_000 });
+  page.once('dialog', (d) => void d.accept());
+  await fold.click({ timeout: 5_000 }).catch(() => {});
+  await expect(page.getByTestId('end-screen')).toBeVisible();
+  const won = (await page.getByTestId('end-screen').textContent())!.includes('Victoire');
+  await page.getByTestId('end-screen').getByRole('button', { name: 'Menu' }).click();
+  await expect(page).toHaveURL(/\/draft$/);
+  await expect(page.getByRole('heading', { name: won ? '1 victoire(s) · 0 défaite(s)' : '0 victoire(s) · 1 défaite(s)' })).toBeVisible();
+
+  // Arrêt du draft : récompense des victoires obtenues (barème : 30 pour 0 victoire, 60 pour 1).
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('draft-retire').click();
+  await expect(page.getByTestId('message')).toHaveText(`Draft terminé : +${won ? 60 : 30} 🪙.`);
+  await expect(page.getByTestId('draft-result')).toContainText(won ? '1 victoire(s), 0 défaite(s)' : '0 victoire(s), 1 défaite(s)');
+  await expect(page.getByTestId('draft-free')).toHaveCount(0);
+  await expect(page.getByTestId('draft-coins')).toBeVisible();
+});

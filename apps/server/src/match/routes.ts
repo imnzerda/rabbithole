@@ -32,6 +32,7 @@ const clientMessageSchema: z.ZodType<ClientMessage> = z.discriminatedUnion('t', 
   z.object({ t: z.literal('action'), action: actionSchema }),
   z.object({ t: z.literal('resume') }),
   z.object({ t: z.literal('daily') }),
+  z.object({ t: z.literal('draft') }),
 ]);
 
 interface MatchRow {
@@ -81,6 +82,9 @@ export function registerMatches(app: FastifyInstance, deps: AppDeps, service: Ma
             break;
           case 'daily':
             service.startDaily(user).catch(fail);
+            break;
+          case 'draft':
+            service.enqueueDraft(user).catch(fail);
             break;
           case 'cancel':
             service.leaveQueue(user.id);

@@ -6,7 +6,7 @@ import type { CardDef, GameAction, MatchEvent, MatchResult, PlayerIndex, PlayerV
  */
 
 /** Modes de file ; `daily` : défi du jour (deck imposé contre l'IA, lancé par le message `daily`). */
-export type QueueMode = 'casual' | 'ranked' | 'ghost' | 'daily';
+export type QueueMode = 'casual' | 'ranked' | 'ghost' | 'daily' | 'draft';
 
 /** Messages client → serveur. */
 export type ClientMessage =
@@ -14,7 +14,9 @@ export type ClientMessage =
   | { t: 'cancel' }
   | { t: 'action'; action: GameAction }
   | { t: 'resume' }
-  | { t: 'daily' };
+  | { t: 'daily' }
+  /** Partie avec le deck du draft en cours (adversaire en file draft, sinon fantôme). */
+  | { t: 'draft' };
 
 /** Cosmétiques d'un joueur visibles en partie : variante affichée par carte, titre actif. */
 export interface PlayerCosmetics {
@@ -378,6 +380,41 @@ export interface DailyResultDto {
   /** Vies de départ des deux Leaders, pour le partage. */
   lives: number;
   opponentLives: number;
+}
+
+export interface DraftRewardDto {
+  coins: number;
+  freeBoosters: number;
+}
+
+/** Draft du week-end : Leader choisi parmi `leaderChoices`, puis une carte par proposition (`offer`). */
+export interface DraftRunDto {
+  id: string;
+  status: 'picking' | 'playing' | 'done';
+  entry: 'free' | 'coins';
+  leader: string | null;
+  leaderChoices: string[];
+  offer: string[];
+  picks: string[];
+  deckSize: number;
+  wins: number;
+  losses: number;
+  reward: DraftRewardDto | null;
+}
+
+export interface DraftDto {
+  open: boolean;
+  /** Prochaine ouverture (ISO), quand le draft est fermé. */
+  opensAt: string | null;
+  week: string;
+  entryCoins: number;
+  freeLeft: number;
+  maxWins: number;
+  maxLosses: number;
+  /** Récompense selon le nombre de victoires (indice = victoires). */
+  rewards: DraftRewardDto[];
+  /** Draft en cours, sinon le dernier de la semaine. */
+  run: DraftRunDto | null;
 }
 
 export interface DailyDto {

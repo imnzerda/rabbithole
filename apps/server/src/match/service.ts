@@ -11,6 +11,7 @@ import { addPassXpSafe, playerCosmetics } from '../retention/pass.js';
 import { applyRankedResult } from '../ranked/ranked.js';
 import { activeTrending } from '../trending/trending.js';
 import { dailyChallenge, dailyKey, hasPlayedDaily, recordDaily } from '../retention/daily.js';
+import { draftDeck, recentDraftDecks, recordDraftResult } from '../retention/draft.js';
 import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
@@ -87,7 +88,29 @@ export class MatchService {
     const errors = await checkDeck(this.deps.db, this.ctx, user.id, deck.leaderId, deck.cardIds, (await contentFilterFor(this.deps.db, user, this.deps.catalog.current)).blocked);
     if (errors.length) throw new ServiceError('invalid_deck', errors.join(' '));
     const seat: SeatInfo = { userId: user.id, name: user.displayName, leader: deck.leaderId, deck: deck.cardIds, cosmetics: await playerCosmetics(this.deps.db, user.id) };
+    await this.queueSeat(user, seat, mode);
+  }
 
+  /** Draft du week-end : partie avec le deck du draft en cours, contre un autre joueur en draft ou un fantôme. */
+  async enqueueDraft(user: User): Promise<void> {
+    if (this.roomFor(user.id)) throw new ServiceError('already_in_match', 'Tu as déjà une partie en cours.');
+    this.leaveQueue(user.id);
+    const draft = await draftDeck(this.deps.db, user.id);
+    if (!draft) throw new ServiceError('no_draft', "Pas de draft prêt à jouer.");
+    const errors = validateDeck(this.ctx, draft.leader, draft.cards);
+    if (errors.length) throw new ServiceError('invalid_deck', errors.join(' '));
+    const seat: SeatInfo = {
+      userId: user.id,
+      name: user.displayName,
+      leader: draft.leader,
+      deck: draft.cards,
+      cosmetics: await playerCosmetics(this.deps.db, user.id),
+      draftRun: draft.runId,
+    };
+    await this.queueSeat(user, seat, 'draft');
+  }
+
+  private async queueSeat(user: User, seat: SeatInfo, mode: QueueMode): Promise<void> {
     if (mode === 'ghost') {
       await this.startGhostMatch(seat, mode);
       return;
@@ -129,12 +152,21 @@ export class MatchService {
 
   /** Fantôme : le deck enregistré d'un autre joueur, piloté par l'IA (repli : un deck de référence de la série, puis du prototype). */
   private async startGhostMatch(seat: SeatInfo, mode: QueueMode): Promise<void> {
+    if (mode === 'draft') {
+      // Draft : le deck de draft d'un autre joueur, sinon un deck de référence.
+      const drafts = (await recentDraftDecks(this.deps.db, seat.userId!, this.ctx.rules.deckSize)).filter((d) => validateDeck(this.ctx, d.leader, d.cards).length === 0);
+      if (drafts.length) {
+        const pick = drafts[randomInt(drafts.length)]!;
+        await this.startMatch(mode, [seat, { userId: null, name: pick.name, leader: pick.leader, deck: pick.cards, cosmetics: await playerCosmetics(this.deps.db, pick.userId) }], true);
+        return;
+      }
+    }
     const candidates = await this.deps.db.query<{ user_id: string; leader_id: string; card_ids: string[]; display_name: string }>(
       `SELECT d.user_id, d.leader_id, d.card_ids, u.display_name FROM decks d JOIN users u ON u.id = d.user_id
        WHERE d.user_id <> $1 ORDER BY d.updated_at DESC LIMIT 50`,
       [seat.userId],
     );
-    const valid = candidates.filter((c) => validateDeck(this.ctx, c.leader_id, c.card_ids).length === 0);
+    const valid = mode === 'draft' ? [] : candidates.filter((c) => validateDeck(this.ctx, c.leader_id, c.card_ids).length === 0);
     let ghost: SeatInfo;
     if (valid.length) {
       const pick = valid[randomInt(valid.length)]!;
@@ -201,6 +233,11 @@ export class MatchService {
         // Défi du jour : score et récompense du défi (première tentative du jour seulement).
         const opponentLeader = room.seats[p === 0 ? 1 : 0].leader;
         rewards[p] = await recordDaily(this.deps.db, userId, dailyKey(), room.id, result, p, this.ctx.cards[opponentLeader]?.life ?? 5, this.deps.config.daily).catch(() => null);
+      } else if (room.mode === 'draft') {
+        // Draft : pas de pièces par partie ; la récompense tombe à la fin du draft (dernière partie).
+        const run = room.seats[p].draftRun;
+        const reward = run ? await recordDraftResult(this.deps.db, userId, run, result.winner === p, this.deps.config.draft).catch(() => null) : null;
+        rewards[p] = reward ? reward.coins : null;
       } else {
         const amount = result.winner === null ? table.draw : result.winner === p ? table.win : table.loss;
         rewards[p] = await awardMatchCoins(this.deps.db, userId, amount, room.id, this.deps.config.economy);

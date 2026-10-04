@@ -32,6 +32,7 @@
     {#if session.user}
       <span class="hello">{t('hello_user', { name: session.user.displayName })}</span>
       <a href="/daily" data-testid="nav-daily">{t('daily_title')}</a>
+      <a href="/draft" data-testid="nav-draft">{t('draft_title')}</a>
       <a href="/missions" data-testid="nav-missions">{t('missions')}</a>
       <a href="/pass" data-testid="nav-pass">{t('pass')}</a>
       <a href="/ranked" data-testid="nav-ranked">{t('ranked_title')}</a>

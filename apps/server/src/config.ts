@@ -272,6 +272,48 @@ export const DEFAULT_DAILY: DailyConfig = {
   leaderboardSize: 20,
 };
 
+/**
+ * Draft du week-end (section 7) : le joueur choisit un Leader parmi quelques-uns, puis ses cartes une à une
+ * parmi des propositions, et joue avec ce deck jusqu'à `maxWins` victoires ou `maxLosses` défaites.
+ * Entrée gratuite une fois par week-end, sinon en pièces. Les cartes choisies ne sont pas gardées : la récompense
+ * dépend du nombre de victoires.
+ */
+export interface DraftConfig {
+  /** Jours d'ouverture (UTC, 0 = dimanche). Une partie commencée se termine même après la fermeture. */
+  days: number[];
+  /** Ouvert tous les jours (tests ; `DRAFT_OPEN=always`). */
+  alwaysOpen: boolean;
+  entryCoins: number;
+  freePerWeekend: number;
+  leaderChoices: number;
+  /** Cartes proposées à chaque choix. */
+  choices: number;
+  maxWins: number;
+  /** Un match nul compte comme une défaite. */
+  maxLosses: number;
+  /** Récompense de fin, selon le nombre de victoires (indice = victoires). */
+  rewards: { coins: number; freeBoosters: number }[];
+}
+
+export const DEFAULT_DRAFT: DraftConfig = {
+  days: [6, 0],
+  alwaysOpen: false,
+  entryCoins: 150,
+  freePerWeekend: 1,
+  leaderChoices: 3,
+  choices: 3,
+  maxWins: 5,
+  maxLosses: 2,
+  rewards: [
+    { coins: 30, freeBoosters: 0 },
+    { coins: 60, freeBoosters: 0 },
+    { coins: 100, freeBoosters: 0 },
+    { coins: 150, freeBoosters: 1 },
+    { coins: 200, freeBoosters: 1 },
+    { coins: 250, freeBoosters: 2 },
+  ],
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -312,6 +354,7 @@ export interface ServerConfig {
   achievements: AchievementsConfig;
   trending: TrendingConfig;
   daily: DailyConfig;
+  draft: DraftConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -394,6 +437,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     ranked: DEFAULT_RANKED,
     achievements: DEFAULT_ACHIEVEMENTS,
     daily: DEFAULT_DAILY,
+    draft: { ...DEFAULT_DRAFT, alwaysOpen: env.DRAFT_OPEN === 'always' || env.NODE_ENV === 'test' },
     trending: { ...DEFAULT_TRENDING, enabled: env.TRENDING !== 'off' && env.NODE_ENV !== 'test' },
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
     logLevel: env.LOG_LEVEL ?? (production ? 'info' : 'warn'),

@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AchievementsDto, AuthConfigDto, DailyDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AchievementsDto, AuthConfigDto, DailyDto, DraftDto, DraftRewardDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -88,6 +88,10 @@ export const api = {
   claimAchievement: (id: string) => request<{ reward: { coins: number; title: Record<string, string> | null }; wallet: WalletDto }>('POST', `/achievements/${id}/claim`),
   claimCollection: () => request<{ reward: { levels: number; coins: number; freeBoosters: number }; wallet: WalletDto }>('POST', '/achievements/collection/claim'),
   daily: () => request<DailyDto>('GET', '/daily'),
+  draft: () => request<DraftDto>('GET', '/draft'),
+  draftStart: (pay: 'free' | 'coins') => request<{ draft: DraftDto; wallet: WalletDto }>('POST', '/draft/start', { pay }),
+  draftPick: (cardId: string) => request<{ draft: DraftDto }>('POST', '/draft/pick', { cardId }),
+  draftRetire: () => request<{ reward: DraftRewardDto; draft: DraftDto; wallet: WalletDto }>('POST', '/draft/retire'),
   trending: () => request<{ date: string | null; cards: TrendingCardDto[] }>('GET', '/trending'),
   ranked: () => request<RankedDto>('GET', '/ranked'),
   leaderboard: (country: string) => request<{ entries: LeaderboardEntryDto[] }>('GET', `/ranked/leaderboard?country=${country}`),
