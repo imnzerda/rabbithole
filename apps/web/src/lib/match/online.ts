@@ -160,6 +160,11 @@ export class Lobby {
     this.send({ t: 'draft' });
   }
 
+  /** Tournoi : match du tour en cours (attend l'adversaire désigné). */
+  tournament(): void {
+    this.send({ t: 'tournament' });
+  }
+
   /** Retour au salon après une partie. */
   leaveMatch(): void {
     this.match = null;

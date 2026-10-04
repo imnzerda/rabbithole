@@ -1,5 +1,5 @@
 import { deviceFingerprint } from './fingerprint';
-import type { AchievementsDto, AuthConfigDto, DailyDto, DraftDto, DraftRewardDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
+import type { AchievementsDto, AuthConfigDto, DailyDto, DraftDto, DraftRewardDto, TournamentsDto, SignupResponse, BoostersResponse, DeckDto, FriendsDto, CosmeticsDto, LeaderboardEntryDto, MatchSummary, MissionsDto, NoticeDto, OfferDto, PassDto, PassReward, PassTrack, PublicUser, PurchaseDto, RankedDto, ReplayData, ShopDto, TrendingCardDto, TradeDto, TradeUpOfferDto, WalletDto } from '@rabbithole/shared';
 
 /** Erreur renvoyée par l'API (`code` = champ `error` de la réponse). */
 export class ApiError extends Error {
@@ -89,6 +89,9 @@ export const api = {
   claimCollection: () => request<{ reward: { levels: number; coins: number; freeBoosters: number }; wallet: WalletDto }>('POST', '/achievements/collection/claim'),
   daily: () => request<DailyDto>('GET', '/daily'),
   draft: () => request<DraftDto>('GET', '/draft'),
+  tournaments: () => request<TournamentsDto>('GET', '/tournaments'),
+  tournamentRegister: (deckId: string) => request<TournamentsDto>('POST', '/tournaments/register', { deckId }),
+  tournamentUnregister: () => request<TournamentsDto>('POST', '/tournaments/unregister'),
   draftStart: (pay: 'free' | 'coins') => request<{ draft: DraftDto; wallet: WalletDto }>('POST', '/draft/start', { pay }),
   draftPick: (cardId: string) => request<{ draft: DraftDto }>('POST', '/draft/pick', { cardId }),
   draftRetire: () => request<{ reward: DraftRewardDto; draft: DraftDto; wallet: WalletDto }>('POST', '/draft/retire'),

@@ -30,6 +30,8 @@ export interface SeatInfo {
   cosmetics?: PlayerCosmetics;
   /** Draft dont ce deck est issu (mode draft) : le résultat y est compté. */
   draftRun?: string;
+  /** Match de tournoi joué (mode tournament). */
+  tournament?: { tournamentId: string; round: number; slot: number };
 }
 
 export interface RoomTimers {

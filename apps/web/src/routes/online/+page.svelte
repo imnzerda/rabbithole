@@ -26,15 +26,18 @@
   // Venu de la page Défi du jour ou Draft : la partie démarre (ou la file draft) dès la connexion,
   // et la fin de partie ramène à cette page.
   const params = untrack(() => page.url.searchParams);
-  let specialPending = $state<'daily' | 'draft' | null>(params.get('daily') === '1' ? 'daily' : params.get('draft') === '1' ? 'draft' : null);
-  let special = $state<'daily' | 'draft' | null>(null);
+  const SPECIAL = { daily: '/daily', draft: '/draft', tournament: '/tournaments' } as const;
+  type Special = keyof typeof SPECIAL;
+  let specialPending = $state<Special | null>((Object.keys(SPECIAL) as Special[]).find((k) => params.get(k) === '1') ?? null);
+  let special = $state<Special | null>(null);
   const specialMatch = $derived(lobbyState.kind === 'playing' ? special : null);
   $effect(() => {
     if (specialPending && lobbyState.kind === 'idle' && lobby) {
       special = specialPending;
       specialPending = null;
       if (special === 'daily') lobby.daily();
-      else lobby.draft();
+      else if (special === 'draft') lobby.draft();
+      else lobby.tournament();
     }
   });
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
@@ -70,7 +73,7 @@
     {#key lobbyState.match}
       <Game
         client={lobbyState.match}
-        onexit={() => (specialMatch ? goto(`/${specialMatch}`) : lobby?.leaveMatch())}
+        onexit={() => (specialMatch ? goto(SPECIAL[specialMatch]) : lobby?.leaveMatch())}
         onagain={specialMatch ? undefined : () => lobby?.leaveMatch()}
       />
     {/key}

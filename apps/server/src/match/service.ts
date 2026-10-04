@@ -12,6 +12,7 @@ import { applyRankedResult } from '../ranked/ranked.js';
 import { activeTrending } from '../trending/trending.js';
 import { dailyChallenge, dailyKey, hasPlayedDaily, recordDaily } from '../retention/daily.js';
 import { draftDeck, recentDraftDecks, recordDraftResult } from '../retention/draft.js';
+import { markLiveStart, pendingTournamentMatch, recordTournamentMatch } from '../tournament/tournament.js';
 import type { RankedResultDto } from '@rabbithole/shared';
 import type { AppDeps } from '../deps.js';
 import { contentFilterFor } from '../moderation/filter.js';
@@ -21,6 +22,8 @@ interface QueueEntry {
   userId: string;
   name: string;
   mode: QueueMode;
+  /** Appariement imposé (tournoi : les deux joueurs du même match) ; absent = n'importe qui de la même file. */
+  key?: string;
   seat: SeatInfo;
   ghostTimer: ReturnType<typeof setTimeout> | null;
 }
@@ -110,6 +113,32 @@ export class MatchService {
     await this.queueSeat(user, seat, 'draft');
   }
 
+  /** Tournoi : match du tour en cours, contre l'adversaire désigné (attente sans fantôme ; échéance : simulation). */
+  async enqueueTournament(user: User): Promise<void> {
+    if (this.roomFor(user.id)) throw new ServiceError('already_in_match', 'Tu as déjà une partie en cours.');
+    this.leaveQueue(user.id);
+    const pairing = await pendingTournamentMatch(this.deps.db, user.id);
+    if (!pairing) throw new ServiceError('no_tournament_match', 'Pas de match de tournoi à jouer.');
+    const tournament = { tournamentId: pairing.tournamentId, round: pairing.round, slot: pairing.slot };
+    const seat: SeatInfo = {
+      userId: user.id,
+      name: user.displayName,
+      leader: pairing.me.leader,
+      deck: pairing.me.cards,
+      cosmetics: await playerCosmetics(this.deps.db, user.id),
+      tournament,
+    };
+    const i = this.queue.findIndex((e) => e.mode === 'tournament' && e.key === pairing.key && e.userId !== user.id);
+    if (i >= 0) {
+      const [opponent] = this.queue.splice(i, 1);
+      const id = await this.startMatch('tournament', [opponent!.seat, seat], false);
+      await markLiveStart(this.deps.db, tournament, id);
+      return;
+    }
+    this.queue.push({ userId: user.id, name: user.displayName, mode: 'tournament', key: pairing.key, seat, ghostTimer: null });
+    this.sends.get(user.id)?.({ t: 'queued', mode: 'tournament', ghostInMs: null });
+  }
+
   private async queueSeat(user: User, seat: SeatInfo, mode: QueueMode): Promise<void> {
     if (mode === 'ghost') {
       await this.startGhostMatch(seat, mode);
@@ -197,7 +226,7 @@ export class MatchService {
     await this.startMatch('daily', [seat, ai], true, challenge.seed);
   }
 
-  private async startMatch(mode: QueueMode, seats: [SeatInfo, SeatInfo], ghost: boolean, fixedSeed?: string): Promise<void> {
+  private async startMatch(mode: QueueMode, seats: [SeatInfo, SeatInfo], ghost: boolean, fixedSeed?: string): Promise<string> {
     const id = randomUUID();
     // Seed issue du RNG cryptographique du serveur (ou celle du défi du jour), enregistrée pour l'audit et les replays.
     const seed = fixedSeed ?? randomBytes(16).toString('hex');
@@ -218,6 +247,7 @@ export class MatchService {
       if (send) room.attach(s.userId, send);
     }
     room.start();
+    return id;
   }
 
   private async onEnd(room: MatchRoom): Promise<void> {
@@ -233,6 +263,9 @@ export class MatchService {
         // Défi du jour : score et récompense du défi (première tentative du jour seulement).
         const opponentLeader = room.seats[p === 0 ? 1 : 0].leader;
         rewards[p] = await recordDaily(this.deps.db, userId, dailyKey(), room.id, result, p, this.ctx.cards[opponentLeader]?.life ?? 5, this.deps.config.daily).catch(() => null);
+      } else if (room.mode === 'tournament') {
+        // Tournoi : pas de pièces par partie ; récompenses au classement final.
+        rewards[p] = null;
       } else if (room.mode === 'draft') {
         // Draft : pas de pièces par partie ; la récompense tombe à la fin du draft (dernière partie).
         const run = room.seats[p].draftRun;
@@ -248,6 +281,12 @@ export class MatchService {
         const outcome = result.winner === null ? 'draw' : result.winner === p ? 'win' : 'loss';
         ranked[p] = await applyRankedResult(this.deps.db, userId, outcome, result.stake, this.deps.config.ranked).catch(() => null);
       }
+    }
+    // Tournoi : vainqueur du match (un nul se rejoue), puis tour suivant si le tour est complet.
+    const pairing = room.seats[0].tournament;
+    if (room.mode === 'tournament' && pairing) {
+      const winner = result.winner === null ? null : room.seats[result.winner].userId;
+      await recordTournamentMatch(this.deps.db, pairing, winner, this.deps.config.tournament).catch(() => {});
     }
     await this.deps.db.query(`UPDATE matches SET actions = $1, result = $2, rewards = $3, ended_at = now() WHERE id = $4`, [
       JSON.stringify(room.actions),

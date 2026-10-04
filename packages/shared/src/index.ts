@@ -6,7 +6,7 @@ import type { CardDef, GameAction, MatchEvent, MatchResult, PlayerIndex, PlayerV
  */
 
 /** Modes de file ; `daily` : défi du jour (deck imposé contre l'IA, lancé par le message `daily`). */
-export type QueueMode = 'casual' | 'ranked' | 'ghost' | 'daily' | 'draft';
+export type QueueMode = 'casual' | 'ranked' | 'ghost' | 'daily' | 'draft' | 'tournament';
 
 /** Messages client → serveur. */
 export type ClientMessage =
@@ -16,7 +16,9 @@ export type ClientMessage =
   | { t: 'resume' }
   | { t: 'daily' }
   /** Partie avec le deck du draft en cours (adversaire en file draft, sinon fantôme). */
-  | { t: 'draft' };
+  | { t: 'draft' }
+  /** Match du tour en cours du tournoi (attend l'adversaire ; pas de fantôme). */
+  | { t: 'tournament' };
 
 /** Cosmétiques d'un joueur visibles en partie : variante affichée par carte, titre actif. */
 export interface PlayerCosmetics {
@@ -380,6 +382,42 @@ export interface DailyResultDto {
   /** Vies de départ des deux Leaders, pour le partage. */
   lives: number;
   opponentLives: number;
+}
+
+/** Un match du tableau : joueurs (`null` = exemption), vainqueur et manière (en direct, simulé, exemption). */
+export interface TournamentSlotDto {
+  slot: number;
+  a: { name: string; leader: string; you: boolean } | null;
+  b: { name: string; leader: string; you: boolean } | null;
+  winner: 'a' | 'b' | null;
+  how: 'bye' | 'played' | 'simulated' | null;
+}
+
+export interface TournamentDto {
+  id: string;
+  startDate: string;
+  startsAt: string;
+  status: 'registering' | 'running' | 'done' | 'cancelled';
+  round: number;
+  rounds: number;
+  /** Échéance du tour en cours : un match non joué est alors tranché par simulation. */
+  roundEndsAt: string | null;
+  players: number;
+  registered: { leader: string; cards: number } | null;
+  /** Tableau, tour par tour. */
+  bracket: TournamentSlotDto[][];
+  myMatch: { round: number; opponent: string; opponentLeader: string; live: boolean } | null;
+  /** Classement final (1 = champion, 2 = finaliste, 4 = demi-finaliste…) et récompense. */
+  result: { top: number; reward: DraftRewardDto } | null;
+}
+
+export interface TournamentsDto {
+  /** Tournoi ouvert aux inscriptions. */
+  next: TournamentDto;
+  /** Tournoi en cours, sinon le dernier terminé. */
+  current: TournamentDto | null;
+  roundHours: number;
+  rewards: { top: number; coins: number; freeBoosters: number }[];
 }
 
 export interface DraftRewardDto {

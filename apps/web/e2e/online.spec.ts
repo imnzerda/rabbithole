@@ -466,3 +466,23 @@ test('draft du week-end : entrée gratuite, Leader puis cartes, partie de draft,
   await expect(page.getByTestId('draft-free')).toHaveCount(0);
   await expect(page.getByTestId('draft-coins')).toBeVisible();
 });
+
+test('tournoi de la semaine : inscription avec un deck, changement de deck, désinscription', async ({ page }, info) => {
+  await signup(page, `tournoi-${info.project.name}`, '/');
+  await page.request.post('/api/test/grant-kit');
+  await page.getByTestId('nav-tournaments').click();
+
+  const next = page.getByTestId('tournament-next');
+  await expect(next).toContainText('Prochain tournoi : samedi');
+  await expect(page.getByTestId('tournament-registered')).toHaveCount(0);
+  await page.getByTestId('tournament-register').click();
+  await expect(page.getByTestId('message')).toHaveText('Inscription enregistrée.');
+  await expect(page.getByTestId('tournament-registered')).toBeVisible();
+  await expect(page.getByTestId('tournament-players')).toHaveText(/\d+ inscrit\(s\)/);
+  await expect(page.getByTestId('tournament-register')).toHaveText('Changer de deck');
+
+  await page.getByTestId('tournament-unregister').click();
+  await expect(page.getByTestId('message')).toHaveText('Désinscription enregistrée.');
+  await expect(page.getByTestId('tournament-registered')).toHaveCount(0);
+  await expect(page.getByTestId('tournament-register')).toHaveText("S'inscrire");
+});

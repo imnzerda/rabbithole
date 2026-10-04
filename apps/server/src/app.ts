@@ -18,6 +18,8 @@ import { registerSocial } from './social/routes.js';
 import { registerPayments } from './payments/routes.js';
 import { registerNotices } from './notices/routes.js';
 import { registerRetention } from './retention/routes.js';
+import { registerTournaments } from './tournament/routes.js';
+import { TournamentScheduler } from './tournament/tournament.js';
 import { registerRanked } from './ranked/routes.js';
 import { registerTrending } from './trending/routes.js';
 import { TrendingScheduler, wikimediaSource, type ViewsSource } from './trending/trending.js';
@@ -60,16 +62,23 @@ export async function buildApp(config: ServerConfig, services: Partial<Guard> & 
   registerRetention(app, deps);
   registerRanked(app, deps);
   registerTrending(app, deps);
+  registerTournaments(app, deps);
   // Tendance du jour : calcul quotidien, puis publication après la fenêtre de vérification (section 8).
   const trending = config.trending.enabled
     ? new TrendingScheduler(db, config.trending, () => catalog.current, trendingSource ?? wikimediaSource, (msg, err) => (err ? app.log.warn({ err }, msg) : app.log.info(msg)))
     : null;
   trending?.start();
+  // Tournoi hebdomadaire : début à l'heure prévue, échéances des tours.
+  const tournaments = config.tournament.enabled
+    ? new TournamentScheduler(db, config.tournament, () => catalog.current, (msg, err) => (err ? app.log.warn({ err }, msg) : app.log.info(msg)))
+    : null;
+  tournaments?.start();
   app.get('/api/health', async () => ({ ok: true }));
 
   app.addHook('onClose', async () => {
     guard.disposable.stop();
     trending?.stop();
+    tournaments?.stop();
     await matches.close();
     await db.close();
   });

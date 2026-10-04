@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,28 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 6b : tournoi hebdomadaire
+
+- **Calendrier** : un tournoi par semaine, qui commence le samedi à 12 h UTC. Les inscriptions restent ouvertes jusqu'au début.
+- **Inscription** : avec un de ses decks, possession vérifiée, et dont une copie figée est enregistrée. On peut changer de deck ou se désinscrire avant le début. 256 joueurs au plus.
+- **Tableau** : élimination directe.
+  - Tirage au sort par seed cryptographique, enregistrée pour l'audit.
+  - Tableau en puissance de 2 : les premiers tirés sont exemptés du premier tour.
+  - Moins de 2 inscrits : le tournoi est annulé.
+- **Tours de 6 h** : les deux adversaires lancent « Jouer mon match » et la partie commence quand les deux sont là (file « tournament », sans fantôme).
+  - Un nul se rejoue.
+  - À l'échéance, un match non joué est tranché par une partie IA contre IA des deux decks, déterministe pour la seed (pile ou face en cas de nul).
+  - Un match commencé en direct depuis moins de 30 min n'est pas tranché : on attend sa fin.
+  - Le tour suivant commence dès que tous les matchs du tour sont tranchés.
+- **Classement et récompenses** : pas de pièces par partie.
+  - Champion : 500 🪙 et 3 boosters gratuits, plus le titre « Champion de la semaine ».
+  - Finaliste : 300 🪙 et 2 boosters. Top 4 : 200 🪙 et 1 booster. Top 8 : 120 🪙. Participation : 50 🪙.
+  - Missions et XP du pass comptent normalement.
+- **Ordonnanceur** du serveur (une vérification par minute) : début des tournois et échéances des tours. `TOURNAMENTS=off` le coupe ; il est coupé en test.
+- **Page Tournois** : tournoi en cours (tour, échéance, mon match, bouton « Jouer mon match »), tableau (joué ⚔️, simulé 🤖, exempté), résultat, prochain tournoi (inscription, changement de deck, désinscription, nombre d'inscrits), barème. Lien sur l'accueil.
+- **Configuration** : `DEFAULT_TOURNAMENT`. **Base** : migration 024 (`tournaments`, `tournament_players`, `tournament_matches`).
+- **Tests** : 4 tests serveur (calendrier ; 3 joueurs avec exemption, échéances simulées, classement, récompenses et titre ; match en direct entre deux clients ; annulation), les tests des parties, du défi et du draft, et 1 scénario E2E (inscription, changement de deck, désinscription). Le démarrage n'est pas testé en E2E : les deux navigateurs de test partagent le tournoi de la semaine. Route de test `/api/test/tournament-tick`, interdite en production.
 
 ### 2026-10-04 — Phase 6, étape 6a : draft du week-end
 

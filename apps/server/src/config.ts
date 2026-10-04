@@ -314,6 +314,45 @@ export const DEFAULT_DRAFT: DraftConfig = {
   ],
 };
 
+/**
+ * Tournoi hebdomadaire (section 7) : inscriptions toute la semaine avec un de ses decks (copie figée), début le
+ * `startDay` à `startHour` (UTC), élimination directe tirée au sort (seed cryptographique enregistrée).
+ * Chaque tour dure `roundHours` : les deux joueurs jouent leur match en direct ; à l'échéance, un match non joué
+ * est tranché par une simulation IA contre IA des deux decks. Récompenses selon le classement final.
+ */
+export interface TournamentConfig {
+  /** Ordonnanceur (début des tournois, échéances des tours). Coupé en test (`TOURNAMENTS=off`). */
+  enabled: boolean;
+  startDay: number;
+  startHour: number;
+  roundHours: number;
+  minPlayers: number;
+  maxPlayers: number;
+  /** Récompense selon le classement (`top` : 1 = champion, 2 = finaliste, 4 = demi-finaliste… ; 0 = participation). */
+  rewards: { top: number; coins: number; freeBoosters: number }[];
+  /** Titre du champion. */
+  championTitle: { fr: string; en: string };
+  /** Un match commencé en direct n'est pas tranché par simulation à l'échéance pendant ce délai. */
+  liveGraceMinutes: number;
+}
+
+export const DEFAULT_TOURNAMENT: Omit<TournamentConfig, 'enabled'> = {
+  startDay: 6,
+  startHour: 12,
+  roundHours: 6,
+  minPlayers: 2,
+  maxPlayers: 256,
+  rewards: [
+    { top: 1, coins: 500, freeBoosters: 3 },
+    { top: 2, coins: 300, freeBoosters: 2 },
+    { top: 4, coins: 200, freeBoosters: 1 },
+    { top: 8, coins: 120, freeBoosters: 0 },
+    { top: 0, coins: 50, freeBoosters: 0 },
+  ],
+  championTitle: { fr: 'Champion de la semaine', en: 'Weekly champion' },
+  liveGraceMinutes: 30,
+};
+
 /** Configuration du serveur, lue depuis l'environnement. */
 export interface ServerConfig {
   port: number;
@@ -355,6 +394,7 @@ export interface ServerConfig {
   trending: TrendingConfig;
   daily: DailyConfig;
   draft: DraftConfig;
+  tournament: TournamentConfig;
   payments: PaymentsConfig;
   logLevel: string;
 }
@@ -437,6 +477,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     ranked: DEFAULT_RANKED,
     achievements: DEFAULT_ACHIEVEMENTS,
     daily: DEFAULT_DAILY,
+    tournament: { ...DEFAULT_TOURNAMENT, enabled: env.TOURNAMENTS !== 'off' && env.NODE_ENV !== 'test' },
     draft: { ...DEFAULT_DRAFT, alwaysOpen: env.DRAFT_OPEN === 'always' || env.NODE_ENV === 'test' },
     trending: { ...DEFAULT_TRENDING, enabled: env.TRENDING !== 'off' && env.NODE_ENV !== 'test' },
     payments: { provider: paymentProvider, sandboxSecret: env.SANDBOX_WEBHOOK_SECRET ?? 'dev-sandbox-secret' },
