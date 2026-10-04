@@ -3,12 +3,14 @@
   import { onMount, untrack } from 'svelte';
   import { GameRenderer, type RenderOptions } from '../game/renderer';
   import type { RankedResultDto } from '@rabbithole/shared';
-  import { loc, t } from '../i18n';
+  import { loc, locale, t } from '../i18n';
   import type { MatchClient, MatchStep } from '../match/client';
   import CardDetail from './CardDetail.svelte';
   import CardInfo from './CardInfo.svelte';
   import DecisionPanel from './DecisionPanel.svelte';
   import EndScreen from './EndScreen.svelte';
+  import { renderEndImage } from '../share/end-image';
+  import { session } from '../session.svelte';
   import RulesSheet from './RulesSheet.svelte';
 
   interface Props {
@@ -46,6 +48,39 @@
   let wide = $state(false);
 
   const busy = $derived(animating || waiting);
+
+  /** Image de fin de partie (partage) : ce que la fin de partie montre, rien de caché. */
+  function endImage(): Promise<Blob> {
+    const v = view!;
+    const result = v.result!;
+    const opp = v.you === 0 ? 1 : 0;
+    const side = (leaderId: string, name: string, life: number) => {
+      const leader = ctx.cards[leaderId]!;
+      return { name, leader, life, startLife: leader.life ?? life };
+    };
+    const outcome = result.winner === null ? 'draw' : result.winner === v.you ? 'victory' : 'defeat';
+    const reason = result.reason === 'fold' ? (result.winner === v.you ? t('reason_fold_them') : t('reason_fold_you')) : t(`reason_${result.reason}`);
+    return renderEndImage({
+      result,
+      you: v.you,
+      me: side(v.me.leader.defId, session.user?.displayName ?? t('share_me'), result.life[v.you]),
+      opponent: side(v.opponent.leader.defId, match.opponentName, result.life[opp]),
+      labels: {
+        outcome: t(outcome),
+        reason,
+        turns: t('turns_played', { n: result.turns }),
+        mode: null,
+        tagline: t('tagline'),
+        you: t('share_me'),
+        date: new Date().toLocaleDateString(locale),
+        board: t('share_board'),
+      },
+      board: [...v.me.characters]
+        .sort((a, b) => b.power - a.power)
+        .map((c) => ({ name: loc(ctx.cards[c.defId]?.name), power: c.power, category: ctx.cards[c.defId]?.categories[0] })),
+      nameOf: (def) => loc(def.name),
+    });
+  }
   const legal = $derived(match.spectator ? null : (view?.legal ?? null));
   const myMain = $derived(!busy && legal?.kind === 'main');
   const myReaction = $derived(!busy && !!legal && legal.kind !== 'main');
@@ -242,7 +277,7 @@
 {/if}
 
 {#if view?.result && !busy}
-  <EndScreen result={view.result} you={view.you} {reward} {ranked} {reportMatchId} onreplay={onagain} onmenu={onexit} />
+  <EndScreen result={view.result} you={view.you} {reward} {ranked} {reportMatchId} onreplay={onagain} onmenu={onexit} image={match.spectator ? undefined : endImage} />
 {/if}
 
 <style>

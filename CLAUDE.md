@@ -114,6 +114,7 @@ Réglages locaux du serveur de dev dans `apps/server/.env` (non versionné), par
   - `lib/fingerprint.ts` : empreinte numérique de l'appareil (anti-double compte) ; `lib/turnstile.ts` : captcha invisible.
   - Pages : `collection` (boosters, recyclage, fabrication), `trade-up`, `missions`, `pass`, `ranked` (classement), `achievements` (succès, titres, progression de collection), `trending` (Tendances), `daily` (défi du jour), `draft` (draft du week-end), `tournaments` (tournoi hebdomadaire), `decks`, `friends` (amis, code ami), `trades` (échanges), `shop` (gemmes, historique d'achats, plafond ; `shop/sandbox` : page de paiement factice), `online`, `replays`, `settings` (contenu sensible), `takedown` (demande de retrait), `credits`, `signup` (avec vérification par SMS), `login`, `play` (entraînement hors ligne).
   - `lib/game/renderer.ts` : plateau, deux dispositions (`PORTRAIT` pour smartphone, `LANDSCAPE` pour PC, choisies selon la forme de l'écran), glisser-déposer, animation des événements.
+  - `lib/share/end-image.ts` : image de fin de partie à partager (9:16), partage natif ou téléchargement.
   - `lib/ui/CardInfo.svelte` : contenu d'une carte, partagé par la fiche plein écran et l'aperçu au survol (PC).
   - `lib/game/card-sprite.ts` : design typographique des cartes.
   - `lib/ui/` : fiches (carte, règles, fin de partie), `DecisionPanel` (mulligan, blocage, contres, Déclencheur), `MiniCard` (carte HTML), `ReportDialog` (signalement), `PageShell` (pages simples).

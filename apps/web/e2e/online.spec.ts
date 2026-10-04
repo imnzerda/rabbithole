@@ -419,6 +419,17 @@ test('défi du jour : deck imposé sans collection, une tentative, score à part
   await fold.click();
   await expect(page.getByTestId('end-screen')).toBeVisible();
   await expect(page.getByTestId('replay')).toHaveCount(0);
+
+  // Partage : image de fin de partie au format vertical 9:16, téléchargeable.
+  await page.getByTestId('share').click();
+  const preview = page.getByTestId('share-preview');
+  await expect(preview).toBeVisible();
+  expect(await preview.evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight])).toEqual([1080, 1920]);
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('share-download').click()]);
+  expect(download.suggestedFilename()).toBe('rabbit-hole.png');
+  await download.saveAs(info.outputPath('partage.png'));
+  await page.getByRole('dialog', { name: 'Partager la partie' }).getByRole('button', { name: 'Fermer' }).click();
+
   await page.getByTestId('end-screen').getByRole('button', { name: 'Menu' }).click();
 
   await expect(page).toHaveURL(/\/daily$/);

@@ -53,8 +53,8 @@ const fr = {
   reason_deck_out: 'Pioche épuisée',
   reason_turn_limit: 'Limite de tours',
   reason_draw: 'Égalité parfaite',
-  reason_fold_you: 'Tu as lâché',
-  reason_fold_them: "L'adversaire a lâché",
+  reason_fold_you: 'Tu as abandonné',
+  reason_fold_them: "L'adversaire a abandonné",
   rank_points: 'points de classement',
   turns_played: '{n} tours',
   lives_left: 'Vies restantes : {me} – {them}',
@@ -548,6 +548,13 @@ const fr = {
   err_tournament_full: "Le tournoi est complet.",
   err_invalid_deck: "Ce deck n'est pas valide.",
   err_deck_not_found: "Deck introuvable.",
+  share_result: "Partager la partie",
+  share_alt: "Image de fin de partie",
+  share_send: "Partager",
+  share_download: "Télécharger",
+  share_text: "Ma partie de RABBIT HOLE #RabbitHole",
+  share_me: "Moi",
+  share_board: "Encore en jeu",
 } as const;
 
 type Key = keyof typeof fr;
@@ -604,8 +611,8 @@ const en: Record<Key, string> = {
   reason_deck_out: 'Deck out',
   reason_turn_limit: 'Turn limit',
   reason_draw: 'Perfect tie',
-  reason_fold_you: 'You folded',
-  reason_fold_them: 'Your opponent folded',
+  reason_fold_you: 'You forfeited',
+  reason_fold_them: 'Your opponent forfeited',
   rank_points: 'ranking points',
   turns_played: '{n} turns',
   lives_left: 'Life left: {me} – {them}',
@@ -1099,6 +1106,13 @@ const en: Record<Key, string> = {
   err_tournament_full: "The tournament is full.",
   err_invalid_deck: "This deck is not valid.",
   err_deck_not_found: "Deck not found.",
+  share_result: "Share this game",
+  share_alt: "End of game image",
+  share_send: "Share",
+  share_download: "Download",
+  share_text: "My RABBIT HOLE game #RabbitHole",
+  share_me: "Me",
+  share_board: "Still on the board",
 };
 
 export const locale: GlossaryLocale =

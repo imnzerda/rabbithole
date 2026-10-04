@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : en cours (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 6 — Rétention** : terminée, en attente de validation (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -21,6 +21,19 @@
 **Dépôt GitHub :** https://github.com/imnzerda/rabbithole (branche `master`).
 
 ## Journal
+
+### 2026-10-04 — Phase 6, étape 6c : partage de fin de partie
+
+- **Image de fin de partie** (cahier des charges, section 15) au format vertical 9:16 (1080 × 1920), dessinée en canvas dans le style typographique des cartes. Elle montre :
+  - le résultat et sa raison, le nombre de tours ;
+  - les deux Leaders face à face, avec les noms des joueurs et les Vies restantes ;
+  - mes Personnages encore en jeu ;
+  - la date et #RabbitHole.
+- Rien de caché n'y figure : seulement ce que la fin de partie montre aux deux joueurs.
+- **Écran de fin** : bouton « Partager la partie » (pas pour les spectateurs), puis aperçu de l'image. Ensuite « Partager » (partage natif du fichier, quand l'appareil le permet) ou « Télécharger ».
+- Le clip vidéo n'est pas fait : le cahier des charges demande un clip **ou** une image.
+- Au passage : l'écran de fin disait encore « Tu as lâché » ; il dit maintenant « Tu as abandonné ».
+- **Tests** : le scénario E2E du défi du jour vérifie l'aperçu (1080 × 1920) et le téléchargement. Rendu contrôlé à l'œil, avec et sans Personnages en jeu.
 
 ### 2026-10-04 — Phase 6, étape 6b : tournoi hebdomadaire
 
