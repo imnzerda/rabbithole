@@ -183,7 +183,7 @@ describe('capacités de Leader', () => {
   });
 });
 
-describe('Hype et Lâcher', () => {
+describe('Hype et abandon', () => {
   it("Hype : l'enjeu double tout de suite, une fois par joueur, pendant son tour", () => {
     const g = sandbox();
     expect(() => g.act(1, { type: 'hype' })).toThrow(EngineError);
@@ -194,7 +194,7 @@ describe('Hype et Lâcher', () => {
     expect(g.state.stake).toBe(4);
   });
 
-  it("Lâcher à tout moment : l'adversaire gagne l'enjeu actuel", () => {
+  it("Abandon à tout moment : l'adversaire gagne l'enjeu actuel", () => {
     const g = sandbox();
     g.act(0, { type: 'hype' }).act(1, { type: 'fold' });
     expect(g.state.result).toMatchObject({ winner: 0, reason: 'fold', stake: 2 });

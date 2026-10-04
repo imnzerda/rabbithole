@@ -83,7 +83,7 @@ TCG (jeu de cartes à collectionner) jouable dans le navigateur, desktop et mobi
 ### 3.4 Hype (enjeu de classement, sans argent)
 - En classé, une partie vaut 1 point de rang de base.
 - Pendant son tour, chaque joueur peut une fois déclarer **Hype** : l'enjeu double **immédiatement** (1 → 2 → 4 maximum).
-- Chaque joueur peut **Lâcher** (abandonner) à tout moment et ne perdre que l'enjeu actuel.
+- Chaque joueur peut **Abandonner** à tout moment (même pendant le tour adverse) et ne perdre que l'enjeu actuel.
 - Aucun lien avec une monnaie : uniquement des points de rang.
 
 ### 3.5 Structure d'une carte

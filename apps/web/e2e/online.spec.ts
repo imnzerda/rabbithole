@@ -257,9 +257,9 @@ test('classé : partie classée (fantôme après l’attente), points en fin de 
   await expect(page.getByTestId('my-rank-badge')).toHaveText('Lurker · 0 points');
 
   // File classée : un fantôme après l'attente, ou l'autre navigateur de test s'il est en file au même moment.
-  // On lâche dès que possible ; si l'adversaire lâche avant, la partie est gagnée.
+  // On abandonne dès que possible ; si l'adversaire abandonne avant, la partie est gagnée.
   await page.getByTestId('mode-ranked').click();
-  const fold = page.getByRole('button', { name: 'Lâcher' });
+  const fold = page.getByTestId('fold');
   for (let i = 0; i < 50; i++) {
     const v = await waitDecision(page);
     if (v.phase === 'ended') break;
@@ -410,18 +410,13 @@ test('défi du jour : deck imposé sans collection, une tentative, score à part
   await page.getByTestId('nav-daily').click();
   await page.getByTestId('daily-play').click();
 
-  // Le défi démarre tout de suite contre l'IA, avec le deck du jour (le compte n'a aucune carte) ; on lâche dès que possible.
-  const fold = page.getByRole('button', { name: 'Lâcher' });
-  for (let i = 0; i < 50; i++) {
-    const v = await waitDecision(page);
-    if (v.phase === 'ended') break;
-    if (await fold.isEnabled()) {
-      page.once('dialog', (d) => void d.accept());
-      await fold.click();
-      break;
-    }
-    await autoStep(page);
-  }
+  // Le défi démarre tout de suite contre l'IA, avec le deck du jour (le compte n'a aucune carte).
+  // On abandonne dès l'apparition du plateau, sans attendre la fin des animations : le bouton est actif en permanence.
+  const fold = page.getByTestId('fold');
+  await expect(fold).toBeEnabled();
+  await expect(fold).toHaveText('Abandonner');
+  page.once('dialog', (d) => void d.accept());
+  await fold.click();
   await expect(page.getByTestId('end-screen')).toBeVisible();
   await expect(page.getByTestId('replay')).toHaveCount(0);
   await page.getByTestId('end-screen').getByRole('button', { name: 'Menu' }).click();

@@ -81,7 +81,7 @@ Actions d'un joueur (`GameAction`) : `mulligan`, `play`, `attach`, `attack`, `ac
 `pnpm test` lance 68 tests :
 - mise en place, mulligan, déroulement des tours, validation des decks ;
 - combat (attaque, blocage, contres, Déclencheurs, Viral, Ratio, coup fatal) ;
-- chaque mot-clé et chaque action du DSL, capacités de Leader, Hype et Lâcher ;
+- chaque mot-clé et chaque action du DSL, capacités de Leader, Hype et abandon ;
 - vue joueur sans information cachée ;
 - déterminisme et replay ;
 - 300 parties aléatoires avec vérification des invariants (zones, 5 Personnages max, conservation du Buzz) ;

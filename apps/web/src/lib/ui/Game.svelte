@@ -97,8 +97,10 @@
     if (legal?.canHype && confirm(t('hype_confirm'))) perform({ type: 'hype' });
   }
 
+  /** Abandon possible à tout moment, même pendant le tour adverse ou une animation (le moteur l'accepte de chaque joueur). */
   function fold(): void {
-    if (view && !busy && confirm(t('fold_confirm', { n: view.stake }))) perform({ type: 'fold' });
+    if (!view || view.phase === 'ended' || match.spectator) return;
+    if (confirm(t('fold_confirm', { n: view.stake }))) match.act({ type: 'fold' });
   }
 
   onMount(() => {
@@ -221,7 +223,7 @@
     <div class="row">
       <span class="deck">{view ? t('my_deck', { n: view.me.deckCount }) : ''}</span>
       <button class="btn hype" disabled={!myMain || !legal?.canHype} onclick={hype}>{t('hype')}</button>
-      <button class="btn fold" disabled={busy || !view || view.phase === 'ended'} onclick={fold}>{t('fold')}</button>
+      <button class="btn fold" disabled={!view || view.phase === 'ended' || match.spectator} data-testid="fold" onclick={fold}>{t('fold')}</button>
       <button class="btn btn-primary end" disabled={!myMain} data-testid="end-turn" onclick={() => perform({ type: 'end_turn' })}>
         {myMain || myReaction ? t('end_turn') : t('waiting')}
         {#if timeLeft !== null && (myMain || myReaction)}<span class="timer" class:urgent={timeLeft <= 10}>{timeLeft}</span>{/if}
