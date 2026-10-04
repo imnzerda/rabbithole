@@ -2,7 +2,7 @@
 
 ## Phase en cours
 
-**Phase 6 — Rétention** : terminée, en attente de validation (phase 5 validée le 2026-10-03). Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
+**Phase 7 — Social** : à démarrer (phase 6 validée le 2026-10-04). **Phase 6 — Rétention** : validée. Fait : missions, pass saisonnier, classé, succès et progression de collection, Tendance du jour, défi du jour, draft du week-end, tournoi hebdomadaire, partage de fin de partie. **Phase 5 — Économie** : validée. Fait : trade-up, amis et échanges, gemmes et paiement sandbox, pièces et essence fusionnées, compensation des cartes retirées.
 
 | Phase | Statut |
 |---|---|
@@ -12,8 +12,8 @@
 | 3. Serveur et comptes | ✅ Validée (fusionnée dans `master`) |
 | 4. Pipeline de contenu et admin | ✅ Validée (2026-10-03) |
 | 5. Économie | ✅ Validée (2026-10-03) |
-| 6. Rétention | 🟡 En cours |
-| 7. Social | — |
+| 6. Rétention | ✅ Validée (2026-10-04) |
+| 7. Social | 🟡 À démarrer |
 | 8. International et lancement | — |
 
 **Lancer le jeu :** `pnpm install` puis `pnpm dev` : serveur de jeu (port 3000), site (http://localhost:5173) et outil d'admin (http://localhost:5174). `pnpm dev:lan` rend le site accessible depuis un téléphone du même Wi-Fi. Aucune base à installer : en développement, PostgreSQL tourne en embarqué (PGlite, données dans `apps/server/.data/`). Les réglages locaux (dont `ADMIN_EMAILS=neil.zerda@gmail.com`) sont dans `apps/server/.env`, non versionné. `?timer=0` dans l'URL d'entraînement désactive les minuteurs.
